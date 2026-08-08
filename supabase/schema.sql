@@ -1,63 +1,44 @@
--- Captain Toto — Supabase schema
+-- Captain Toto — Booking System schema
 -- Run this in your Supabase project: SQL Editor → New query → paste → Run.
 
--- =========================================================
--- Tables
--- =========================================================
-
-create table if not exists public.tours (
-  id            uuid primary key default gen_random_uuid(),
-  slug          text unique not null,
-  title         text not null,
-  destination   text not null,
-  country       text not null,
-  category      text not null,
-  summary       text not null,
-  description   text not null,
-  price         numeric not null,
-  duration_days integer not null,
-  rating        numeric not null default 5,
-  image         text not null,
-  featured      boolean not null default false,
-  created_at    timestamptz not null default now()
-);
-
 create table if not exists public.bookings (
-  id          uuid primary key default gen_random_uuid(),
-  tour_slug   text not null,
-  tour_title  text not null,
-  full_name   text not null,
-  email       text not null,
-  phone       text not null,
-  travelers   integer not null default 1,
-  travel_date date not null,
-  message     text,
-  created_at  timestamptz not null default now()
+  id             uuid primary key default gen_random_uuid(),
+  booking_id     text not null,
+  booking_date   date not null,
+  client_name    text not null,
+  client_type    text not null default 'Individual',
+  route          text not null default '',
+  airline        text not null default '',
+  ticket_cost    numeric not null default 0,
+  service_fee    numeric not null default 0,
+  total_paid     numeric not null default 0,
+  payment_status text not null default 'Pending',
+  issued         boolean not null default false,
+  handled_by     text not null default '',
+  payment_method text not null default 'Cash',
+  profit         numeric not null default 0,
+  debt           numeric not null default 0,
+  supplier_name  text not null default '',
+  supplier_code  text not null default '',
+  month          integer not null default 0,
+  year           integer not null default 0,
+  created_at     timestamptz not null default now()
 );
+
+create index if not exists bookings_date_idx on public.bookings (booking_date desc);
 
 -- =========================================================
 -- Row Level Security (RLS)
 -- =========================================================
-alter table public.tours    enable row level security;
+-- This is an internal back-office tool with no login yet, so we allow the
+-- anon key full access. TIGHTEN THIS once you add authentication: restrict
+-- each policy to `authenticated` and check roles.
+
 alter table public.bookings enable row level security;
 
--- Anyone can READ tours (public catalogue).
-drop policy if exists "tours are public" on public.tours;
-create policy "tours are public"
-  on public.tours for select
+drop policy if exists "bookings full access (internal)" on public.bookings;
+create policy "bookings full access (internal)"
+  on public.bookings for all
   to anon, authenticated
-  using (true);
-
--- Anyone can CREATE a booking (submit the form)...
-drop policy if exists "anyone can create a booking" on public.bookings;
-create policy "anyone can create a booking"
-  on public.bookings for insert
-  to anon, authenticated
+  using (true)
   with check (true);
-
--- ...but only signed-in admins can READ bookings.
-drop policy if exists "only authenticated can read bookings" on public.bookings;
-create policy "only authenticated can read bookings"
-  on public.bookings for select
-  to authenticated
-  using (true);

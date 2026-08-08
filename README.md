@@ -1,22 +1,30 @@
-# Captain Toto ✈
+# Captain ToTo — Booking System ✈
 
-A modern travel-agency website: browse tours, view details, and request bookings.
-Built with **Next.js + Tailwind CSS + Supabase**.
+An internal back-office web app for the Captain ToTo travel agency. Staff
+**enter booking records** and the system automatically produces dashboards and
+analysis reports. Modeled on the `Captain_ToTo_Booking_System.xlsx` workbook.
 
-> New here? Read **[GUIDE.md](GUIDE.md)** — a complete, beginner-friendly, step-by-step
-> walkthrough from zero to a live website (Supabase, GitHub, and Vercel included).
+Built with **Next.js 16 + Tailwind CSS + Supabase**.
 
 ---
 
-## Tech stack
+## What's inside
 
-| Layer      | Technology                        | Where it runs        |
-| ---------- | --------------------------------- | -------------------- |
-| Frontend   | Next.js 16 (App Router) + React   | Vercel               |
-| Styling    | Tailwind CSS v4                   | —                    |
-| Database   | Supabase (PostgreSQL)             | Supabase cloud       |
-| Hosting    | Vercel (free)                     | Vercel               |
-| Source     | GitHub                            | GitHub               |
+| Section | Route | What it does |
+| ------- | ----- | ------------ |
+| Dashboard | `/` | KPIs (bookings, revenue, profit, issued, pending, debt) + recent bookings |
+| Bookings | `/bookings` | Searchable/filterable table of every booking |
+| New / Edit | `/bookings/new`, `/bookings/[id]` | Data-entry form with dropdowns and live totals |
+| Monthly Summary | `/reports/monthly` | Per-month bookings, revenue, profit |
+| Payment Report | `/reports/payments` | Payment status + live money totals |
+| Client Analysis | `/reports/clients` | Grouped by client |
+| Staff Performance | `/reports/staff` | Grouped by staff member |
+| Airline Analysis | `/reports/airlines` | Grouped by airline |
+| Route Analysis | `/reports/routes` | Grouped by route |
+
+Each booking auto-calculates **Total Paid** (`ticket + fee`), **Profit**, and
+its **Month/Year** from the date. Booking IDs (`CT-0001`, …) are generated
+automatically.
 
 ---
 
@@ -29,19 +37,29 @@ npm run dev
 
 Open http://localhost:3000
 
-The site works immediately with built-in **sample tours**. To use your own data,
-connect Supabase (see [GUIDE.md](GUIDE.md) → *Connect Supabase*).
+The app runs immediately in **demo mode** (data kept in memory, resets on
+restart) so you can try it without any setup.
 
 ---
 
-## Environment variables
+## Connecting Supabase (to save data permanently)
 
-Copy `.env.example` to `.env.local` and fill in your Supabase values:
+1. Create a project at [supabase.com](https://supabase.com).
+2. In the SQL Editor, run `supabase/schema.sql`, then `supabase/seed.sql`.
+3. Copy `.env.example` to `.env.local` and fill in your project URL + anon key
+   (Supabase → Project Settings → API).
+4. Restart `npm run dev`. The demo banner disappears and data now persists.
 
-```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
+> Note: RLS is currently open (no login yet). Tighten the policies in
+> `schema.sql` when authentication is added.
+
+---
+
+## Adding more sections
+
+The Bookings section is the first of several. Each new Excel workbook can become
+another section by adding: a type + list in `src/lib/`, a data-access module, a
+sidebar entry in `src/components/Sidebar.tsx`, and pages under `src/app/`.
 
 ---
 
@@ -50,22 +68,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 src/
   app/
-    page.tsx              Home page
-    tours/page.tsx        Tours listing (search + filter)
-    tours/[slug]/page.tsx Tour detail + booking form
-    about/page.tsx        About page
-    contact/page.tsx      Contact page
-    api/bookings/route.ts Saves bookings to Supabase
-  components/             Navbar, Footer, TourCard, BookingForm, ToursExplorer
+    page.tsx                 Dashboard
+    bookings/                List, new, edit
+    reports/                 monthly, payments, clients, staff, airlines, routes
+  components/                Sidebar, BookingForm, BookingsTable, GroupReport, ui
   lib/
-    supabase.ts           Supabase client
-    tours.ts              Data access (+ sample fallback)
-    types.ts              TypeScript types
+    types.ts                 Booking types
+    lists.ts                 Dropdown options (from the Lists sheet)
+    bookings.ts              Data access + aggregations
+    actions.ts               Server Actions (create/update/delete)
+    supabase.ts, format.ts   Client + helpers
 supabase/
-  schema.sql             Tables + security policies
-  seed.sql               Sample tour data
+  schema.sql, seed.sql
 ```
-
----
-
-Built for learning and easy extension. See [GUIDE.md](GUIDE.md) for everything else.
