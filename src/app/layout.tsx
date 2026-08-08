@@ -22,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Sidebar />
           <div className="flex min-w-0 flex-1 flex-col">
             {!isSupabaseConfigured && (
-              <div className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-center text-xs text-amber-800">
+              <div className="no-print border-b border-amber-200 bg-amber-50 px-6 py-2 text-center text-xs text-amber-800">
                 Demo mode — data is stored in memory and resets on restart.
                 Connect Supabase (see <code>.env.example</code>) to save
                 permanently.

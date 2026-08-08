@@ -46,3 +46,64 @@ export type BookingInput = {
   supplier_name: string;
   supplier_code: string;
 };
+
+// ---------------------------------------------------------------------------
+// Ticket Invoice section
+// Mirrors Captain_Toto_Ticket_Invoice_Data_Workbook. An invoice has one header,
+// many passengers, and many flight segments. No prices (those live in Booking).
+// ---------------------------------------------------------------------------
+
+export type InvoicePassenger = {
+  id?: string;
+  full_name: string;
+  passport_no: string;
+  nationality: string;
+  date_of_birth: string; // ISO date
+  ticket_no: string;
+  notes: string;
+};
+
+export type InvoiceSegment = {
+  id?: string;
+  seg_no: number;
+  airline: string;
+  flight_no: string;
+  route: string;
+  departure: string; // datetime-local string
+  arrival: string; // datetime-local string
+  travel_class: string;
+  baggage: string;
+  notes: string;
+};
+
+export type Invoice = {
+  id: string;
+  invoice_no: string; // CT-TI-0001
+  invoice_date: string; // ISO date
+  booking_id: string; // links to bookings.booking_id
+  airline: string;
+  pnr: string;
+  reservation_status: string;
+  client_name: string;
+  notes: string;
+  passengers: InvoicePassenger[];
+  segments: InvoiceSegment[];
+  created_at?: string;
+};
+
+export type InvoiceInput = {
+  invoice_date: string;
+  booking_id: string;
+  airline: string;
+  pnr: string;
+  reservation_status: string;
+  client_name: string;
+  notes: string;
+  passengers: InvoicePassenger[];
+  segments: InvoiceSegment[];
+};
+
+export type AirlinePolicy = {
+  airline: string;
+  policy_text: string;
+};

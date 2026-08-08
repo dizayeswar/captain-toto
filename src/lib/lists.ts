@@ -40,6 +40,45 @@ export const SUPPLIERS: Supplier[] = [
   { name: "Hala Travel", code: "SUP-0004" },
 ];
 
+// --- Ticket Invoice section lists (from the Setup / Airline_Policies sheets) ---
+
+export const INVOICE_AIRLINES = [
+  "Turkish Airlines",
+  "Emirates",
+  "flydubai",
+  "Air Arabia",
+  "EgyptAir",
+  "Iraqi Airways",
+  "Pegasus",
+  "AJet",
+  "Qatar Airways",
+  "Royal Jordanian",
+  "FLY ERBIL",
+] as const;
+
+export const RESERVATION_STATUSES = [
+  "Confirmed",
+  "Pending",
+  "Cancelled",
+  "Issued",
+  "On Hold",
+  "Refunded",
+] as const;
+
+export const TRAVEL_CLASSES = [
+  "Economy",
+  "Premium Economy",
+  "Business",
+  "First",
+] as const;
+
+export const BAGGAGE_OPTIONS = [
+  "30 KG",
+  "20 KG",
+  "2 PC",
+  "Not Included",
+] as const;
+
 export const MONTH_NAMES = [
   "January",
   "February",

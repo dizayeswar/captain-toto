@@ -27,3 +27,25 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    height: auto;
+    background: #fff;
+  }
+  /* Let the printable content take the full page width. */
+  main {
+    overflow: visible !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}

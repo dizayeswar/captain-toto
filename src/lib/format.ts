@@ -16,3 +16,18 @@ export function formatDate(iso: string): string {
     year: "numeric",
   });
 }
+
+/** Format a datetime-local string (e.g. "2026-04-05T15:00") for display. */
+export function formatDateTime(value: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
