@@ -2,6 +2,8 @@ import { getBookings } from "@/lib/bookings";
 import { PageHeader, Button } from "@/components/ui";
 import BookingsTable from "@/components/BookingsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function BookingsPage() {
   const bookings = await getBookings();
 

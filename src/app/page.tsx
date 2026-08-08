@@ -3,6 +3,8 @@ import { getBookings, computeTotals } from "@/lib/bookings";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader, StatCard, Card, Button, StatusBadge } from "@/components/ui";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const bookings = await getBookings();
   const totals = computeTotals(bookings);

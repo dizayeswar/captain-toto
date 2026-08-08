@@ -2,6 +2,8 @@ import { getBookings, computeTotals } from "@/lib/bookings";
 import { formatCurrency } from "@/lib/format";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
 
+export const dynamic = "force-dynamic";
+
 export default async function PaymentReportPage() {
   const bookings = await getBookings();
   const totals = computeTotals(bookings);

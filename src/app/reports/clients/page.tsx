@@ -2,6 +2,8 @@ import { getBookings, groupBy } from "@/lib/bookings";
 import { PageHeader } from "@/components/ui";
 import GroupReport from "@/components/GroupReport";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClientReportPage() {
   const bookings = await getBookings();
   const rows = groupBy(bookings, (b) => b.client_name);

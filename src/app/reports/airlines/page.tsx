@@ -3,6 +3,8 @@ import { AIRLINES } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
 import GroupReport from "@/components/GroupReport";
 
+export const dynamic = "force-dynamic";
+
 export default async function AirlineReportPage() {
   const bookings = await getBookings();
   const rows = groupByKeys(bookings, (b) => b.airline, AIRLINES);

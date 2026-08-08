@@ -4,6 +4,8 @@ import { updateBookingAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import BookingForm from "@/components/BookingForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditBookingPage(props: PageProps<"/bookings/[id]">) {
   const { id } = await props.params;
   const booking = await getBooking(id);
