@@ -41,6 +41,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { href: "/payments", label: "Payment Invoices" },
       { href: "/payments/new", label: "New Payment Invoice" },
+      { href: "/payments/summary", label: "Payments Summary" },
     ],
   },
 ];

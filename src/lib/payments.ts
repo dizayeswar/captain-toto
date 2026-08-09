@@ -101,6 +101,76 @@ export async function updatePaymentInvoice(
   return data as PaymentInvoice;
 }
 
+export type PaymentGroupRow = {
+  key: string;
+  count: number;
+  total: number;
+};
+
+export type PaymentSummary = {
+  totalReceived: number;
+  count: number;
+  thisMonthTotal: number;
+  thisMonthCount: number;
+  averageReceipt: number;
+  byMonth: PaymentGroupRow[];
+  byStaff: PaymentGroupRow[];
+  byPayerType: PaymentGroupRow[];
+};
+
+function groupSum(
+  receipts: PaymentInvoice[],
+  selector: (r: PaymentInvoice) => string
+): PaymentGroupRow[] {
+  const map = new Map<string, PaymentGroupRow>();
+  for (const r of receipts) {
+    const key = selector(r) || "—";
+    const row = map.get(key) ?? { key, count: 0, total: 0 };
+    row.count += 1;
+    row.total += r.amount || 0;
+    map.set(key, row);
+  }
+  return [...map.values()];
+}
+
+export function summarizePayments(
+  receipts: PaymentInvoice[]
+): PaymentSummary {
+  const now = new Date();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+
+  const totalReceived = receipts.reduce((s, r) => s + (r.amount || 0), 0);
+  const thisMonth = receipts.filter((r) => {
+    const d = new Date(r.receipt_date);
+    return d.getMonth() === curMonth && d.getFullYear() === curYear;
+  });
+  const thisMonthTotal = thisMonth.reduce((s, r) => s + (r.amount || 0), 0);
+
+  const byMonth = groupSum(receipts, (r) =>
+    r.receipt_date ? r.receipt_date.slice(0, 7) : "—"
+  ).sort((a, b) => b.key.localeCompare(a.key));
+
+  const byStaff = groupSum(receipts, (r) => r.prepared_by).sort(
+    (a, b) => b.total - a.total
+  );
+
+  const byPayerType = groupSum(receipts, (r) => r.payer_type).sort(
+    (a, b) => b.total - a.total
+  );
+
+  return {
+    totalReceived,
+    count: receipts.length,
+    thisMonthTotal,
+    thisMonthCount: thisMonth.length,
+    averageReceipt: receipts.length ? totalReceived / receipts.length : 0,
+    byMonth,
+    byStaff,
+    byPayerType,
+  };
+}
+
 export async function deletePaymentInvoice(id: string): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) {
