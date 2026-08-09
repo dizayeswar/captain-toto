@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# scratch (workbook/doc extraction)
+/.docx_tmp/
+/.xlsx_tmp/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

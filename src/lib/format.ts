@@ -6,6 +6,20 @@ export function formatCurrency(value: number): string {
   }).format(value || 0);
 }
 
+/** Convert a foreign amount to USD using an "FX to USD" multiplier. */
+export function toUsd(amount: number, fx: number): number {
+  const a = Number(amount) || 0;
+  const rate = Number(fx) || 1;
+  return Math.round(a * rate * 100) / 100;
+}
+
+/** Format a number (no currency symbol) with thousands separators. */
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+  }).format(value || 0);
+}
+
 export function formatDate(iso: string): string {
   if (!iso) return "—";
   const d = new Date(iso);

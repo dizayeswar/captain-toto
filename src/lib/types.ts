@@ -137,3 +137,252 @@ export type PaymentInvoiceInput = {
   notes: string;
   prepared_by: string;
 };
+
+// ---------------------------------------------------------------------------
+// Shared Suppliers directory (used by Hotel, Visa and Supplier Finance)
+// ---------------------------------------------------------------------------
+
+export type SupplierRecord = {
+  id: string;
+  supplier_code: string; // SUP-0001
+  name: string;
+  supplier_type: string;
+  country: string;
+  city: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+  currency: string;
+  payment_terms: string;
+  bank_details: string;
+  active: boolean;
+  notes: string;
+  created_at?: string;
+};
+
+export type SupplierInput = Omit<
+  SupplierRecord,
+  "id" | "supplier_code" | "created_at"
+>;
+
+// ---------------------------------------------------------------------------
+// Hotel Management
+// ---------------------------------------------------------------------------
+
+export type HotelBooking = {
+  id: string;
+  booking_code: string; // CTH-0001
+  created_date: string;
+  lead_guest: string;
+  phone: string;
+  email: string;
+  nationality: string;
+  destination_country: string;
+  city: string;
+  hotel_name: string;
+  hotel_confirmation_no: string;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  rooms: number;
+  adults: number;
+  children: number;
+  infants: number;
+  room_type: string;
+  meal_plan: string;
+  supplier: string;
+  currency: string;
+  cost_per_room_night: number;
+  sale_per_room_night: number;
+  extra_cost: number;
+  discount: number;
+  total_cost_usd: number;
+  total_sale_usd: number;
+  profit_usd: number;
+  net_paid_usd: number;
+  balance_usd: number;
+  payment_status: string;
+  booking_status: string;
+  staff: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type HotelBookingInput = {
+  created_date: string;
+  lead_guest: string;
+  phone: string;
+  email: string;
+  nationality: string;
+  destination_country: string;
+  city: string;
+  hotel_name: string;
+  hotel_confirmation_no: string;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  rooms: number;
+  adults: number;
+  children: number;
+  infants: number;
+  room_type: string;
+  meal_plan: string;
+  supplier: string;
+  currency: string;
+  cost_per_room_night: number;
+  sale_per_room_night: number;
+  extra_cost: number;
+  discount: number;
+  net_paid_usd: number;
+  payment_status: string;
+  booking_status: string;
+  staff: string;
+  notes: string;
+};
+
+// ---------------------------------------------------------------------------
+// Visa Management
+// ---------------------------------------------------------------------------
+
+export type VisaCase = {
+  id: string;
+  visa_id: string; // CTV-0001
+  created_date: string;
+  client_name: string;
+  phone: string;
+  email: string;
+  passport_no: string;
+  nationality: string;
+  destination_country: string;
+  visa_type: string;
+  entry_type: string;
+  travel_date: string;
+  application_date: string;
+  appointment_date: string;
+  decision_date: string;
+  case_status: string;
+  priority: string;
+  staff: string;
+  currency: string;
+  appointment_fee: number;
+  document_fee: number;
+  extra_charges: number;
+  total_sale_usd: number;
+  amount_paid_usd: number;
+  balance_usd: number;
+  payment_status: string;
+  documents_result: string;
+  passport_received: string;
+  passport_returned: string;
+  provider: string;
+  provider_reference: string;
+  supplier_name: string;
+  supplier_code: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type VisaCaseInput = {
+  created_date: string;
+  client_name: string;
+  phone: string;
+  email: string;
+  passport_no: string;
+  nationality: string;
+  destination_country: string;
+  visa_type: string;
+  entry_type: string;
+  travel_date: string;
+  application_date: string;
+  appointment_date: string;
+  decision_date: string;
+  case_status: string;
+  priority: string;
+  staff: string;
+  currency: string;
+  appointment_fee: number;
+  document_fee: number;
+  extra_charges: number;
+  amount_paid_usd: number;
+  payment_status: string;
+  documents_result: string;
+  passport_received: string;
+  passport_returned: string;
+  provider: string;
+  provider_reference: string;
+  supplier_name: string;
+  supplier_code: string;
+  notes: string;
+};
+
+// ---------------------------------------------------------------------------
+// Supplier Financial
+// ---------------------------------------------------------------------------
+
+export type SupplierInvoice = {
+  id: string;
+  invoice_id: string; // SINV-0001
+  invoice_date: string;
+  due_date: string;
+  supplier: string;
+  supplier_invoice_no: string;
+  booking_ref: string;
+  service_type: string;
+  currency: string;
+  invoice_amount: number;
+  invoice_usd: number;
+  paid_usd: number;
+  refund_usd: number;
+  net_paid_usd: number;
+  outstanding_usd: number;
+  invoice_status: string;
+  payment_status: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type SupplierInvoiceInput = {
+  invoice_date: string;
+  due_date: string;
+  supplier: string;
+  supplier_invoice_no: string;
+  booking_ref: string;
+  service_type: string;
+  currency: string;
+  invoice_amount: number;
+  paid_usd: number;
+  refund_usd: number;
+  invoice_status: string;
+  payment_status: string;
+  notes: string;
+};
+
+// ---------------------------------------------------------------------------
+// Finance Control (daily expenses)
+// ---------------------------------------------------------------------------
+
+export type Expense = {
+  id: string;
+  expense_date: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  paid_by: string;
+  receipt_ref: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type ExpenseInput = {
+  expense_date: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  paid_by: string;
+  receipt_ref: string;
+  notes: string;
+};

@@ -14,12 +14,38 @@ import {
   updatePaymentInvoice,
   deletePaymentInvoice,
 } from "./payments";
+import {
+  createHotelBooking,
+  updateHotelBooking,
+  deleteHotelBooking,
+} from "./hotels";
+import {
+  createVisaCase,
+  updateVisaCase,
+  deleteVisaCase,
+} from "./visas";
+import {
+  createSupplierInvoice,
+  updateSupplierInvoice,
+  deleteSupplierInvoice,
+} from "./supplierFinance";
+import { createSupplier, deleteSupplier } from "./suppliers";
+import {
+  createExpense,
+  updateExpense,
+  deleteExpense,
+} from "./expenses";
 import type {
   BookingInput,
   InvoiceInput,
   InvoicePassenger,
   InvoiceSegment,
   PaymentInvoiceInput,
+  HotelBookingInput,
+  VisaCaseInput,
+  SupplierInvoiceInput,
+  SupplierInput,
+  ExpenseInput,
 } from "./types";
 
 function parseForm(formData: FormData): BookingInput {
@@ -169,6 +195,242 @@ export async function deletePaymentInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deletePaymentInvoice(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hotel Management actions
+// ---------------------------------------------------------------------------
+
+function parseHotelForm(formData: FormData): HotelBookingInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const num = (name: string) => Number(formData.get(name)) || 0;
+  return {
+    created_date: str("created_date"),
+    lead_guest: str("lead_guest"),
+    phone: str("phone"),
+    email: str("email"),
+    nationality: str("nationality"),
+    destination_country: str("destination_country"),
+    city: str("city"),
+    hotel_name: str("hotel_name"),
+    hotel_confirmation_no: str("hotel_confirmation_no"),
+    check_in: str("check_in"),
+    check_out: str("check_out"),
+    nights: num("nights"),
+    rooms: num("rooms"),
+    adults: num("adults"),
+    children: num("children"),
+    infants: num("infants"),
+    room_type: str("room_type"),
+    meal_plan: str("meal_plan"),
+    supplier: str("supplier"),
+    currency: str("currency"),
+    cost_per_room_night: num("cost_per_room_night"),
+    sale_per_room_night: num("sale_per_room_night"),
+    extra_cost: num("extra_cost"),
+    discount: num("discount"),
+    net_paid_usd: num("net_paid_usd"),
+    payment_status: str("payment_status"),
+    booking_status: str("booking_status"),
+    staff: str("staff"),
+    notes: str("notes"),
+  };
+}
+
+export async function createHotelBookingAction(formData: FormData) {
+  await createHotelBooking(parseHotelForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/hotel");
+}
+
+export async function updateHotelBookingAction(id: string, formData: FormData) {
+  await updateHotelBooking(id, parseHotelForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/hotel");
+}
+
+export async function deleteHotelBookingAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteHotelBooking(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Visa Management actions
+// ---------------------------------------------------------------------------
+
+function parseVisaForm(formData: FormData): VisaCaseInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const num = (name: string) => Number(formData.get(name)) || 0;
+  return {
+    created_date: str("created_date"),
+    client_name: str("client_name"),
+    phone: str("phone"),
+    email: str("email"),
+    passport_no: str("passport_no"),
+    nationality: str("nationality"),
+    destination_country: str("destination_country"),
+    visa_type: str("visa_type"),
+    entry_type: str("entry_type"),
+    travel_date: str("travel_date"),
+    application_date: str("application_date"),
+    appointment_date: str("appointment_date"),
+    decision_date: str("decision_date"),
+    case_status: str("case_status"),
+    priority: str("priority"),
+    staff: str("staff"),
+    currency: str("currency"),
+    appointment_fee: num("appointment_fee"),
+    document_fee: num("document_fee"),
+    extra_charges: num("extra_charges"),
+    amount_paid_usd: num("amount_paid_usd"),
+    payment_status: str("payment_status"),
+    documents_result: str("documents_result"),
+    passport_received: str("passport_received"),
+    passport_returned: str("passport_returned"),
+    provider: str("provider"),
+    provider_reference: str("provider_reference"),
+    supplier_name: str("supplier_name"),
+    supplier_code: str("supplier_code"),
+    notes: str("notes"),
+  };
+}
+
+export async function createVisaCaseAction(formData: FormData) {
+  await createVisaCase(parseVisaForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/visa");
+}
+
+export async function updateVisaCaseAction(id: string, formData: FormData) {
+  await updateVisaCase(id, parseVisaForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/visa");
+}
+
+export async function deleteVisaCaseAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteVisaCase(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Supplier Financial actions
+// ---------------------------------------------------------------------------
+
+function parseSupplierInvoiceForm(formData: FormData): SupplierInvoiceInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const num = (name: string) => Number(formData.get(name)) || 0;
+  return {
+    invoice_date: str("invoice_date"),
+    due_date: str("due_date"),
+    supplier: str("supplier"),
+    supplier_invoice_no: str("supplier_invoice_no"),
+    booking_ref: str("booking_ref"),
+    service_type: str("service_type"),
+    currency: str("currency"),
+    invoice_amount: num("invoice_amount"),
+    paid_usd: num("paid_usd"),
+    refund_usd: num("refund_usd"),
+    invoice_status: str("invoice_status"),
+    payment_status: str("payment_status"),
+    notes: str("notes"),
+  };
+}
+
+export async function createSupplierInvoiceAction(formData: FormData) {
+  await createSupplierInvoice(parseSupplierInvoiceForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/suppliers/invoices");
+}
+
+export async function updateSupplierInvoiceAction(
+  id: string,
+  formData: FormData
+) {
+  await updateSupplierInvoice(id, parseSupplierInvoiceForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/suppliers/invoices");
+}
+
+export async function deleteSupplierInvoiceAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteSupplierInvoice(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+export async function createSupplierAction(formData: FormData) {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const input: SupplierInput = {
+    name: str("name"),
+    supplier_type: str("supplier_type"),
+    country: str("country"),
+    city: str("city"),
+    contact_person: str("contact_person"),
+    phone: str("phone"),
+    email: str("email"),
+    currency: str("currency") || "USD",
+    payment_terms: str("payment_terms"),
+    bank_details: str("bank_details"),
+    active: formData.get("active") !== "off",
+    notes: str("notes"),
+  };
+  await createSupplier(input);
+  revalidatePath("/", "layout");
+  redirect("/suppliers");
+}
+
+export async function deleteSupplierAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteSupplier(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Finance Control (expenses) actions
+// ---------------------------------------------------------------------------
+
+function parseExpenseForm(formData: FormData): ExpenseInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  return {
+    expense_date: str("expense_date"),
+    category: str("category"),
+    description: str("description"),
+    amount: Number(formData.get("amount")) || 0,
+    currency: str("currency"),
+    payment_method: str("payment_method"),
+    paid_by: str("paid_by"),
+    receipt_ref: str("receipt_ref"),
+    notes: str("notes"),
+  };
+}
+
+export async function createExpenseAction(formData: FormData) {
+  await createExpense(parseExpenseForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/finance");
+}
+
+export async function updateExpenseAction(id: string, formData: FormData) {
+  await updateExpense(id, parseExpenseForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/finance");
+}
+
+export async function deleteExpenseAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteExpense(id);
     revalidatePath("/", "layout");
   }
 }

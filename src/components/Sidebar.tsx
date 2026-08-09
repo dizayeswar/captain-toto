@@ -44,6 +44,47 @@ const SECTIONS: NavSection[] = [
       { href: "/payments/summary", label: "Payments Summary" },
     ],
   },
+  {
+    id: "hotel",
+    title: "Hotel",
+    icon: "hotel",
+    items: [
+      { href: "/hotel", label: "Dashboard" },
+      { href: "/hotel/bookings", label: "Hotel Bookings" },
+      { href: "/hotel/bookings/new", label: "New Hotel Booking" },
+    ],
+  },
+  {
+    id: "visa",
+    title: "Visa",
+    icon: "visa",
+    items: [
+      { href: "/visa", label: "Dashboard" },
+      { href: "/visa/cases", label: "Visa Cases" },
+      { href: "/visa/cases/new", label: "New Visa Case" },
+    ],
+  },
+  {
+    id: "suppliers",
+    title: "Supplier Finance",
+    icon: "supplier",
+    items: [
+      { href: "/suppliers/dashboard", label: "Dashboard" },
+      { href: "/suppliers/invoices", label: "Supplier Invoices" },
+      { href: "/suppliers/invoices/new", label: "New Invoice" },
+      { href: "/suppliers", label: "Suppliers Directory" },
+    ],
+  },
+  {
+    id: "finance",
+    title: "Finance",
+    icon: "finance",
+    items: [
+      { href: "/finance", label: "Expenses" },
+      { href: "/finance/new", label: "New Expense" },
+      { href: "/finance/summary", label: "Expense Summary" },
+    ],
+  },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -181,6 +222,34 @@ function Icon({ name }: { name: string }) {
         <svg {...common}>
           <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 2V2l-1 2-3-2-3 2-3-2-3 2-3-2Z" />
           <path d="M8 8h8M8 12h8M8 16h5" />
+        </svg>
+      );
+    case "hotel":
+      return (
+        <svg {...common}>
+          <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01M9 14h.01M15 14h.01" />
+        </svg>
+      );
+    case "visa":
+      return (
+        <svg {...common}>
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <circle cx="9" cy="12" r="2" />
+          <path d="M14 10h4M14 14h4" />
+        </svg>
+      );
+    case "supplier":
+      return (
+        <svg {...common}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "finance":
+      return (
+        <svg {...common}>
+          <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
         </svg>
       );
     default:
