@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getInvoice, getPolicyForAirline } from "@/lib/invoices";
 import { formatDate, formatDateTime } from "@/lib/format";
 import PrintButton from "@/components/PrintButton";
+import { DocLetterhead, DocFooter } from "@/components/DocBranding";
 
 export const dynamic = "force-dynamic";
 
@@ -38,27 +39,7 @@ export default async function InvoiceViewPage(
 
       {/* Printable document */}
       <div className="print-area mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
-        {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-200 pb-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-xl font-bold text-white">
-              CT
-            </span>
-            <div>
-              <p className="text-lg font-bold text-slate-900">Captain ToTo</p>
-              <p className="text-sm text-slate-500">Travel & Ticketing</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xl font-bold uppercase tracking-wide text-slate-900">
-              Ticket Invoice
-            </p>
-            <p className="mt-1 text-sm text-slate-600">{invoice.invoice_no}</p>
-            <p className="text-sm text-slate-500">
-              {formatDate(invoice.invoice_date)}
-            </p>
-          </div>
-        </div>
+        <DocLetterhead title="Ticket Invoice" />
 
         {/* Meta */}
         <div className="grid gap-6 border-b border-slate-200 py-6 sm:grid-cols-2">
@@ -71,6 +52,8 @@ export default async function InvoiceViewPage(
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <Meta label="Invoice No." value={invoice.invoice_no} />
+            <Meta label="Invoice Date" value={formatDate(invoice.invoice_date)} />
             <Meta label="Booking ID" value={invoice.booking_id || "—"} />
             <Meta label="Airline" value={invoice.airline || "—"} />
             <Meta label="PNR / Code" value={invoice.pnr || "—"} />
@@ -181,6 +164,8 @@ export default async function InvoiceViewPage(
             </p>
           )}
         </section>
+
+        <DocFooter disclaimer="This document confirms ticket and travel information only. Payment receipts are issued separately." />
       </div>
     </div>
   );

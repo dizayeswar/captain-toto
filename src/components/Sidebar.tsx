@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 type NavItem = { href: string; label: string };
@@ -31,6 +32,15 @@ const SECTIONS: NavSection[] = [
       { href: "/invoices", label: "Invoices" },
       { href: "/invoices/new", label: "New Invoice" },
       { href: "/invoices/policies", label: "Airline Policies" },
+    ],
+  },
+  {
+    id: "payment",
+    title: "Payment Invoice",
+    icon: "receipt",
+    items: [
+      { href: "/payments", label: "Payment Invoices" },
+      { href: "/payments/new", label: "New Payment Invoice" },
     ],
   },
 ];
@@ -63,10 +73,14 @@ export default function Sidebar() {
 
   return (
     <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="flex items-center gap-2 px-6 py-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-lg font-bold text-white">
-          CT
-        </span>
+      <div className="flex items-center gap-3 px-6 py-5">
+        <Image
+          src="/logo.png"
+          alt="Captain ToTo"
+          width={40}
+          height={40}
+          className="h-10 w-10"
+        />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-slate-900">Captain ToTo</p>
           <p className="text-xs text-slate-500">Booking System</p>
@@ -159,6 +173,13 @@ function Icon({ name }: { name: string }) {
         <svg {...common}>
           <path d="M4 2h11l5 5v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" />
           <path d="M14 2v6h6M8 13h8M8 17h8M8 9h2" />
+        </svg>
+      );
+    case "receipt":
+      return (
+        <svg {...common}>
+          <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 2V2l-1 2-3-2-3 2-3-2-3 2-3-2Z" />
+          <path d="M8 8h8M8 12h8M8 16h5" />
         </svg>
       );
     default:

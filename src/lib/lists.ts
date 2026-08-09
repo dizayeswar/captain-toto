@@ -79,6 +79,10 @@ export const BAGGAGE_OPTIONS = [
   "Not Included",
 ] as const;
 
+// --- Payment Invoice (cash receipt) lists ---
+
+export const PAYER_TYPES = ["Individual", "Company"] as const;
+
 export const MONTH_NAMES = [
   "January",
   "February",

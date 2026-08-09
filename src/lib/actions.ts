@@ -9,11 +9,17 @@ import {
   deleteInvoice,
   upsertPolicy,
 } from "./invoices";
+import {
+  createPaymentInvoice,
+  updatePaymentInvoice,
+  deletePaymentInvoice,
+} from "./payments";
 import type {
   BookingInput,
   InvoiceInput,
   InvoicePassenger,
   InvoiceSegment,
+  PaymentInvoiceInput,
 } from "./types";
 
 function parseForm(formData: FormData): BookingInput {
@@ -120,6 +126,49 @@ export async function updatePolicyAction(formData: FormData) {
   const policyText = String(formData.get("policy_text") ?? "").trim();
   if (airline) {
     await upsertPolicy(airline, policyText);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Payment Invoice (cash receipt) actions
+// ---------------------------------------------------------------------------
+
+function parsePaymentForm(formData: FormData): PaymentInvoiceInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  return {
+    receipt_date: str("receipt_date"),
+    payer_type: str("payer_type"),
+    booking_id: str("booking_id"),
+    received_from: str("received_from"),
+    amount: Number(formData.get("amount")) || 0,
+    for_text: str("for_text"),
+    notes: str("notes"),
+    prepared_by: str("prepared_by"),
+  };
+}
+
+export async function createPaymentInvoiceAction(formData: FormData) {
+  const input = parsePaymentForm(formData);
+  const receipt = await createPaymentInvoice(input);
+  revalidatePath("/", "layout");
+  redirect(`/payments/${receipt.id}`);
+}
+
+export async function updatePaymentInvoiceAction(
+  id: string,
+  formData: FormData
+) {
+  const input = parsePaymentForm(formData);
+  await updatePaymentInvoice(id, input);
+  revalidatePath("/", "layout");
+  redirect(`/payments/${id}`);
+}
+
+export async function deletePaymentInvoiceAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deletePaymentInvoice(id);
     revalidatePath("/", "layout");
   }
 }

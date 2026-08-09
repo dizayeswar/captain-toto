@@ -107,3 +107,33 @@ export type AirlinePolicy = {
   airline: string;
   policy_text: string;
 };
+
+// ---------------------------------------------------------------------------
+// Payment Invoice (Cash Receipt) section
+// Mirrors Captain_ToTo_Payment_Invoice. A bilingual cash receipt.
+// ---------------------------------------------------------------------------
+
+export type PaymentInvoice = {
+  id: string;
+  receipt_no: string; // CT-PR-0001
+  receipt_date: string; // ISO date
+  payer_type: string; // Individual | Company (COMP/INDV)
+  booking_id: string; // optional link to a booking
+  received_from: string; // client name (bilingual)
+  amount: number; // The Sum Of
+  for_text: string; // For / reason
+  notes: string;
+  prepared_by: string;
+  created_at?: string;
+};
+
+export type PaymentInvoiceInput = {
+  receipt_date: string;
+  payer_type: string;
+  booking_id: string;
+  received_from: string;
+  amount: number;
+  for_text: string;
+  notes: string;
+  prepared_by: string;
+};
