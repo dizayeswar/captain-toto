@@ -20,6 +20,7 @@ type Props = {
   receipt?: PaymentInvoice;
   bookings: PaymentBookingOption[];
   submitLabel?: string;
+  initialBookingId?: string;
 };
 
 const labelCls = "mb-1 block text-xs font-medium text-slate-600";
@@ -31,14 +32,30 @@ export default function PaymentForm({
   receipt,
   bookings,
   submitLabel = "Save Payment Invoice",
+  initialBookingId,
 }: Props) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [bookingId, setBookingId] = useState(receipt?.booking_id ?? "");
-  const [receivedFrom, setReceivedFrom] = useState(receipt?.received_from ?? "");
-  const [amount, setAmount] = useState<number>(receipt?.amount ?? 0);
-  const [forText, setForText] = useState(receipt?.for_text ?? "");
+  // When arriving from a booking (no existing receipt), pre-fill from it.
+  const prefill =
+    !receipt && initialBookingId
+      ? bookings.find((b) => b.booking_id === initialBookingId)
+      : undefined;
+
+  const [bookingId, setBookingId] = useState(
+    receipt?.booking_id ?? prefill?.booking_id ?? ""
+  );
+  const [receivedFrom, setReceivedFrom] = useState(
+    receipt?.received_from ?? prefill?.client_name ?? ""
+  );
+  const [amount, setAmount] = useState<number>(
+    receipt?.amount ?? prefill?.total_paid ?? 0
+  );
+  const [forText, setForText] = useState(
+    receipt?.for_text ??
+      (prefill ? `Flight ticket ${prefill.route} (${prefill.airline})` : "")
+  );
 
   function onBookingChange(value: string) {
     setBookingId(value);

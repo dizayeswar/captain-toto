@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBooking } from "@/lib/bookings";
 import { updateBookingAction } from "@/lib/actions";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Button } from "@/components/ui";
 import BookingForm from "@/components/BookingForm";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +18,16 @@ export default async function EditBookingPage(props: PageProps<"/bookings/[id]">
       <PageHeader
         title={`Edit ${booking.booking_id}`}
         subtitle="Update the details of this booking"
+        action={
+          <Button
+            href={`/payments/new?booking=${encodeURIComponent(
+              booking.booking_id
+            )}`}
+            variant="secondary"
+          >
+            + Payment Invoice
+          </Button>
+        }
       />
       <div className="p-8">
         <BookingForm

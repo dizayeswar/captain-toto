@@ -5,7 +5,12 @@ import PaymentForm, { type PaymentBookingOption } from "@/components/PaymentForm
 
 export const dynamic = "force-dynamic";
 
-export default async function NewPaymentInvoicePage() {
+export default async function NewPaymentInvoicePage(
+  props: PageProps<"/payments/new">
+) {
+  const { booking } = await props.searchParams;
+  const initialBookingId = Array.isArray(booking) ? booking[0] : booking;
+
   const bookings = await getBookings();
   const options: PaymentBookingOption[] = bookings.map((b) => ({
     booking_id: b.booking_id,
@@ -26,6 +31,7 @@ export default async function NewPaymentInvoicePage() {
           action={createPaymentInvoiceAction}
           bookings={options}
           submitLabel="Create Payment Invoice"
+          initialBookingId={initialBookingId}
         />
       </div>
     </>
