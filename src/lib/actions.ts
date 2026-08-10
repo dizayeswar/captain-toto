@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createBooking, updateBooking, deleteBooking } from "./bookings";
+import { createBooking, updateBooking, deleteBooking, getBookings } from "./bookings";
 import {
   createInvoice,
   updateInvoice,
@@ -128,6 +128,29 @@ function parseInvoiceForm(formData: FormData): InvoiceInput {
 export async function createInvoiceAction(formData: FormData) {
   const input = parseInvoiceForm(formData);
   const invoice = await createInvoice(input);
+
+  // Always create a matching Payment Invoice (cash receipt), paid or not.
+  let amount = 0;
+  let forText = `Ticket invoice ${invoice.invoice_no}`;
+  if (invoice.booking_id) {
+    const bookings = await getBookings();
+    const linked = bookings.find((b) => b.booking_id === invoice.booking_id);
+    if (linked) {
+      amount = linked.total_paid || 0;
+      forText = `Flight ticket ${linked.route || ""} (${linked.airline || ""}) — ${invoice.invoice_no}`.trim();
+    }
+  }
+  await createPaymentInvoice({
+    receipt_date: invoice.invoice_date,
+    payer_type: "Individual",
+    booking_id: invoice.booking_id || "",
+    received_from: invoice.client_name || "",
+    amount,
+    for_text: forText,
+    notes: invoice.notes || "",
+    prepared_by: "Osman",
+  });
+
   revalidatePath("/", "layout");
   redirect(`/invoices/${invoice.id}`);
 }
@@ -232,6 +255,8 @@ function parseHotelForm(formData: FormData): HotelBookingInput {
     extra_cost: num("extra_cost"),
     discount: num("discount"),
     net_paid_usd: num("net_paid_usd"),
+    refunded_usd: num("refunded_usd"),
+    cancellation_fee_usd: num("cancellation_fee_usd"),
     payment_status: str("payment_status"),
     booking_status: str("booking_status"),
     staff: str("staff"),

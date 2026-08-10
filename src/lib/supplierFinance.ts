@@ -26,7 +26,7 @@ export function buildSupplierInvoice(
     id,
     invoice_id: invoiceId,
     invoice_date: input.invoice_date,
-    due_date: input.due_date,
+    due_date: input.due_date || null,
     supplier: input.supplier,
     supplier_invoice_no: input.supplier_invoice_no,
     booking_ref: input.booking_ref,

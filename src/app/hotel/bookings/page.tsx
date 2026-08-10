@@ -83,6 +83,12 @@ export default async function HotelBookingsPage() {
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-3">
                           <Link
+                            href={`/hotel/bookings/${b.id}/voucher`}
+                            className="font-medium text-brand hover:underline"
+                          >
+                            Voucher
+                          </Link>
+                          <Link
                             href={`/hotel/bookings/${b.id}`}
                             className="font-medium text-brand hover:underline"
                           >

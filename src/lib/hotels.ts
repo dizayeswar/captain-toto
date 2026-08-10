@@ -27,6 +27,20 @@ export function buildHotelBooking(
   const totalCost = rooms * nights * cost + extra - discount;
   const totalSale = rooms * nights * sale;
   const netPaid = Number(input.net_paid_usd) || 0;
+  const refunded = Number(input.refunded_usd) || 0;
+  const cancelFee = Number(input.cancellation_fee_usd) || 0;
+  const cancelled =
+    input.booking_status === "Cancelled" || input.booking_status === "No Show";
+  // When cancelled, the client owes the cancellation fee (not full sale).
+  const finalCharge = cancelled ? cancelFee : totalSale;
+  const netEffect = netPaid - refunded;
+  // Positive = client still owes; negative = refund still due to client.
+  const balance = finalCharge - netEffect;
+
+  let paymentStatus = input.payment_status;
+  if (refunded > 0 && Math.abs(balance) < 0.01) {
+    paymentStatus = refunded >= netPaid ? "Refunded" : paymentStatus;
+  }
 
   return {
     id,
@@ -40,8 +54,8 @@ export function buildHotelBooking(
     city: input.city,
     hotel_name: input.hotel_name,
     hotel_confirmation_no: input.hotel_confirmation_no,
-    check_in: input.check_in,
-    check_out: input.check_out,
+    check_in: input.check_in || null,
+    check_out: input.check_out || null,
     nights,
     rooms,
     adults: Number(input.adults) || 0,
@@ -57,10 +71,13 @@ export function buildHotelBooking(
     discount,
     total_cost_usd: totalCost,
     total_sale_usd: totalSale,
-    profit_usd: totalSale - totalCost,
+    profit_usd: finalCharge - totalCost,
     net_paid_usd: netPaid,
-    balance_usd: totalSale - netPaid,
-    payment_status: input.payment_status,
+    refunded_usd: refunded,
+    cancellation_fee_usd: cancelFee,
+    final_charge_usd: finalCharge,
+    balance_usd: balance,
+    payment_status: paymentStatus,
     booking_status: input.booking_status,
     staff: input.staff,
     notes: input.notes,
@@ -99,6 +116,8 @@ const demoStore: HotelBooking[] = [
       extra_cost: 0,
       discount: 0,
       net_paid_usd: 70,
+      refunded_usd: 0,
+      cancellation_fee_usd: 0,
       payment_status: "Paid",
       booking_status: "Confirmed",
       staff: "Osman",

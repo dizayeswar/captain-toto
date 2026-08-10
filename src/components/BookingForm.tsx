@@ -85,28 +85,36 @@ export default function BookingForm({
 
           <div>
             <label className={labelCls}>Route</label>
-            <select
+            <input
+              type="text"
               name="route"
-              defaultValue={booking?.route ?? ROUTES[0]}
+              list="route-options"
+              defaultValue={booking?.route ?? ""}
+              placeholder="e.g. EBL - CGK"
               className={inputCls}
-            >
+            />
+            <datalist id="route-options">
               {ROUTES.map((r) => (
-                <option key={r}>{r}</option>
+                <option key={r} value={r} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>
             <label className={labelCls}>Airline</label>
-            <select
+            <input
+              type="text"
               name="airline"
-              defaultValue={booking?.airline ?? AIRLINES[0]}
+              list="airline-options"
+              defaultValue={booking?.airline ?? ""}
+              placeholder="Type or pick an airline"
               className={inputCls}
-            >
+            />
+            <datalist id="airline-options">
               {AIRLINES.map((a) => (
-                <option key={a}>{a}</option>
+                <option key={a} value={a} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>

@@ -57,6 +57,13 @@ export default function HotelForm({
   const [extraCost, setExtraCost] = useState(booking?.extra_cost ?? 0);
   const [discount, setDiscount] = useState(booking?.discount ?? 0);
   const [netPaid, setNetPaid] = useState(booking?.net_paid_usd ?? 0);
+  const [refunded, setRefunded] = useState(booking?.refunded_usd ?? 0);
+  const [cancelFee, setCancelFee] = useState(
+    booking?.cancellation_fee_usd ?? 0
+  );
+  const [bookingStatus, setBookingStatus] = useState(
+    booking?.booking_status ?? HOTEL_BOOKING_STATUSES[0]
+  );
 
   const computedNights = nightsBetween(checkIn, checkOut);
   const nights =
@@ -67,8 +74,12 @@ export default function HotelForm({
     (Number(extraCost) || 0) -
     (Number(discount) || 0);
   const totalSale = roomsN * nights * (Number(salePerNight) || 0);
-  const profit = totalSale - totalCost;
-  const balance = totalSale - (Number(netPaid) || 0);
+  const cancelled =
+    bookingStatus === "Cancelled" || bookingStatus === "No Show";
+  const finalCharge = cancelled ? Number(cancelFee) || 0 : totalSale;
+  const netEffect = (Number(netPaid) || 0) - (Number(refunded) || 0);
+  const balance = finalCharge - netEffect;
+  const profit = finalCharge - totalCost;
 
   return (
     <form action={action} className="space-y-6">
@@ -362,9 +373,36 @@ export default function HotelForm({
               className={inputCls}
             />
           </div>
+          <div>
+            <label className={labelCls}>Refunded ($)</label>
+            <input
+              type="number"
+              name="refunded_usd"
+              min={0}
+              step="0.01"
+              value={refunded}
+              onChange={(e) => setRefunded(Number(e.target.value))}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Cancellation Fee ($)</label>
+            <input
+              type="number"
+              name="cancellation_fee_usd"
+              min={0}
+              step="0.01"
+              value={cancelFee}
+              onChange={(e) => setCancelFee(Number(e.target.value))}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Used as final charge when status is Cancelled / No Show
+            </p>
+          </div>
         </div>
 
-        <div className="mt-6 grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Total Cost
@@ -383,6 +421,14 @@ export default function HotelForm({
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Final Charge
+            </p>
+            <p className="mt-1 text-xl font-bold text-slate-900">
+              {formatCurrency(finalCharge)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Profit
             </p>
             <p
@@ -395,15 +441,22 @@ export default function HotelForm({
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Balance
+              Outstanding
             </p>
             <p
               className={`mt-1 text-xl font-bold ${
-                balance > 0 ? "text-amber-600" : "text-slate-900"
+                balance > 0
+                  ? "text-amber-600"
+                  : balance < 0
+                    ? "text-red-600"
+                    : "text-slate-900"
               }`}
             >
               {formatCurrency(balance)}
             </p>
+            {balance < 0 && (
+              <p className="text-xs text-red-500">Refund due to client</p>
+            )}
           </div>
         </div>
       </Card>
@@ -428,7 +481,8 @@ export default function HotelForm({
             <label className={labelCls}>Booking Status</label>
             <select
               name="booking_status"
-              defaultValue={booking?.booking_status ?? HOTEL_BOOKING_STATUSES[0]}
+              value={bookingStatus}
+              onChange={(e) => setBookingStatus(e.target.value)}
               className={inputCls}
             >
               {HOTEL_BOOKING_STATUSES.map((s) => (

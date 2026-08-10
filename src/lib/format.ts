@@ -20,7 +20,7 @@ export function formatNumber(value: number): string {
   }).format(value || 0);
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;

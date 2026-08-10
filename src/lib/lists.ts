@@ -126,6 +126,7 @@ export const HOTEL_PAYMENT_STATUSES = [
   "Paid",
   "Partially Paid",
   "Unpaid",
+  "Refunded",
   "No Amount",
 ] as const;
 

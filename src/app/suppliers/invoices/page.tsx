@@ -14,7 +14,7 @@ export default async function SupplierInvoicesPage() {
     <>
       <PageHeader
         title="Supplier Invoices"
-        subtitle="Invoices received from suppliers and payment status"
+        subtitle="Service invoices from suppliers (ticket, hotel, visa, etc.)"
         action={
           <Button href="/suppliers/invoices/new">+ New Supplier Invoice</Button>
         }
@@ -70,6 +70,12 @@ export default async function SupplierInvoicesPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-3">
+                          <Link
+                            href={`/suppliers/invoices/${inv.id}/print`}
+                            className="font-medium text-brand hover:underline"
+                          >
+                            Print
+                          </Link>
                           <Link
                             href={`/suppliers/invoices/${inv.id}`}
                             className="font-medium text-brand hover:underline"

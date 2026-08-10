@@ -19,6 +19,8 @@ export type BookingOption = {
   booking_id: string;
   client_name: string;
   airline: string;
+  route: string;
+  total_paid: number;
 };
 
 type Props = {
@@ -81,12 +83,33 @@ export default function InvoiceForm({
   function onBookingChange(value: string) {
     setBookingId(value);
     const b = bookings.find((x) => x.booking_id === value);
-    if (b) {
-      if (!clientName.trim() && b.client_name) setClientName(b.client_name);
-      if (b.airline && INVOICE_AIRLINES.includes(b.airline as never)) {
-        setAirline(b.airline);
+    if (!b) return;
+
+    // Always pull client + airline from the booking when selected.
+    if (b.client_name) setClientName(b.client_name);
+    if (b.airline) setAirline(b.airline);
+
+    // Prefill first passenger name if still blank.
+    setPassengers((prev) => {
+      const next = [...prev];
+      if (next[0] && !next[0].full_name.trim() && b.client_name) {
+        next[0] = { ...next[0], full_name: b.client_name };
       }
-    }
+      return next;
+    });
+
+    // Prefill first segment route + airline if still blank.
+    setSegments((prev) => {
+      const next = [...prev];
+      if (next[0]) {
+        next[0] = {
+          ...next[0],
+          airline: next[0].airline || b.airline || airline,
+          route: next[0].route || b.route || "",
+        };
+      }
+      return next;
+    });
   }
 
   function updatePassenger(i: number, patch: Partial<InvoicePassenger>) {
@@ -144,15 +167,19 @@ export default function InvoiceForm({
 
           <div>
             <label className={labelCls}>Airline</label>
-            <select
+            <input
+              type="text"
+              list="invoice-airline-options"
               value={airline}
               onChange={(e) => setAirline(e.target.value)}
+              placeholder="Type or pick an airline"
               className={inputCls}
-            >
+            />
+            <datalist id="invoice-airline-options">
               {INVOICE_AIRLINES.map((a) => (
-                <option key={a}>{a}</option>
+                <option key={a} value={a} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>
@@ -343,15 +370,14 @@ export default function InvoiceForm({
               </div>
               <div>
                 <label className={labelCls}>Airline</label>
-                <select
+                <input
+                  type="text"
+                  list="segment-airline-options"
                   value={s.airline}
                   onChange={(e) => updateSegment(i, { airline: e.target.value })}
+                  placeholder="Type or pick"
                   className={inputCls}
-                >
-                  {INVOICE_AIRLINES.map((a) => (
-                    <option key={a}>{a}</option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <label className={labelCls}>Flight No.</label>
@@ -427,6 +453,12 @@ export default function InvoiceForm({
           ))}
         </div>
       </Card>
+
+      <datalist id="segment-airline-options">
+        {INVOICE_AIRLINES.map((a) => (
+          <option key={a} value={a} />
+        ))}
+      </datalist>
 
       <div className="mt-6 flex items-center gap-3">
         <Button type="submit" variant="primary">
