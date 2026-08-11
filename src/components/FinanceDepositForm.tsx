@@ -73,7 +73,7 @@ export default function FinanceDepositForm({ action }: Props) {
           </select>
         </div>
         <div className="flex items-end">
-          <Button type="submit" variant="primary" className="w-full">
+          <Button type="submit" variant="primary">
             Add balance
           </Button>
         </div>
