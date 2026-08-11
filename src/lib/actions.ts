@@ -65,7 +65,7 @@ function parseForm(formData: FormData): BookingInput {
     issued: formData.get("issued") === "on" || formData.get("issued") === "true",
     handled_by: str("handled_by"),
     payment_method: str("payment_method"),
-    debt: num("debt"),
+    pnr: str("pnr"),
     supplier_name: str("supplier_name"),
     supplier_code: str("supplier_code"),
   };

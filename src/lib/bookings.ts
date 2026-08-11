@@ -25,7 +25,7 @@ const demoStore: Booking[] = [
       issued: true,
       handled_by: "Osman",
       payment_method: "Cash",
-      debt: 0,
+      pnr: "",
       supplier_name: "Captain ToTo",
       supplier_code: "SUP-0001",
     },
@@ -66,7 +66,8 @@ export function buildBooking(
     handled_by: input.handled_by,
     payment_method: input.payment_method,
     profit: total - ticket,
-    debt: Number(input.debt) || 0,
+    debt: 0,
+    pnr: (input.pnr || "").trim(),
     supplier_name: input.supplier_name,
     supplier_code: input.supplier_code,
     month: valid ? date.getUTCMonth() + 1 : 0,
@@ -96,7 +97,7 @@ export async function getBookings(): Promise<Booking[]> {
     .order("booking_date", { ascending: false });
 
   if (error || !data) return [];
-  return data as Booking[];
+  return (data as Booking[]).map((b) => ({ ...b, pnr: b.pnr ?? "", debt: b.debt ?? 0 }));
 }
 
 export async function getBooking(id: string): Promise<Booking | null> {
@@ -112,7 +113,8 @@ export async function getBooking(id: string): Promise<Booking | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  return data as Booking;
+  const b = data as Booking;
+  return { ...b, pnr: b.pnr ?? "", debt: b.debt ?? 0 };
 }
 
 export async function createBooking(input: BookingInput): Promise<Booking> {

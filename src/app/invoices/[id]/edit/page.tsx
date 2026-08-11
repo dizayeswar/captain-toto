@@ -21,6 +21,7 @@ export default async function EditInvoicePage(
     airline: b.airline,
     route: b.route,
     total_paid: b.total_paid,
+    pnr: b.pnr || "",
   }));
 
   const action = updateInvoiceAction.bind(null, invoice.id);

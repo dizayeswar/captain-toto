@@ -21,6 +21,7 @@ export type BookingOption = {
   airline: string;
   route: string;
   total_paid: number;
+  pnr: string;
 };
 
 type Props = {
@@ -71,6 +72,7 @@ export default function InvoiceForm({
   const [bookingId, setBookingId] = useState(invoice?.booking_id ?? "");
   const [airline, setAirline] = useState(invoice?.airline ?? INVOICE_AIRLINES[0]);
   const [clientName, setClientName] = useState(invoice?.client_name ?? "");
+  const [pnr, setPnr] = useState(invoice?.pnr ?? "");
   const [passengers, setPassengers] = useState<InvoicePassenger[]>(
     invoice?.passengers?.length ? invoice.passengers : [blankPassenger()]
   );
@@ -88,6 +90,7 @@ export default function InvoiceForm({
     // Always pull client + airline from the booking when selected.
     if (b.client_name) setClientName(b.client_name);
     if (b.airline) setAirline(b.airline);
+    if (b.pnr) setPnr(b.pnr);
 
     // Prefill first passenger name if still blank.
     setPassengers((prev) => {
@@ -187,7 +190,8 @@ export default function InvoiceForm({
             <input
               type="text"
               name="pnr"
-              defaultValue={invoice?.pnr ?? ""}
+              value={pnr}
+              onChange={(e) => setPnr(e.target.value)}
               placeholder="e.g. FFBUR6"
               className={inputCls}
             />

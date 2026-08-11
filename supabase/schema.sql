@@ -18,6 +18,7 @@ create table if not exists public.bookings (
   payment_method text not null default 'Cash',
   profit         numeric not null default 0,
   debt           numeric not null default 0,
+  pnr            text not null default '',
   supplier_name  text not null default '',
   supplier_code  text not null default '',
   month          integer not null default 0,

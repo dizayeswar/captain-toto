@@ -13,6 +13,7 @@ export default async function NewInvoicePage() {
     airline: b.airline,
     route: b.route,
     total_paid: b.total_paid,
+    pnr: b.pnr || "",
   }));
 
   return (

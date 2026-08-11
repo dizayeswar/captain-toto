@@ -39,7 +39,7 @@ export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
       amount: b.ticket_cost, // NO service fee
       description: `TICKET — ${b.route} (${b.airline})`,
       client_name: b.client_name,
-      pnr: "",
+      pnr: b.pnr || "",
       route: b.route,
       issue_date: b.booking_date,
     });

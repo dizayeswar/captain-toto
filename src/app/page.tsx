@@ -33,11 +33,6 @@ export default async function DashboardPage() {
             value={String(totals.pending)}
             tone="amber"
           />
-          <StatCard
-            label="Outstanding Debt"
-            value={formatCurrency(totals.debt)}
-            tone={totals.debt > 0 ? "red" : "default"}
-          />
         </div>
 
         <div className="mt-8">

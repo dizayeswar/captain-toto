@@ -162,13 +162,12 @@ export default function BookingForm({
           </div>
 
           <div>
-            <label className={labelCls}>Debt ($)</label>
+            <label className={labelCls}>PNR</label>
             <input
-              type="number"
-              name="debt"
-              min={0}
-              step="0.01"
-              defaultValue={booking?.debt ?? 0}
+              type="text"
+              name="pnr"
+              defaultValue={booking?.pnr ?? ""}
+              placeholder="e.g. ABC123"
               className={inputCls}
             />
           </div>

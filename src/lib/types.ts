@@ -21,7 +21,9 @@ export type Booking = {
   handled_by: string;
   payment_method: string;
   profit: number; // total_paid - ticket_cost
+  /** @deprecated Kept for DB compatibility; always 0. Use pnr instead. */
   debt: number;
+  pnr: string;
   supplier_name: string;
   supplier_code: string;
   month: number; // 1-12, derived from booking_date
@@ -42,7 +44,7 @@ export type BookingInput = {
   issued: boolean;
   handled_by: string;
   payment_method: string;
-  debt: number;
+  pnr: string;
   supplier_name: string;
   supplier_code: string;
 };
