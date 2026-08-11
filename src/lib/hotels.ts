@@ -30,13 +30,16 @@ export function buildHotelBooking(
   const refunded = Number(input.refunded_usd) || 0;
   const cancelFee = Number(input.cancellation_fee_usd) || 0;
   const serviceFee = Number(input.service_fee_usd) || 0;
-  const cancelCost = Number(input.cancel_cost_usd) || 0;
   const cancelled =
     input.booking_status === "Cancelled" || input.booking_status === "No Show";
+  // Penalty and supplier ticket/cancel cost are the same amount (one form field).
+  const cancelCost = cancelled
+    ? cancelFee
+    : Number(input.cancel_cost_usd) || 0;
   // Cancelled: client owes penalty + service fee (not the full stay sale).
   // Active: client owes the full sale.
   const finalCharge = cancelled ? cancelFee + serviceFee : totalSale;
-  // Cancelled profit uses supplier cancel/ticket cost, not full stay cost.
+  // Cancelled profit = service fee when penalty === ticket cost.
   const profitCost = cancelled ? cancelCost : totalCost;
   const netEffect = netPaid - refunded;
   // Positive = client still owes; negative = refund still due to client.
@@ -104,7 +107,10 @@ export function refreshHotelFinancials(row: HotelBooking): HotelBooking {
     row.booking_status === "Cancelled" || row.booking_status === "No Show";
   const cancelFee = Number(row.cancellation_fee_usd) || 0;
   const serviceFee = Number(row.service_fee_usd) || 0;
-  const cancelCost = Number(row.cancel_cost_usd) || 0;
+  // Same as penalty when cancelled (merged UI field).
+  const cancelCost = cancelled
+    ? cancelFee
+    : Number(row.cancel_cost_usd) || 0;
   const totalCost = Number(row.total_cost_usd) || 0;
   const totalSale = Number(row.total_sale_usd) || 0;
   const netPaid = Number(row.net_paid_usd) || 0;

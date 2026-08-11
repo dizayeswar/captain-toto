@@ -96,16 +96,12 @@ export default async function HotelVoucherPage(
             <Amount label="Paid" value={formatCurrency(b.net_paid_usd)} />
             <Amount label="Refunded" value={formatCurrency(b.refunded_usd)} />
             <Amount
-              label="Cancellation Fee"
+              label="Cancellation / Ticket Cost"
               value={formatCurrency(b.cancellation_fee_usd)}
             />
             <Amount
               label="Service Fee"
               value={formatCurrency(b.service_fee_usd ?? 0)}
-            />
-            <Amount
-              label="Cancel Cost"
-              value={formatCurrency(b.cancel_cost_usd ?? 0)}
             />
             <Amount
               label="Final Charge"
