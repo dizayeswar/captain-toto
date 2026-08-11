@@ -496,6 +496,8 @@ export async function deleteSupplierPaymentReceiptAction(formData: FormData) {
 
 function parseExpenseForm(formData: FormData): ExpenseInput {
   const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const paidBy = str("paid_by");
+  const isToto = paidBy === "ToTo Balance";
   return {
     expense_date: str("expense_date"),
     category: str("category"),
@@ -503,9 +505,11 @@ function parseExpenseForm(formData: FormData): ExpenseInput {
     amount: Number(formData.get("amount")) || 0,
     currency: str("currency"),
     payment_method: str("payment_method"),
-    paid_by: str("paid_by"),
+    paid_by: paidBy,
     receipt_ref: str("receipt_ref"),
     notes: str("notes"),
+    // Only meaningful when someone other than ToTo Balance paid
+    owe_to_staff: !isToto && formData.get("owe_to_staff") === "on",
   };
 }
 

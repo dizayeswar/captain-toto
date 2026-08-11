@@ -179,8 +179,8 @@ export default async function FinancePage() {
               ToTo owes others
             </h2>
             <p className="text-sm text-slate-500">
-              Expenses paid by Osman, Sherwani, Ali, etc. — not taken from cash
-              balance. ToTo still needs to reimburse them.
+              Expenses paid by Osman, Sherwani, Ali, etc. where you checked
+              “ToTo owes this person” — not taken from cash balance.
             </p>
           </div>
 

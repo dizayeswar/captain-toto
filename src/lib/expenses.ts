@@ -16,6 +16,7 @@ const demoStore: Expense[] = [
     paid_by: "ToTo Balance",
     receipt_ref: "",
     notes: "",
+    owe_to_staff: false,
   },
 ];
 
@@ -31,7 +32,10 @@ export async function getExpenses(): Promise<Expense[]> {
     .select("*")
     .order("expense_date", { ascending: false });
   if (error || !data) return [];
-  return data as Expense[];
+  return (data as Expense[]).map((e) => ({
+    ...e,
+    owe_to_staff: Boolean(e.owe_to_staff),
+  }));
 }
 
 export async function getExpense(id: string): Promise<Expense | null> {

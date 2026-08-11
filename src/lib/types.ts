@@ -427,6 +427,8 @@ export type Expense = {
   paid_by: string;
   receipt_ref: string;
   notes: string;
+  /** When Paid By is not ToTo Balance and true → show under ToTo owes others */
+  owe_to_staff: boolean;
   created_at?: string;
 };
 
@@ -440,6 +442,7 @@ export type ExpenseInput = {
   paid_by: string;
   receipt_ref: string;
   notes: string;
+  owe_to_staff: boolean;
 };
 
 /** Money added into the office / ToTo cash balance. */

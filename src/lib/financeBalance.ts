@@ -140,9 +140,11 @@ export function computeFinanceBalance(
   };
 }
 
-/** Expenses paid by staff/others — ToTo still owes them reimbursement. */
+/** Expenses paid by staff/others with owe_to_staff checked — ToTo must reimburse. */
 export function computeOwedToOthers(expenses: Expense[]): OwedToOthers {
-  const staffPaid = expenses.filter((e) => !isPaidFromTotoBalance(e.paid_by));
+  const staffPaid = expenses.filter(
+    (e) => !isPaidFromTotoBalance(e.paid_by) && Boolean(e.owe_to_staff)
+  );
   const byPersonMap = new Map<string, OwedToPerson>();
   let totalUsd = 0;
   let totalIqd = 0;

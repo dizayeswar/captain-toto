@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CURRENCIES,
@@ -7,6 +8,7 @@ import {
   EXPENSE_PAYMENT_METHODS,
   EXPENSE_PAID_BY,
 } from "@/lib/lists";
+import { TOTO_BALANCE_PAID_BY } from "@/lib/financeBalance";
 import type { Expense } from "@/lib/types";
 import { Card, Button } from "./ui";
 
@@ -27,6 +29,10 @@ export default function ExpenseForm({
 }: Props) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
+  const [paidBy, setPaidBy] = useState(
+    expense?.paid_by ?? EXPENSE_PAID_BY[0]
+  );
+  const showOweCheckbox = paidBy !== TOTO_BALANCE_PAID_BY;
 
   return (
     <form action={action}>
@@ -113,7 +119,8 @@ export default function ExpenseForm({
             <label className={labelCls}>Paid By</label>
             <select
               name="paid_by"
-              defaultValue={expense?.paid_by ?? EXPENSE_PAID_BY[0]}
+              value={paidBy}
+              onChange={(e) => setPaidBy(e.target.value)}
               className={inputCls}
             >
               {EXPENSE_PAID_BY.map((p) => (
@@ -121,6 +128,29 @@ export default function ExpenseForm({
               ))}
             </select>
           </div>
+
+          {showOweCheckbox && (
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <input
+                  type="checkbox"
+                  name="owe_to_staff"
+                  defaultChecked={Boolean(expense?.owe_to_staff)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/30"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-800">
+                    ToTo owes this person
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-600">
+                    Check to list this under “ToTo owes others” for
+                    reimbursement. Leave unchecked if {paidBy} paid and ToTo
+                    does not owe them.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
 
           <div>
             <label className={labelCls}>Receipt Ref</label>
