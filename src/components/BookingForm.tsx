@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import type { Booking } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 
 export type SupplierOption = { code: string; name: string };
 
@@ -137,26 +138,20 @@ export default function BookingForm({
 
           <div>
             <label className={labelCls}>Ticket Cost ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="ticket_cost"
-              min={0}
-              step="0.01"
               value={ticket}
-              onChange={(e) => setTicket(Number(e.target.value))}
+              onChange={setTicket}
               className={inputCls}
             />
           </div>
 
           <div>
             <label className={labelCls}>Service Fee ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="service_fee"
-              min={0}
-              step="0.01"
               value={fee}
-              onChange={(e) => setFee(Number(e.target.value))}
+              onChange={setFee}
               className={inputCls}
             />
           </div>

@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import type { HotelBooking } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 import type { SupplierOption } from "./BookingForm";
 
 type Props = {
@@ -343,73 +344,55 @@ export default function HotelForm({
           </div>
           <div>
             <label className={labelCls}>Cost / Room / Night ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="cost_per_room_night"
-              min={0}
-              step="0.01"
               value={costPerNight}
-              onChange={(e) => setCostPerNight(Number(e.target.value))}
+              onChange={setCostPerNight}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Sale / Room / Night ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="sale_per_room_night"
-              min={0}
-              step="0.01"
               value={salePerNight}
-              onChange={(e) => setSalePerNight(Number(e.target.value))}
+              onChange={setSalePerNight}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Extra Cost ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="extra_cost"
-              min={0}
-              step="0.01"
               value={extraCost}
-              onChange={(e) => setExtraCost(Number(e.target.value))}
+              onChange={setExtraCost}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Discount ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="discount"
-              min={0}
-              step="0.01"
               value={discount}
-              onChange={(e) => setDiscount(Number(e.target.value))}
+              onChange={setDiscount}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Net Paid ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="net_paid_usd"
-              min={0}
-              step="0.01"
               value={netPaid}
-              onChange={(e) => setNetPaid(Number(e.target.value))}
+              onChange={setNetPaid}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Refunded ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="refunded_usd"
-              min={0}
-              step="0.01"
               value={refunded}
-              onChange={(e) => setRefunded(Number(e.target.value))}
+              onChange={setRefunded}
               className={inputCls}
             />
             {cancelled && suggestedRefund > 0 && (
@@ -427,14 +410,10 @@ export default function HotelForm({
             <label className={labelCls}>
               Cancellation Fee / Ticket Cost ($)
             </label>
-            <input
-              type="number"
+            <AmountInput
               name="cancellation_fee_usd"
-              min={0}
-              step="0.01"
               value={cancelFee}
-              onChange={(e) => {
-                const fee = Number(e.target.value);
+              onChange={(fee) => {
                 setCancelFee(fee);
                 if (cancelled) {
                   const charge = fee + (Number(serviceFee) || 0);
@@ -454,14 +433,10 @@ export default function HotelForm({
           </div>
           <div>
             <label className={labelCls}>Service Fee ($)</label>
-            <input
-              type="number"
+            <AmountInput
               name="service_fee_usd"
-              min={0}
-              step="0.01"
               value={serviceFee}
-              onChange={(e) => {
-                const fee = Number(e.target.value);
+              onChange={(fee) => {
                 setServiceFee(fee);
                 if (cancelled) {
                   const charge = penalty + fee;

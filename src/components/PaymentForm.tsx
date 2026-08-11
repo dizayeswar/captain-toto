@@ -6,6 +6,7 @@ import { PAYER_TYPES, STAFF } from "@/lib/lists";
 import { formatCurrency } from "@/lib/format";
 import type { PaymentInvoice } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 
 export type PaymentBookingOption = {
   booking_id: string;
@@ -133,12 +134,9 @@ export default function PaymentForm({
 
           <div>
             <label className={labelCls}>The Sum Of ($)</label>
-            <input
-              type="number"
-              min={0}
-              step="0.01"
+            <AmountInput
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              onChange={setAmount}
               className={inputCls}
             />
           </div>

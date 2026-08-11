@@ -3,6 +3,7 @@
 import { BALANCE_BROUGHT_BY } from "@/lib/financeBalance";
 import { CURRENCIES } from "@/lib/lists";
 import { Button, Card } from "./ui";
+import AmountInput from "./AmountInput";
 
 const labelCls = "mb-1 block text-xs font-medium text-slate-600";
 const inputCls =
@@ -54,12 +55,9 @@ export default function FinanceDepositForm({ action }: Props) {
         </div>
         <div>
           <label className={labelCls}>Amount *</label>
-          <input
-            type="number"
+          <AmountInput
             name="amount"
             required
-            min={0}
-            step="0.01"
             defaultValue={0}
             className={inputCls}
           />

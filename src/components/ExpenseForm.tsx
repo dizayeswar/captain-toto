@@ -11,6 +11,7 @@ import {
 import { TOTO_BALANCE_PAID_BY } from "@/lib/financeBalance";
 import type { Expense } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
@@ -89,11 +90,8 @@ export default function ExpenseForm({
 
           <div>
             <label className={labelCls}>Amount *</label>
-            <input
-              type="number"
+            <AmountInput
               name="amount"
-              min={0}
-              step="0.01"
               required
               defaultValue={expense?.amount ?? 0}
               className={inputCls}

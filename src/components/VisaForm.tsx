@@ -16,6 +16,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import type { VisaCase } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 import type { SupplierOption } from "./BookingForm";
 
 type Props = {
@@ -256,52 +257,40 @@ export default function VisaForm({
 
           <div>
             <label className={labelCls}>Appointment Fee</label>
-            <input
-              type="number"
+            <AmountInput
               name="appointment_fee"
-              min={0}
-              step="0.01"
               value={appointmentFee}
-              onChange={(e) => setAppointmentFee(Number(e.target.value))}
+              onChange={setAppointmentFee}
               className={inputCls}
             />
           </div>
 
           <div>
             <label className={labelCls}>Document Fee</label>
-            <input
-              type="number"
+            <AmountInput
               name="document_fee"
-              min={0}
-              step="0.01"
               value={documentFee}
-              onChange={(e) => setDocumentFee(Number(e.target.value))}
+              onChange={setDocumentFee}
               className={inputCls}
             />
           </div>
 
           <div>
             <label className={labelCls}>Extra Charges</label>
-            <input
-              type="number"
+            <AmountInput
               name="extra_charges"
-              min={0}
-              step="0.01"
               value={extraCharges}
-              onChange={(e) => setExtraCharges(Number(e.target.value))}
+              onChange={setExtraCharges}
               className={inputCls}
             />
           </div>
 
           <div>
             <label className={labelCls}>Amount Paid (USD)</label>
-            <input
-              type="number"
+            <AmountInput
               name="amount_paid_usd"
-              min={0}
-              step="0.01"
               value={amountPaid}
-              onChange={(e) => setAmountPaid(Number(e.target.value))}
+              onChange={setAmountPaid}
               className={inputCls}
             />
           </div>

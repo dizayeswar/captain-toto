@@ -15,6 +15,7 @@ import {
 } from "@/lib/supplierLinks";
 import type { SupplierInvoice, SupplierInvoiceLine } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 
 export type { SupplierLinkOption };
 
@@ -364,14 +365,9 @@ export default function SupplierInvoiceForm({
                 </div>
                 <div>
                   <label className={labelCls}>Amount (cost) $</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step="0.01"
+                  <AmountInput
                     value={line.amount}
-                    onChange={(e) =>
-                      updateLine(i, { amount: Number(e.target.value) })
-                    }
+                    onChange={(amount) => updateLine(i, { amount })}
                     className={inputCls}
                   />
                 </div>
@@ -448,25 +444,19 @@ export default function SupplierInvoiceForm({
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className={labelCls}>Paid (USD)</label>
-            <input
-              type="number"
+            <AmountInput
               name="paid_usd"
-              min={0}
-              step="0.01"
               value={paidUsd}
-              onChange={(e) => setPaidUsd(Number(e.target.value))}
+              onChange={setPaidUsd}
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Refund from supplier (USD)</label>
-            <input
-              type="number"
+            <AmountInput
               name="refund_usd"
-              min={0}
-              step="0.01"
               value={refundUsd}
-              onChange={(e) => setRefundUsd(Number(e.target.value))}
+              onChange={setRefundUsd}
               className={inputCls}
             />
           </div>

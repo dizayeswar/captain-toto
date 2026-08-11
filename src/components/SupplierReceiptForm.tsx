@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { SupplierPaymentReceipt } from "@/lib/types";
 import { Card, Button } from "./ui";
+import AmountInput from "./AmountInput";
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
@@ -52,12 +53,9 @@ export default function SupplierReceiptForm({
           </div>
           <div>
             <label className={labelCls}>Amount ($) *</label>
-            <input
-              type="number"
+            <AmountInput
               name="amount"
               required
-              min={0}
-              step="0.01"
               defaultValue={receipt?.amount ?? 0}
               className={inputCls}
             />
