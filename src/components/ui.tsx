@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import RefreshButton from "./RefreshButton";
 
 export function PageHeader({
   title,
@@ -11,12 +12,15 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 bg-white px-8 py-6">
+    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 bg-white px-8 py-6 no-print">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       </div>
-      {action}
+      <div className="flex flex-wrap items-center gap-3">
+        <RefreshButton />
+        {action}
+      </div>
     </div>
   );
 }
