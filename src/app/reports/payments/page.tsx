@@ -17,15 +17,10 @@ export default async function PaymentReportPage() {
         subtitle="Payment status and live totals across all bookings"
       />
       <div className="p-8">
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard label="Total Ticket Cost" value={formatCurrency(ticketTotal)} />
           <StatCard label="Total Service Fee" value={formatCurrency(feeTotal)} />
           <StatCard label="Total Paid" value={formatCurrency(totals.revenue)} />
-          <StatCard
-            label="Outstanding Debt"
-            value={formatCurrency(totals.debt)}
-            tone={totals.debt > 0 ? "red" : "default"}
-          />
         </div>
 
         {bookings.length === 0 ? (
@@ -47,7 +42,6 @@ export default async function PaymentReportPage() {
                     <th className="px-5 py-3 text-right font-semibold">
                       Total Paid
                     </th>
-                    <th className="px-5 py-3 text-right font-semibold">Debt</th>
                     <th className="px-5 py-3 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -69,9 +63,6 @@ export default async function PaymentReportPage() {
                       <td className="px-5 py-3 text-right font-medium tabular-nums text-slate-900">
                         {formatCurrency(b.total_paid)}
                       </td>
-                      <td className="px-5 py-3 text-right tabular-nums text-slate-700">
-                        {formatCurrency(b.debt)}
-                      </td>
                       <td className="px-5 py-3">
                         <StatusBadge status={b.payment_status} />
                       </td>
@@ -91,9 +82,6 @@ export default async function PaymentReportPage() {
                     </td>
                     <td className="px-5 py-3 text-right tabular-nums">
                       {formatCurrency(totals.revenue)}
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums">
-                      {formatCurrency(totals.debt)}
                     </td>
                     <td className="px-5 py-3" />
                   </tr>
