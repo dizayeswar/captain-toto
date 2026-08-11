@@ -441,3 +441,22 @@ export type ExpenseInput = {
   receipt_ref: string;
   notes: string;
 };
+
+/** Money added into the office / ToTo cash balance. */
+export type FinanceDeposit = {
+  id: string;
+  deposit_date: string;
+  brought_by: string;
+  amount: number;
+  currency: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type FinanceDepositInput = {
+  deposit_date: string;
+  brought_by: string;
+  amount: number;
+  currency: string;
+  notes: string;
+};

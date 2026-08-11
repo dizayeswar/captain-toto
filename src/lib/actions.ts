@@ -41,6 +41,10 @@ import {
   updateExpense,
   deleteExpense,
 } from "./expenses";
+import {
+  createFinanceDeposit,
+  deleteFinanceDeposit,
+} from "./financeBalance";
 import type {
   BookingInput,
   InvoiceInput,
@@ -54,6 +58,7 @@ import type {
   SupplierInput,
   SupplierPaymentReceiptInput,
   ExpenseInput,
+  FinanceDepositInput,
 } from "./types";
 
 function parseForm(formData: FormData): BookingInput {
@@ -520,6 +525,35 @@ export async function deleteExpenseAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteExpense(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Finance balance deposits (money in)
+// ---------------------------------------------------------------------------
+
+function parseDepositForm(formData: FormData): FinanceDepositInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  return {
+    deposit_date: str("deposit_date"),
+    brought_by: str("brought_by"),
+    amount: Number(formData.get("amount")) || 0,
+    currency: str("currency") || "IQD",
+    notes: str("notes"),
+  };
+}
+
+export async function createFinanceDepositAction(formData: FormData) {
+  await createFinanceDeposit(parseDepositForm(formData));
+  revalidatePath("/", "layout");
+  redirect("/finance");
+}
+
+export async function deleteFinanceDepositAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteFinanceDeposit(id);
     revalidatePath("/", "layout");
   }
 }

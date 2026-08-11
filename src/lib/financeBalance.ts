@@ -1,0 +1,151 @@
+import { getSupabase } from "./supabase";
+import type { Expense, FinanceDeposit, FinanceDepositInput } from "./types";
+
+const TABLE = "finance_deposits";
+
+const demoStore: FinanceDeposit[] = [];
+
+export const BALANCE_BROUGHT_BY = ["Osman", "Sherwani", "Ali", "Staff1", "Other"] as const;
+
+export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return [...demoStore].sort((a, b) =>
+      b.deposit_date.localeCompare(a.deposit_date)
+    );
+  }
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .order("deposit_date", { ascending: false });
+  if (error || !data) return [];
+  return data as FinanceDeposit[];
+}
+
+export async function createFinanceDeposit(
+  input: FinanceDepositInput
+): Promise<FinanceDeposit> {
+  const row = {
+    deposit_date: input.deposit_date,
+    brought_by: input.brought_by.trim(),
+    amount: Number(input.amount) || 0,
+    currency: input.currency || "IQD",
+    notes: input.notes.trim(),
+  };
+  const supabase = getSupabase();
+  if (!supabase) {
+    const rec: FinanceDeposit = { id: `demo-dep-${Date.now()}`, ...row };
+    demoStore.push(rec);
+    return rec;
+  }
+  const { data, error } = await supabase
+    .from(TABLE)
+    .insert(row)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as FinanceDeposit;
+}
+
+export async function deleteFinanceDeposit(id: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const idx = demoStore.findIndex((d) => d.id === id);
+    if (idx >= 0) demoStore.splice(idx, 1);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export type FinanceBalance = {
+  depositedUsd: number;
+  depositedIqd: number;
+  spentUsd: number;
+  spentIqd: number;
+  balanceUsd: number;
+  balanceIqd: number;
+};
+
+export type BalanceActivity = {
+  id: string;
+  kind: "deposit" | "expense";
+  date: string;
+  title: string;
+  detail: string;
+  amount: number;
+  currency: string;
+  signedAmount: number; // + for deposit, − for expense
+};
+
+export function computeFinanceBalance(
+  deposits: FinanceDeposit[],
+  expenses: Expense[]
+): FinanceBalance {
+  let depositedUsd = 0;
+  let depositedIqd = 0;
+  let spentUsd = 0;
+  let spentIqd = 0;
+
+  for (const d of deposits) {
+    const a = Number(d.amount) || 0;
+    if (d.currency === "IQD") depositedIqd += a;
+    else depositedUsd += a;
+  }
+  for (const e of expenses) {
+    const a = Number(e.amount) || 0;
+    if (e.currency === "IQD") spentIqd += a;
+    else spentUsd += a;
+  }
+
+  return {
+    depositedUsd,
+    depositedIqd,
+    spentUsd,
+    spentIqd,
+    balanceUsd: depositedUsd - spentUsd,
+    balanceIqd: depositedIqd - spentIqd,
+  };
+}
+
+/** Combined timeline: deposits (in) and expenses (out), newest first. */
+export function buildBalanceActivity(
+  deposits: FinanceDeposit[],
+  expenses: Expense[]
+): BalanceActivity[] {
+  const items: BalanceActivity[] = [];
+
+  for (const d of deposits) {
+    const amount = Number(d.amount) || 0;
+    items.push({
+      id: `dep-${d.id}`,
+      kind: "deposit",
+      date: d.deposit_date,
+      title: `Balance in · ${d.brought_by || "—"}`,
+      detail: d.notes || "Cash deposited into balance",
+      amount,
+      currency: d.currency || "IQD",
+      signedAmount: amount,
+    });
+  }
+
+  for (const e of expenses) {
+    const amount = Number(e.amount) || 0;
+    items.push({
+      id: `exp-${e.id}`,
+      kind: "expense",
+      date: e.expense_date,
+      title: `${e.category || "Expense"} · ${e.description || "—"}`,
+      detail: `Paid by ${e.paid_by || "—"} · ${e.payment_method || "—"}`,
+      amount,
+      currency: e.currency || "USD",
+      signedAmount: -amount,
+    });
+  }
+
+  return items.sort((a, b) => {
+    const byDate = b.date.localeCompare(a.date);
+    if (byDate !== 0) return byDate;
+    return b.id.localeCompare(a.id);
+  });
+}
