@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -95,28 +95,53 @@ const SECTIONS: NavSection[] = [
   },
 ];
 
-function isActive(pathname: string, href: string): boolean {
+const ALL_HREFS = SECTIONS.flatMap((s) => s.items.map((i) => i.href));
+
+function pathMatches(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-function sectionOwnsPath(section: NavSection, pathname: string): boolean {
-  // A section is "active" if the current path belongs to any of its items
-  // (treating "/" specially so it only belongs to the Dashboard item).
-  return section.items.some((item) =>
-    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+/** Highlight the most specific nav item for the current path. */
+function isActive(pathname: string, href: string): boolean {
+  if (!pathMatches(pathname, href)) return false;
+  const better = ALL_HREFS.some(
+    (other) =>
+      other !== href &&
+      other.length > href.length &&
+      pathMatches(pathname, other) &&
+      (href === "/" || other.startsWith(href + "/"))
   );
+  return !better;
+}
+
+function sectionOwnsPath(section: NavSection, pathname: string): boolean {
+  return section.items.some((item) => pathMatches(pathname, item.href));
+}
+
+function openStateForPath(pathname: string): Record<string, boolean> {
+  const next: Record<string, boolean> = {};
+  for (const s of SECTIONS) next[s.id] = sectionOwnsPath(s, pathname);
+  if (!Object.values(next).some(Boolean)) next[SECTIONS[0].id] = true;
+  return next;
 }
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const s of SECTIONS) initial[s.id] = sectionOwnsPath(s, pathname);
-    // Ensure at least the first section is open on the dashboard.
-    if (!Object.values(initial).some(Boolean)) initial[SECTIONS[0].id] = true;
-    return initial;
-  });
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    openStateForPath(pathname)
+  );
+
+  // Expand the section that owns the current page (e.g. after Dashboard card click)
+  useEffect(() => {
+    setOpen((prev) => {
+      const owned = SECTIONS.filter((s) => sectionOwnsPath(s, pathname));
+      if (owned.length === 0) return prev;
+      const next = { ...prev };
+      for (const s of owned) next[s.id] = true;
+      return next;
+    });
+  }, [pathname]);
 
   const toggle = (id: string) =>
     setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -140,16 +165,21 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 pb-6">
         {SECTIONS.map((section) => {
           const expanded = open[section.id];
+          const sectionActive = sectionOwnsPath(section, pathname);
           return (
             <div key={section.id} className="mb-2">
               <button
                 type="button"
                 onClick={() => toggle(section.id)}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                  sectionActive
+                    ? "bg-brand/10 text-brand"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
               >
                 <Icon name={section.icon} />
                 <span className="flex-1 text-left">{section.title}</span>
-                <Chevron open={expanded} />
+                <Chevron open={!!expanded} />
               </button>
 
               {expanded && (
