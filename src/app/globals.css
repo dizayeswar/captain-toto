@@ -28,19 +28,13 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/*
- * Flat chrome: no hover motion, lift, or animated background.
- * Sidebar + Refresh / Export / header action buttons stay still.
- */
+/* Allow color/background hover, but never lift / slide / scale */
 aside a,
 aside button,
 .page-chrome-btn {
   transform: none !important;
   translate: none !important;
   scale: none !important;
-  rotate: none !important;
-  transition: none !important;
-  animation: none !important;
   box-shadow: none !important;
 }
 
@@ -49,29 +43,11 @@ aside button:hover,
 .page-chrome-btn:hover,
 aside a:active,
 aside button:active,
-.page-chrome-btn:active,
-aside a:focus,
-aside button:focus,
-.page-chrome-btn:focus,
-aside a:focus-visible,
-aside button:focus-visible,
-.page-chrome-btn:focus-visible {
+.page-chrome-btn:active {
   transform: none !important;
   translate: none !important;
   scale: none !important;
   box-shadow: none !important;
-  outline: none;
-}
-
-/* Keep active nav highlight, but never animate it */
-aside a,
-aside button {
-  background-image: none !important;
-}
-
-/* Chevron open/close: instant, no rotate animation */
-aside .nav-chevron {
-  transition: none !important;
 }
 
 @media print {

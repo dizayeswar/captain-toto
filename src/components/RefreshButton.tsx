@@ -24,9 +24,9 @@ export default function RefreshButton({
           router.refresh();
         });
       }}
-      className={`page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-70 ${className}`}
+      className={`page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70 ${className}`}
       aria-busy={pending}
-      aria-label="Refresh page data"
+      title="Refresh page data"
     >
       <svg
         className={`h-4 w-4 ${pending ? "animate-spin" : ""}`}
