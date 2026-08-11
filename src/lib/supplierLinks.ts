@@ -5,6 +5,8 @@ import { getVisaCases } from "./visas";
 export type SupplierLinkOption = {
   ref: string;
   service_type: string;
+  /** Supplier name used for auto-fill filtering */
+  supplier: string;
   label: string;
   amount: number;
   description: string;
@@ -13,6 +15,10 @@ export type SupplierLinkOption = {
   route: string;
   issue_date: string;
 };
+
+function norm(s: string) {
+  return s.trim().toLowerCase();
+}
 
 /** Build link options for supplier invoice line items (cost only). */
 export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
@@ -28,6 +34,7 @@ export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
     options.push({
       ref: b.booking_id,
       service_type: "Ticket",
+      supplier: b.supplier_name || "",
       label: `${b.booking_id} · Ticket · ${b.client_name} · $${b.ticket_cost}`,
       amount: b.ticket_cost, // NO service fee
       description: `TICKET — ${b.route} (${b.airline})`,
@@ -43,16 +50,19 @@ export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
       h.check_in && h.check_out
         ? `Dept. ${h.check_in} / Return ${h.check_out}`
         : "";
+    // Prefer check-in for hotel date filtering; fall back to created date.
+    const issueDate = h.check_in || h.created_date || "";
     options.push({
       ref: h.booking_code,
       service_type: "Hotel",
+      supplier: h.supplier || "",
       label: `${h.booking_code} · Hotel · ${h.lead_guest} · $${h.total_cost_usd}`,
       amount: h.total_cost_usd,
       description: `HOTEL — ${h.hotel_name}${dates ? ` · ${dates}` : ""}`,
       client_name: h.lead_guest,
       pnr: h.hotel_confirmation_no || "",
       route: [h.city, h.destination_country].filter(Boolean).join(" / "),
-      issue_date: h.created_date,
+      issue_date: issueDate,
     });
   }
 
@@ -60,6 +70,7 @@ export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
     options.push({
       ref: v.visa_id,
       service_type: "Visa",
+      supplier: v.supplier_name || "",
       label: `${v.visa_id} · Visa · ${v.client_name} · $${v.total_sale_usd}`,
       amount: v.total_sale_usd,
       description: `SERVICES — ${v.visa_type} / ${v.destination_country}`,
@@ -71,4 +82,24 @@ export async function getSupplierLinkOptions(): Promise<SupplierLinkOption[]> {
   }
 
   return options;
+}
+
+/** Filter link options by supplier name and inclusive date range (YYYY-MM-DD). */
+export function filterSupplierLinkOptions(
+  options: SupplierLinkOption[],
+  supplier: string,
+  dateFrom: string,
+  dateTo: string
+): SupplierLinkOption[] {
+  const s = norm(supplier);
+  if (!s) return [];
+
+  return options.filter((o) => {
+    if (norm(o.supplier) !== s) return false;
+    const d = (o.issue_date || "").slice(0, 10);
+    if (!d) return false;
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+    return true;
+  });
 }

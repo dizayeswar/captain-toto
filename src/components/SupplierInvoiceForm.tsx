@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   SERVICE_TYPES,
@@ -9,7 +9,10 @@ import {
   SUPPLIER_PAYMENT_STATUSES,
 } from "@/lib/lists";
 import { formatCurrency } from "@/lib/format";
-import type { SupplierLinkOption } from "@/lib/supplierLinks";
+import {
+  filterSupplierLinkOptions,
+  type SupplierLinkOption,
+} from "@/lib/supplierLinks";
 import type { SupplierInvoice, SupplierInvoiceLine } from "@/lib/types";
 import { Card, Button } from "./ui";
 
@@ -41,6 +44,20 @@ function blankLine(): SupplierInvoiceLine {
   };
 }
 
+function optionToLine(opt: SupplierLinkOption): SupplierInvoiceLine {
+  return {
+    service_type: opt.service_type,
+    booking_ref: opt.ref,
+    description: opt.description,
+    amount: opt.amount,
+    client_name: opt.client_name,
+    pnr: opt.pnr,
+    route: opt.route,
+    issue_date: opt.issue_date,
+    notes: "",
+  };
+}
+
 export default function SupplierInvoiceForm({
   action,
   invoice,
@@ -57,10 +74,22 @@ export default function SupplierInvoiceForm({
   const [paidUsd, setPaidUsd] = useState<number>(invoice?.paid_usd ?? 0);
   const [refundUsd, setRefundUsd] = useState<number>(invoice?.refund_usd ?? 0);
   const [linkPick, setLinkPick] = useState("");
+  const [supplier, setSupplier] = useState(
+    invoice?.supplier ?? suppliers[0] ?? ""
+  );
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [fillMessage, setFillMessage] = useState("");
 
   const invoiceAmount = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
   const netPaid = paidUsd - refundUsd;
   const outstanding = invoiceAmount - netPaid;
+
+  const filteredLinks = useMemo(() => {
+    if (!supplier) return linkOptions;
+    const s = supplier.trim().toLowerCase();
+    return linkOptions.filter((o) => o.supplier.trim().toLowerCase() === s);
+  }, [linkOptions, supplier]);
 
   function updateLine(i: number, patch: Partial<SupplierInvoiceLine>) {
     setLines((prev) =>
@@ -72,28 +101,60 @@ export default function SupplierInvoiceForm({
     if (!ref) return;
     const opt = linkOptions.find((o) => o.ref === ref);
     if (!opt) return;
-    setLines((prev) => [
-      ...prev.filter(
-        (l) =>
-          l.booking_ref ||
-          l.description ||
-          l.amount ||
-          l.client_name ||
-          l.route
-      ),
-      {
-        service_type: opt.service_type,
-        booking_ref: opt.ref,
-        description: opt.description,
-        amount: opt.amount,
-        client_name: opt.client_name,
-        pnr: opt.pnr,
-        route: opt.route,
-        issue_date: opt.issue_date,
-        notes: "",
-      },
-    ]);
+    setLines((prev) => {
+      if (prev.some((l) => l.booking_ref === opt.ref)) return prev;
+      return [
+        ...prev.filter(
+          (l) =>
+            l.booking_ref ||
+            l.description ||
+            l.amount ||
+            l.client_name ||
+            l.route
+        ),
+        optionToLine(opt),
+      ];
+    });
     setLinkPick("");
+    setFillMessage("");
+  }
+
+  function fillFromSupplierAndDates() {
+    if (!supplier) {
+      setFillMessage("Select a supplier first.");
+      return;
+    }
+    if (!dateFrom || !dateTo) {
+      setFillMessage("Set both Date from and Date to.");
+      return;
+    }
+    if (dateFrom > dateTo) {
+      setFillMessage("Date from must be on or before Date to.");
+      return;
+    }
+
+    const matched = filterSupplierLinkOptions(
+      linkOptions,
+      supplier,
+      dateFrom,
+      dateTo
+    );
+
+    if (matched.length === 0) {
+      setLines([blankLine()]);
+      setFillMessage(
+        `No ticket / hotel / visa found for ${supplier} between ${dateFrom} and ${dateTo}.`
+      );
+      return;
+    }
+
+    setLines(matched.map(optionToLine));
+    const tickets = matched.filter((m) => m.service_type === "Ticket").length;
+    const hotels = matched.filter((m) => m.service_type === "Hotel").length;
+    const visas = matched.filter((m) => m.service_type === "Visa").length;
+    setFillMessage(
+      `Filled ${matched.length} line(s): ${tickets} ticket, ${hotels} hotel, ${visas} visa.`
+    );
   }
 
   return (
@@ -129,15 +190,64 @@ export default function SupplierInvoiceForm({
             <select
               name="supplier"
               required
-              defaultValue={invoice?.supplier ?? suppliers[0] ?? ""}
+              value={supplier}
+              onChange={(e) => {
+                setSupplier(e.target.value);
+                setFillMessage("");
+              }}
               className={inputCls}
             >
-              {suppliers.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
+              {suppliers.length === 0 ? (
+                <option value="">No suppliers</option>
+              ) : (
+                suppliers.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))
+              )}
             </select>
+          </div>
+          <div>
+            <label className={labelCls}>Date from</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setFillMessage("");
+              }}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Booking / check-in / case date start
+            </p>
+          </div>
+          <div>
+            <label className={labelCls}>Date to</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setFillMessage("");
+              }}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">Inclusive end date</p>
+          </div>
+          <div className="flex flex-col justify-end gap-2">
+            <button
+              type="button"
+              onClick={fillFromSupplierAndDates}
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+            >
+              Auto-fill line items
+            </button>
+            <p className="text-[11px] leading-snug text-slate-500">
+              Loads all tickets, hotels &amp; visas for this supplier in the
+              date range.
+            </p>
           </div>
           <div>
             <label className={labelCls}>Supplier Invoice No.</label>
@@ -171,6 +281,11 @@ export default function SupplierInvoiceForm({
             />
           </div>
         </div>
+        {fillMessage ? (
+          <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            {fillMessage}
+          </p>
+        ) : null}
       </Card>
 
       <Card className="p-6">
@@ -183,17 +298,17 @@ export default function SupplierInvoiceForm({
               Ticket lines use ticket cost only (service fee is not included).
             </p>
           </div>
-          {linkOptions.length > 0 && (
+          {filteredLinks.length > 0 && (
             <div className="flex items-end gap-2">
               <div>
-                <label className={labelCls}>Add from booking / case</label>
+                <label className={labelCls}>Add one booking / case</label>
                 <select
                   value={linkPick}
                   onChange={(e) => addFromLink(e.target.value)}
                   className={`${inputCls} min-w-[240px]`}
                 >
                   <option value="">— pick to add —</option>
-                  {linkOptions.map((o) => (
+                  {filteredLinks.map((o) => (
                     <option key={`${o.service_type}-${o.ref}`} value={o.ref}>
                       {o.label}
                     </option>
