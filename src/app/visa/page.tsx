@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getVisaCases, summarizeVisas } from "@/lib/visas";
+import { visasToExcel } from "@/lib/excelRows";
 import { formatCurrency, formatDate } from "@/lib/format";
 import {
   PageHeader,
@@ -8,6 +9,7 @@ import {
   Button,
   StatusBadge,
 } from "@/components/ui";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,16 @@ export default async function VisaDashboardPage() {
       <PageHeader
         title="Visa Management"
         subtitle="Overview of visa cases, appointments and balances"
-        action={<Button href="/visa/cases/new">+ New Case</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="visa-cases"
+              sheetName="Visas"
+              rows={visasToExcel(cases)}
+            />
+            <Button href="/visa/cases/new">+ New Case</Button>
+          </div>
+        }
       />
 
       <div className="p-8">

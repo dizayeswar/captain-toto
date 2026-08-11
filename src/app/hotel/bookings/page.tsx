@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getHotelBookings } from "@/lib/hotels";
+import { hotelsToExcel } from "@/lib/excelRows";
 import { deleteHotelBookingAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import {
@@ -10,6 +11,7 @@ import {
   StatusBadge,
 } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,16 @@ export default async function HotelBookingsPage() {
       <PageHeader
         title="Hotel Bookings"
         subtitle="All hotel reservations"
-        action={<Button href="/hotel/bookings/new">+ New Booking</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="hotel-bookings"
+              sheetName="Hotels"
+              rows={hotelsToExcel(bookings)}
+            />
+            <Button href="/hotel/bookings/new">+ New Booking</Button>
+          </div>
+        }
       />
       <div className="p-8">
         {bookings.length === 0 ? (

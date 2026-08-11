@@ -1,4 +1,5 @@
 import { getSuppliers } from "@/lib/supplierFinance";
+import { suppliersToExcel } from "@/lib/excelRows";
 import {
   createSupplierAction,
   deleteSupplierAction,
@@ -6,6 +7,7 @@ import {
 import { CURRENCIES, SUPPLIER_TYPES } from "@/lib/lists";
 import { PageHeader, Button, Card, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,13 @@ export default async function SuppliersPage() {
       <PageHeader
         title="Suppliers"
         subtitle="Shared directory — suppliers appear in Booking, Hotel, Visa, and Supplier Invoices"
+        action={
+          <ExportExcelButton
+            filename="suppliers"
+            sheetName="Suppliers"
+            rows={suppliersToExcel(suppliers)}
+          />
+        }
       />
       <div className="space-y-8 p-8">
         <Card className="p-6">

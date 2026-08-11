@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getHotelBookings, summarizeHotels } from "@/lib/hotels";
+import { hotelsToExcel } from "@/lib/excelRows";
 import { formatCurrency, formatDate } from "@/lib/format";
 import {
   PageHeader,
@@ -8,6 +9,7 @@ import {
   Button,
   StatusBadge,
 } from "@/components/ui";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,16 @@ export default async function HotelDashboardPage() {
       <PageHeader
         title="Hotel Management"
         subtitle="Overview of hotel bookings and performance"
-        action={<Button href="/hotel/bookings/new">+ New Booking</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="hotel-bookings"
+              sheetName="Hotels"
+              rows={hotelsToExcel(bookings)}
+            />
+            <Button href="/hotel/bookings/new">+ New Booking</Button>
+          </div>
+        }
       />
 
       <div className="p-8">

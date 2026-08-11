@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getSupplierPaymentReceipts } from "@/lib/supplierReceipts";
+import { supplierReceiptsToExcel } from "@/lib/excelRows";
 import { deleteSupplierPaymentReceiptAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader, Button, Card, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,14 @@ export default async function SupplierReceiptsPage() {
         title="Payment Receipts"
         subtitle="A6 receipts for payments made to suppliers"
         action={
-          <Button href="/suppliers/receipts/new">+ New Payment Receipt</Button>
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="supplier-payment-receipts"
+              sheetName="Receipts"
+              rows={supplierReceiptsToExcel(receipts)}
+            />
+            <Button href="/suppliers/receipts/new">+ New Payment Receipt</Button>
+          </div>
         }
       />
       <div className="p-8">

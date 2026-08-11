@@ -1,8 +1,13 @@
 import { getExpenses, summarizeExpenses } from "@/lib/expenses";
 import type { ExpenseGroup } from "@/lib/expenses";
+import {
+  expensesToExcel,
+  expenseGroupsToExcel,
+} from "@/lib/excelRows";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { PageHeader, Card, StatCard, EmptyState } from "@/components/ui";
 import PrintButton from "@/components/PrintButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +21,25 @@ export default async function FinanceSummaryPage() {
         <PageHeader
           title="Expense Summary"
           subtitle="Totals by month and category"
-          action={<PrintButton />}
+          action={
+            <div className="flex items-center gap-3">
+              <ExportExcelButton
+                filename="expense-summary"
+                sheets={[
+                  { name: "Expenses", rows: expensesToExcel(expenses) },
+                  {
+                    name: "By Month",
+                    rows: expenseGroupsToExcel(s.byMonth, "Month"),
+                  },
+                  {
+                    name: "By Category",
+                    rows: expenseGroupsToExcel(s.byCategory, "Category"),
+                  },
+                ]}
+              />
+              <PrintButton />
+            </div>
+          }
         />
       </div>
       <div className="print-area space-y-8 p-8">

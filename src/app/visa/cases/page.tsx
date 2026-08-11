@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getVisaCases } from "@/lib/visas";
+import { visasToExcel } from "@/lib/excelRows";
 import { deleteVisaCaseAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import {
@@ -10,6 +11,7 @@ import {
   StatusBadge,
 } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,16 @@ export default async function VisaCasesPage() {
       <PageHeader
         title="Visa Cases"
         subtitle="All visa applications tracked in the system"
-        action={<Button href="/visa/cases/new">+ New Case</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="visa-cases"
+              sheetName="Visas"
+              rows={visasToExcel(cases)}
+            />
+            <Button href="/visa/cases/new">+ New Case</Button>
+          </div>
+        }
       />
       <div className="p-8">
         {cases.length === 0 ? (

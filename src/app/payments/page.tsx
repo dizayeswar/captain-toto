@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getPaymentInvoices } from "@/lib/payments";
+import { paymentsToExcel } from "@/lib/excelRows";
 import { deletePaymentInvoiceAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader, Button, Card, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,16 @@ export default async function PaymentInvoicesPage() {
       <PageHeader
         title="Payment Invoices"
         subtitle="Cash receipts confirming payments received"
-        action={<Button href="/payments/new">+ New Payment Invoice</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="payment-invoices"
+              sheetName="Payments"
+              rows={paymentsToExcel(receipts)}
+            />
+            <Button href="/payments/new">+ New Payment Invoice</Button>
+          </div>
+        }
       />
       <div className="p-8">
         {receipts.length === 0 ? (

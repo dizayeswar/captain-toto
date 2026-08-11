@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getSupplierInvoices } from "@/lib/supplierFinance";
+import { supplierInvoicesToExcel } from "@/lib/excelRows";
 import { deleteSupplierInvoiceAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader, Button, Card, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,14 @@ export default async function SupplierInvoicesPage() {
         title="Supplier Invoices"
         subtitle="Service invoices from suppliers (ticket, hotel, visa, etc.)"
         action={
-          <Button href="/suppliers/invoices/new">+ New Supplier Invoice</Button>
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="supplier-invoices"
+              sheetName="Supplier Invoices"
+              rows={supplierInvoicesToExcel(invoices)}
+            />
+            <Button href="/suppliers/invoices/new">+ New Supplier Invoice</Button>
+          </div>
         }
       />
       <div className="p-8">

@@ -15,6 +15,8 @@ import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PageHeader, Button, Card, StatCard, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
 import FinanceDepositForm from "@/components/FinanceDepositForm";
+import ExportExcelButton from "@/components/ExportExcelButton";
+import { expensesToExcel, depositsToExcel } from "@/lib/excelRows";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +42,13 @@ export default async function FinancePage() {
         subtitle="Daily office and operating expenses"
         action={
           <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="finance"
+              sheets={[
+                { name: "Expenses", rows: expensesToExcel(expenses) },
+                { name: "Deposits", rows: depositsToExcel(deposits) },
+              ]}
+            />
             <Button href="/finance/summary" variant="secondary">
               Summary
             </Button>

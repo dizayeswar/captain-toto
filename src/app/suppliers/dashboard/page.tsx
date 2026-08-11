@@ -3,8 +3,10 @@ import {
   getSupplierInvoices,
   summarizeSupplierFinance,
 } from "@/lib/supplierFinance";
+import { supplierInvoicesToExcel } from "@/lib/excelRows";
 import { formatCurrency } from "@/lib/format";
 import { PageHeader, Button, StatCard, EmptyState } from "@/components/ui";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +20,14 @@ export default async function SupplierFinanceDashboardPage() {
         title="Supplier Finance"
         subtitle="Outstanding balances and payments to suppliers"
         action={
-          <Button href="/suppliers/invoices/new">+ New Supplier Invoice</Button>
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="supplier-invoices"
+              sheetName="Supplier Invoices"
+              rows={supplierInvoicesToExcel(invoices)}
+            />
+            <Button href="/suppliers/invoices/new">+ New Supplier Invoice</Button>
+          </div>
         }
       />
       <div className="space-y-8 p-8">

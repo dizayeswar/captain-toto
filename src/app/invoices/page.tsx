@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getInvoices } from "@/lib/invoices";
+import { invoicesToExcel } from "@/lib/excelRows";
 import { deleteInvoiceAction } from "@/lib/actions";
 import { formatDate } from "@/lib/format";
 import { PageHeader, Button, Card, StatusBadge, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,16 @@ export default async function InvoicesPage() {
       <PageHeader
         title="Ticket Invoices"
         subtitle="Prepare and print ticket invoices for clients"
-        action={<Button href="/invoices/new">+ New Invoice</Button>}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportExcelButton
+              filename="ticket-invoices"
+              sheetName="Invoices"
+              rows={invoicesToExcel(invoices)}
+            />
+            <Button href="/invoices/new">+ New Invoice</Button>
+          </div>
+        }
       />
       <div className="p-8">
         {invoices.length === 0 ? (

@@ -1,7 +1,9 @@
 import { getBookings, groupByKeys } from "@/lib/bookings";
+import { groupRowsToExcel } from "@/lib/excelRows";
 import { AIRLINES } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
 import GroupReport from "@/components/GroupReport";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,13 @@ export default async function AirlineReportPage() {
       <PageHeader
         title="Airline Analysis"
         subtitle="Bookings, revenue and profit per airline"
+        action={
+          <ExportExcelButton
+            filename="airline-analysis"
+            sheetName="Airlines"
+            rows={groupRowsToExcel(rows, "Airline")}
+          />
+        }
       />
       <div className="p-8">
         <GroupReport

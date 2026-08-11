@@ -1,8 +1,13 @@
 import { getPaymentInvoices, summarizePayments } from "@/lib/payments";
 import type { PaymentGroupRow } from "@/lib/payments";
+import {
+  paymentsToExcel,
+  paymentGroupsToExcel,
+} from "@/lib/excelRows";
 import { formatCurrency } from "@/lib/format";
 import { MONTH_NAMES } from "@/lib/lists";
 import { PageHeader, Card, StatCard, EmptyState } from "@/components/ui";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +27,29 @@ export default async function PaymentsSummaryPage() {
       <PageHeader
         title="Payments Summary"
         subtitle="Totals of payments received (cash receipts)"
+        action={
+          <ExportExcelButton
+            filename="payments-summary"
+            sheets={[
+              { name: "Receipts", rows: paymentsToExcel(receipts) },
+              {
+                name: "By Month",
+                rows: paymentGroupsToExcel(
+                  s.byMonth.map((r) => ({ ...r, key: monthLabel(r.key) })),
+                  "Month"
+                ),
+              },
+              {
+                name: "By Staff",
+                rows: paymentGroupsToExcel(s.byStaff, "Staff"),
+              },
+              {
+                name: "By Payer Type",
+                rows: paymentGroupsToExcel(s.byPayerType, "Payer Type"),
+              },
+            ]}
+          />
+        }
       />
       <div className="space-y-8 p-8">
         {receipts.length === 0 ? (
