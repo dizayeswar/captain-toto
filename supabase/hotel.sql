@@ -43,6 +43,12 @@ create table if not exists public.hotel_bookings (
   created_at              timestamptz not null default now()
 );
 
+-- Cancel extras (also in hotel_cancel_fees.sql for existing DBs)
+alter table public.hotel_bookings
+  add column if not exists service_fee_usd numeric not null default 0;
+alter table public.hotel_bookings
+  add column if not exists cancel_cost_usd numeric not null default 0;
+
 create index if not exists hotel_bookings_date_idx
   on public.hotel_bookings (created_date desc);
 

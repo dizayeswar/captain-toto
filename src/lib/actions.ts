@@ -258,6 +258,8 @@ function parseHotelForm(formData: FormData): HotelBookingInput {
     net_paid_usd: num("net_paid_usd"),
     refunded_usd: num("refunded_usd"),
     cancellation_fee_usd: num("cancellation_fee_usd"),
+    service_fee_usd: num("service_fee_usd"),
+    cancel_cost_usd: num("cancel_cost_usd"),
     payment_status: str("payment_status"),
     booking_status: str("booking_status"),
     staff: str("staff"),

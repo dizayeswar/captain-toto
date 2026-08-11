@@ -29,10 +29,15 @@ export function buildHotelBooking(
   const netPaid = Number(input.net_paid_usd) || 0;
   const refunded = Number(input.refunded_usd) || 0;
   const cancelFee = Number(input.cancellation_fee_usd) || 0;
+  const serviceFee = Number(input.service_fee_usd) || 0;
+  const cancelCost = Number(input.cancel_cost_usd) || 0;
   const cancelled =
     input.booking_status === "Cancelled" || input.booking_status === "No Show";
-  // When cancelled, the client owes the cancellation fee (not full sale).
-  const finalCharge = cancelled ? cancelFee : totalSale;
+  // Cancelled: client owes penalty + service fee (not the full stay sale).
+  // Active: client owes the full sale.
+  const finalCharge = cancelled ? cancelFee + serviceFee : totalSale;
+  // Cancelled profit uses supplier cancel/ticket cost, not full stay cost.
+  const profitCost = cancelled ? cancelCost : totalCost;
   const netEffect = netPaid - refunded;
   // Positive = client still owes; negative = refund still due to client.
   const balance = finalCharge - netEffect;
@@ -71,10 +76,12 @@ export function buildHotelBooking(
     discount,
     total_cost_usd: totalCost,
     total_sale_usd: totalSale,
-    profit_usd: finalCharge - totalCost,
+    profit_usd: finalCharge - profitCost,
     net_paid_usd: netPaid,
     refunded_usd: refunded,
     cancellation_fee_usd: cancelFee,
+    service_fee_usd: serviceFee,
+    cancel_cost_usd: cancelCost,
     final_charge_usd: finalCharge,
     balance_usd: balance,
     payment_status: paymentStatus,
@@ -118,6 +125,8 @@ const demoStore: HotelBooking[] = [
       net_paid_usd: 70,
       refunded_usd: 0,
       cancellation_fee_usd: 0,
+      service_fee_usd: 0,
+      cancel_cost_usd: 0,
       payment_status: "Paid",
       booking_status: "Confirmed",
       staff: "Osman",

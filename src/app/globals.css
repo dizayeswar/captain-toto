@@ -34,20 +34,45 @@ body {
   }
   html,
   body {
-    height: auto;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #fff;
   }
-  /* Let the printable content take the full page width. */
+  /* Flatten the app chrome so only the document prints */
+  .flex.h-full {
+    display: block !important;
+    height: auto !important;
+  }
   main {
     overflow: visible !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .print-area {
     box-shadow: none !important;
     border: none !important;
   }
-  /* Default invoices / vouchers: A4. Payment receipts override with @page A6 on their page. */
+  /* Default invoices / vouchers: A4. Ticket invoice sets exact margins on its page. */
   @page {
     size: A4;
-    margin: 14mm;
+    margin: 8mm;
+  }
+
+  /*
+   * Ticket invoice: size comes from TicketPrintShell (exact A4 + absolute footer).
+   */
+  .ticket-print {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    background: #fff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .ticket-print-footer {
+    margin: 0 !important;
   }
 }

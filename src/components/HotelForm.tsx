@@ -61,6 +61,8 @@ export default function HotelForm({
   const [cancelFee, setCancelFee] = useState(
     booking?.cancellation_fee_usd ?? 0
   );
+  const [serviceFee, setServiceFee] = useState(booking?.service_fee_usd ?? 0);
+  const [cancelCost, setCancelCost] = useState(booking?.cancel_cost_usd ?? 0);
   const [bookingStatus, setBookingStatus] = useState(
     booking?.booking_status ?? HOTEL_BOOKING_STATUSES[0]
   );
@@ -76,23 +78,27 @@ export default function HotelForm({
   const totalSale = roomsN * nights * (Number(salePerNight) || 0);
   const cancelled =
     bookingStatus === "Cancelled" || bookingStatus === "No Show";
-  const finalCharge = cancelled ? Number(cancelFee) || 0 : totalSale;
+  const finalCharge = cancelled
+    ? (Number(cancelFee) || 0) + (Number(serviceFee) || 0)
+    : totalSale;
   const netEffect = (Number(netPaid) || 0) - (Number(refunded) || 0);
   const balance = finalCharge - netEffect;
-  const profit = finalCharge - totalCost;
-  // If customer paid full sale then cancelled: refund due = paid − penalty.
+  // On cancel, profit = (penalty + service fee) − supplier ticket/cancel cost.
+  const profitCost = cancelled ? Number(cancelCost) || 0 : totalCost;
+  const profit = finalCharge - profitCost;
+  // If customer paid full sale then cancelled: refund due = paid − final charge.
   const suggestedRefund = cancelled
-    ? Math.max(0, (Number(netPaid) || 0) - (Number(cancelFee) || 0))
+    ? Math.max(0, (Number(netPaid) || 0) - finalCharge)
     : 0;
 
   function onStatusChange(status: string) {
     setBookingStatus(status);
     const isCancel = status === "Cancelled" || status === "No Show";
     if (isCancel) {
-      const fee = Number(cancelFee) || 0;
+      const charge =
+        (Number(cancelFee) || 0) + (Number(serviceFee) || 0);
       const paid = Number(netPaid) || 0;
-      // Auto-fill refund when they already paid more than the penalty.
-      if (paid > fee) setRefunded(paid - fee);
+      if (paid > charge) setRefunded(paid - charge);
     }
   }
 
@@ -421,15 +427,56 @@ export default function HotelForm({
               onChange={(e) => {
                 const fee = Number(e.target.value);
                 setCancelFee(fee);
-                if (cancelled && Number(netPaid) > fee) {
-                  setRefunded(Number(netPaid) - fee);
+                if (cancelled) {
+                  const charge = fee + (Number(serviceFee) || 0);
+                  if (Number(netPaid) > charge) {
+                    setRefunded(Number(netPaid) - charge);
+                  }
                 }
               }}
               className={inputCls}
             />
             <p className="mt-1 text-xs text-slate-400">
-              Example: sale $1,440, penalty $360 → customer pays $360. If they
-              already paid $1,440, refund = $1,080.
+              Hotel/supplier penalty charged to the client (e.g. $320).
+            </p>
+          </div>
+          <div>
+            <label className={labelCls}>Service Fee ($)</label>
+            <input
+              type="number"
+              name="service_fee_usd"
+              min={0}
+              step="0.01"
+              value={serviceFee}
+              onChange={(e) => {
+                const fee = Number(e.target.value);
+                setServiceFee(fee);
+                if (cancelled) {
+                  const charge = (Number(cancelFee) || 0) + fee;
+                  if (Number(netPaid) > charge) {
+                    setRefunded(Number(netPaid) - charge);
+                  }
+                }
+              }}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Your agency fee on cancel (e.g. $40). Added to Final Charge.
+            </p>
+          </div>
+          <div>
+            <label className={labelCls}>Cancel Cost / Ticket Cost ($)</label>
+            <input
+              type="number"
+              name="cancel_cost_usd"
+              min={0}
+              step="0.01"
+              value={cancelCost}
+              onChange={(e) => setCancelCost(Number(e.target.value))}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              What you pay the supplier on cancel (e.g. $320). Used for profit.
             </p>
           </div>
         </div>
@@ -437,11 +484,16 @@ export default function HotelForm({
         <div className="mt-6 grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Total Cost
+              {cancelled ? "Original Stay Cost" : "Total Cost"}
             </p>
             <p className="mt-1 text-xl font-bold text-slate-900">
               {formatCurrency(totalCost)}
             </p>
+            {cancelled && (
+              <p className="mt-1 text-xs text-slate-500">
+                Cancel cost: {formatCurrency(Number(cancelCost) || 0)}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -458,6 +510,11 @@ export default function HotelForm({
             <p className="mt-1 text-xl font-bold text-slate-900">
               {formatCurrency(finalCharge)}
             </p>
+            {cancelled && (
+              <p className="mt-1 text-xs text-slate-500">
+                Penalty + service fee
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -470,6 +527,11 @@ export default function HotelForm({
             >
               {formatCurrency(profit)}
             </p>
+            {cancelled && (
+              <p className="mt-1 text-xs text-slate-500">
+                Final charge − cancel cost
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">

@@ -1,13 +1,21 @@
 "use client";
 
 /**
- * Browser print headers/footers (date, title, URL, page numbers) cannot be
- * fully removed from CSS. We blank the document title so "Captain ToTo —
- * Booking System" does not appear, and remind the user to disable Headers
- * and footers in the print dialog for date / URL / page numbers.
+ * Blanks document.title for print and reminds the user about dialog settings
+ * that otherwise leave blank space (Custom scale / Custom margins).
  */
 export default function PrintButton() {
   function handlePrint() {
+    const ok = window.confirm(
+      "Before the print window opens, set these in the print dialog:\n\n" +
+        "1) Margins → Default or None  (NOT Custom)\n" +
+        "2) Scale → Default  (NOT 98% / Custom)\n" +
+        "3) Headers and footers → Off\n\n" +
+        "Custom Scale is what creates the empty space at the top and bottom.\n\n" +
+        "Click OK to open print."
+    );
+    if (!ok) return;
+
     const previousTitle = document.title;
     document.title = " ";
 
@@ -16,8 +24,6 @@ export default function PrintButton() {
       window.removeEventListener("afterprint", restore);
     };
     window.addEventListener("afterprint", restore);
-
-    // Fallback if afterprint does not fire (some browsers / PDF destinations).
     window.setTimeout(restore, 60_000);
 
     window.print();
@@ -46,9 +52,8 @@ export default function PrintButton() {
         Print / Save as PDF
       </button>
       <p className="max-w-xs text-right text-[11px] leading-snug text-slate-500">
-        In the print dialog → More settings → turn off{" "}
-        <span className="font-semibold">Headers and footers</span> to hide
-        date, page title, URL and page numbers.
+        Scale must be <span className="font-semibold">Default</span> — Custom
+        98% leaves blank space above and below.
       </p>
     </div>
   );

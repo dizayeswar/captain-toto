@@ -202,6 +202,10 @@ export type HotelBooking = {
   net_paid_usd: number;
   refunded_usd: number;
   cancellation_fee_usd: number;
+  /** Agency service fee kept on cancel (added to final charge). */
+  service_fee_usd: number;
+  /** What we pay the supplier on cancel (ticket / supplier penalty). */
+  cancel_cost_usd: number;
   final_charge_usd: number;
   balance_usd: number;
   payment_status: string;
@@ -239,6 +243,8 @@ export type HotelBookingInput = {
   net_paid_usd: number;
   refunded_usd: number;
   cancellation_fee_usd: number;
+  service_fee_usd: number;
+  cancel_cost_usd: number;
   payment_status: string;
   booking_status: string;
   staff: string;
