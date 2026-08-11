@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type { Expense, FinanceDeposit, FinanceDepositInput } from "./types";
 
 const TABLE = "finance_deposits";
@@ -60,7 +61,30 @@ export async function createFinanceDeposit(
   return data as FinanceDeposit;
 }
 
+export async function getFinanceDeposit(
+  id: string
+): Promise<FinanceDeposit | null> {
+  const supabase = getSupabase();
+  if (!supabase) return demoStore.find((d) => d.id === id) ?? null;
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as FinanceDeposit;
+}
+
 export async function deleteFinanceDeposit(id: string): Promise<void> {
+  const row = await getFinanceDeposit(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "finance_deposit",
+    entity_id: id,
+    label: `Deposit · ${row.brought_by || "—"} · ${row.amount} ${row.currency}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((d) => d.id === id);
@@ -68,6 +92,16 @@ export async function deleteFinanceDeposit(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreFinanceDeposit(row: FinanceDeposit): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((d) => d.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

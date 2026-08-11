@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type { HotelBooking, HotelBookingInput } from "./types";
 
 const TABLE = "hotel_bookings";
@@ -255,6 +256,15 @@ export async function updateHotelBooking(
 }
 
 export async function deleteHotelBooking(id: string): Promise<void> {
+  const row = await getHotelBooking(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "hotel_booking",
+    entity_id: id,
+    label: `${row.booking_code} · ${row.lead_guest || "—"} · ${row.hotel_name || "—"}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
@@ -262,6 +272,16 @@ export async function deleteHotelBooking(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreHotelBooking(row: HotelBooking): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((b) => b.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

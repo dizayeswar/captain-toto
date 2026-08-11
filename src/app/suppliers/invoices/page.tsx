@@ -94,7 +94,7 @@ export default async function SupplierInvoicesPage() {
                           <DeleteButton
                             action={deleteSupplierInvoiceAction}
                             id={inv.id}
-                            confirmMessage={`Delete supplier invoice ${inv.invoice_id}?`}
+                            confirmMessage={`Move supplier invoice ${inv.invoice_id} to Recycle Bin?`}
                           />
                         </div>
                       </td>

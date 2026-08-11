@@ -84,7 +84,7 @@ export default async function PaymentInvoicesPage() {
                           <DeleteButton
                             action={deletePaymentInvoiceAction}
                             id={r.id}
-                            confirmMessage={`Delete payment invoice ${r.receipt_no}?`}
+                            confirmMessage={`Move payment invoice ${r.receipt_no} to Recycle Bin?`}
                           />
                         </div>
                       </td>

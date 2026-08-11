@@ -561,3 +561,25 @@ export async function deleteFinanceDepositAction(formData: FormData) {
     revalidatePath("/", "layout");
   }
 }
+
+// ---------------------------------------------------------------------------
+// Recycle bin
+// ---------------------------------------------------------------------------
+
+export async function restoreRecycleBinItemAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    const { restoreRecycleBinItem } = await import("./recycleBin");
+    await restoreRecycleBinItem(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+export async function purgeRecycleBinItemAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    const { purgeRecycleBinItem } = await import("./recycleBin");
+    await purgeRecycleBinItem(id);
+    revalidatePath("/", "layout");
+  }
+}

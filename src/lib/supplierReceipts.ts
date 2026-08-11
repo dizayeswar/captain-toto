@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type {
   SupplierInvoice,
   SupplierPaymentReceipt,
@@ -142,6 +143,15 @@ export async function updateSupplierPaymentReceipt(
 }
 
 export async function deleteSupplierPaymentReceipt(id: string): Promise<void> {
+  const row = await getSupplierPaymentReceipt(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "supplier_receipt",
+    entity_id: id,
+    label: `${row.receipt_no} · ${row.supplier || "—"} · ${row.amount}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((r) => r.id === id);
@@ -149,6 +159,18 @@ export async function deleteSupplierPaymentReceipt(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreSupplierPaymentReceipt(
+  row: SupplierPaymentReceipt
+): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((r) => r.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

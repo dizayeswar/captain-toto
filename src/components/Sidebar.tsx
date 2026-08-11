@@ -5,8 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-import ThemeToggle from "./ThemeToggle";
-
 type NavItem = { href: string; label: string };
 type NavSection = { id: string; title: string; icon: string; items: NavItem[] };
 
@@ -93,6 +91,15 @@ const SECTIONS: NavSection[] = [
       { href: "/finance", label: "Expenses" },
       { href: "/finance/new", label: "New Expense" },
       { href: "/finance/summary", label: "Expense Summary" },
+    ],
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    icon: "settings",
+    items: [
+      { href: "/settings/appearance", label: "Appearance" },
+      { href: "/settings/recycle-bin", label: "Recycle Bin" },
     ],
   },
 ];
@@ -223,10 +230,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="border-t border-slate-200 p-3 dark:border-slate-700">
-        <ThemeToggle />
-      </div>
     </aside>
   );
 }
@@ -317,6 +320,13 @@ function Icon({ name }: { name: string }) {
       return (
         <svg {...common}>
           <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      );
+    case "settings":
+      return (
+        <svg {...common}>
+          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
         </svg>
       );
     default:

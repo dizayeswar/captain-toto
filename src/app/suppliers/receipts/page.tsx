@@ -88,7 +88,7 @@ export default async function SupplierReceiptsPage() {
                           <DeleteButton
                             action={deleteSupplierPaymentReceiptAction}
                             id={r.id}
-                            confirmMessage={`Delete receipt ${r.receipt_no}?`}
+                            confirmMessage={`Move receipt ${r.receipt_no} to Recycle Bin?`}
                           />
                         </div>
                       </td>

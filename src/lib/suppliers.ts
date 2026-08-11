@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type { SupplierRecord, SupplierInput } from "./types";
 
 const TABLE = "suppliers";
@@ -124,6 +125,15 @@ export async function updateSupplier(
 }
 
 export async function deleteSupplier(id: string): Promise<void> {
+  const row = await getSupplier(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "supplier",
+    entity_id: id,
+    label: `${row.supplier_code} · ${row.name || "—"}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((s) => s.id === id);
@@ -131,5 +141,15 @@ export async function deleteSupplier(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreSupplier(row: SupplierRecord): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((s) => s.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }

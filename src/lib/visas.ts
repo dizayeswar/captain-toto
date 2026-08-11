@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type { VisaCase, VisaCaseInput } from "./types";
 
 const TABLE = "visa_cases";
@@ -168,6 +169,15 @@ export async function updateVisaCase(
 }
 
 export async function deleteVisaCase(id: string): Promise<void> {
+  const row = await getVisaCase(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "visa_case",
+    entity_id: id,
+    label: `${row.visa_id} · ${row.client_name || "—"} · ${row.destination_country || "—"}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((v) => v.id === id);
@@ -175,6 +185,16 @@ export async function deleteVisaCase(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreVisaCase(row: VisaCase): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((v) => v.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

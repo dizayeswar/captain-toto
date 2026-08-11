@@ -143,7 +143,7 @@ export default async function SuppliersPage() {
                           <DeleteButton
                             action={deleteSupplierAction}
                             id={s.id}
-                            confirmMessage={`Delete supplier ${s.name}?`}
+                            confirmMessage={`Move supplier ${s.name} to Recycle Bin?`}
                           />
                         </div>
                       </td>

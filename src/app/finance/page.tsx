@@ -165,7 +165,7 @@ export default async function FinancePage() {
                               <DeleteButton
                                 action={deleteFinanceDepositAction}
                                 id={depositId}
-                                confirmMessage="Delete this balance deposit?"
+                                confirmMessage="Move this balance deposit to Recycle Bin?"
                               />
                             ) : (
                               <span className="text-xs text-slate-400">—</span>
@@ -353,7 +353,7 @@ export default async function FinancePage() {
                             <DeleteButton
                               action={deleteExpenseAction}
                               id={e.id}
-                              confirmMessage={`Delete expense "${e.description}"?`}
+                              confirmMessage={`Move expense "${e.description}" to Recycle Bin?`}
                             />
                           </div>
                         </td>

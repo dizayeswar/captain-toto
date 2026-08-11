@@ -114,7 +114,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                           onSubmit={(e) => {
                             if (
                               !confirm(
-                                `Delete booking ${b.booking_id}? This cannot be undone.`
+                                `Move booking ${b.booking_id} to Recycle Bin?`
                               )
                             ) {
                               e.preventDefault();

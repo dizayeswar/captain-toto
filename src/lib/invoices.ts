@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { INVOICE_AIRLINES } from "./lists";
+import { addToRecycleBin } from "./recycleBin";
 import type {
   Invoice,
   InvoiceInput,
@@ -275,6 +276,15 @@ async function insertChildren(
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
+  const row = await getInvoice(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "invoice",
+    entity_id: id,
+    label: `${row.invoice_no} · ${row.client_name || "—"} · ${row.airline || "—"}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
@@ -283,6 +293,62 @@ export async function deleteInvoice(id: string): Promise<void> {
   }
   const { error } = await supabase.from("invoices").delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function restoreInvoice(row: Invoice): Promise<void> {
+  const supabase = getSupabase();
+  const { passengers, segments, ...head } = row;
+
+  if (!supabase) {
+    if (!demoInvoices.some((i) => i.id === row.id)) {
+      demoInvoices.push({
+        ...head,
+        passengers: passengers ?? [],
+        segments: segments ?? [],
+      });
+    }
+    return;
+  }
+
+  const { error } = await supabase.from("invoices").insert(head);
+  if (error) throw new Error(error.message);
+
+  const passengerRows = (passengers ?? []).map((p, i) => ({
+    invoice_id: row.id,
+    full_name: p.full_name,
+    passport_no: p.passport_no,
+    nationality: p.nationality,
+    date_of_birth: p.date_of_birth || null,
+    ticket_no: p.ticket_no,
+    notes: p.notes,
+    sort_order: i,
+  }));
+  const segmentRows = (segments ?? []).map((s, i) => ({
+    invoice_id: row.id,
+    seg_no: s.seg_no || i + 1,
+    airline: s.airline,
+    flight_no: s.flight_no,
+    route: s.route,
+    departure: s.departure,
+    arrival: s.arrival,
+    travel_class: s.travel_class,
+    baggage: s.baggage,
+    notes: s.notes,
+    sort_order: i,
+  }));
+
+  if (passengerRows.length > 0) {
+    const { error: pErr } = await supabase
+      .from("invoice_passengers")
+      .insert(passengerRows);
+    if (pErr) throw new Error(pErr.message);
+  }
+  if (segmentRows.length > 0) {
+    const { error: sErr } = await supabase
+      .from("invoice_segments")
+      .insert(segmentRows);
+    if (sErr) throw new Error(sErr.message);
+  }
 }
 
 // ---------------------------------------------------------------------------

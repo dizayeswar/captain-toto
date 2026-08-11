@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type { PaymentInvoice, PaymentInvoiceInput } from "./types";
 
 const TABLE = "payment_invoices";
@@ -172,6 +173,15 @@ export function summarizePayments(
 }
 
 export async function deletePaymentInvoice(id: string): Promise<void> {
+  const row = await getPaymentInvoice(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "payment_invoice",
+    entity_id: id,
+    label: `${row.receipt_no} · ${row.received_from || "—"} · ${row.amount}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((p) => p.id === id);
@@ -179,5 +189,15 @@ export async function deletePaymentInvoice(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restorePaymentInvoice(row: PaymentInvoice): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((p) => p.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }

@@ -112,7 +112,7 @@ export default async function VisaCasesPage() {
                           <DeleteButton
                             action={deleteVisaCaseAction}
                             id={v.id}
-                            confirmMessage={`Delete visa case ${v.visa_id}?`}
+                            confirmMessage={`Move visa case ${v.visa_id} to Recycle Bin?`}
                           />
                         </div>
                       </td>

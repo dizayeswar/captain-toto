@@ -108,7 +108,7 @@ export default async function HotelBookingsPage() {
                           <DeleteButton
                             action={deleteHotelBookingAction}
                             id={b.id}
-                            confirmMessage={`Delete hotel booking ${b.booking_code}?`}
+                            confirmMessage={`Move hotel booking ${b.booking_code} to Recycle Bin?`}
                           />
                         </div>
                       </td>

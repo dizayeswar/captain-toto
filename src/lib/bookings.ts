@@ -1,5 +1,6 @@
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { MONTH_NAMES } from "./lists";
+import { addToRecycleBin } from "./recycleBin";
 import type { Booking, BookingInput } from "./types";
 
 const TABLE = "bookings";
@@ -173,6 +174,15 @@ export async function updateBooking(
 }
 
 export async function deleteBooking(id: string): Promise<void> {
+  const row = await getBooking(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "booking",
+    entity_id: id,
+    label: `${row.booking_id} · ${row.client_name || "—"} · ${row.route || "—"}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
@@ -181,6 +191,16 @@ export async function deleteBooking(id: string): Promise<void> {
   }
 
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreBooking(row: Booking): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((b) => b.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

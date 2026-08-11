@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { MONTH_NAMES } from "./lists";
+import { addToRecycleBin } from "./recycleBin";
 import type { Expense, ExpenseInput } from "./types";
 
 const TABLE = "expenses";
@@ -88,6 +89,15 @@ export async function updateExpense(
 }
 
 export async function deleteExpense(id: string): Promise<void> {
+  const row = await getExpense(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "expense",
+    entity_id: id,
+    label: `${row.description || "Expense"} · ${row.amount} ${row.currency}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((e) => e.id === id);
@@ -95,6 +105,16 @@ export async function deleteExpense(id: string): Promise<void> {
     return;
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function restoreExpense(row: Expense): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    if (!demoStore.some((e) => e.id === row.id)) demoStore.push(row);
+    return;
+  }
+  const { error } = await supabase.from(TABLE).insert(row);
   if (error) throw new Error(error.message);
 }
 

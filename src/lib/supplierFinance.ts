@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase";
+import { addToRecycleBin } from "./recycleBin";
 import type {
   SupplierInvoice,
   SupplierInvoiceInput,
@@ -244,6 +245,15 @@ export async function updateSupplierInvoice(
 }
 
 export async function deleteSupplierInvoice(id: string): Promise<void> {
+  const row = await getSupplierInvoice(id);
+  if (!row) return;
+  await addToRecycleBin({
+    entity_type: "supplier_invoice",
+    entity_id: id,
+    label: `${row.invoice_id} · ${row.supplier || "—"} · ${row.invoice_usd}`,
+    payload: row,
+  });
+
   const supabase = getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
@@ -254,6 +264,24 @@ export async function deleteSupplierInvoice(id: string): Promise<void> {
   await supabase.from(LINES_TABLE).delete().eq("invoice_id", id);
   const { error } = await supabase.from(INV_TABLE).delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function restoreSupplierInvoice(
+  row: SupplierInvoice
+): Promise<void> {
+  const supabase = getSupabase();
+  const { lines, ...head } = row;
+
+  if (!supabase) {
+    if (!demoInvoices.some((i) => i.id === row.id)) {
+      demoInvoices.push({ ...head, lines: lines ?? [] });
+    }
+    return;
+  }
+
+  const { error } = await supabase.from(INV_TABLE).insert(head);
+  if (error) throw new Error(error.message);
+  await replaceLines(supabase, row.id, lines ?? []);
 }
 
 export type SupplierFinanceSummary = {
