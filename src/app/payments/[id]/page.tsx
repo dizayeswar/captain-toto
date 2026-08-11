@@ -1,9 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPaymentInvoice } from "@/lib/payments";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { COMPANY } from "@/lib/company";
 import PrintButton from "@/components/PrintButton";
-import { DocLetterhead, DocFooter } from "@/components/DocBranding";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,22 @@ export default async function PaymentInvoiceViewPage(
 
   return (
     <div className="p-8">
-      {/* Toolbar (hidden when printing) */}
+      {/* A6 page size only for this payment receipt print */}
+      <style>{`
+        @media print {
+          @page { size: A6 portrait; margin: 6mm; }
+          .print-a6 {
+            max-width: none !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+        }
+      `}</style>
+
       <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/payments"
@@ -35,108 +51,123 @@ export default async function PaymentInvoiceViewPage(
         </div>
       </div>
 
-      {/* Printable receipt */}
-      <div className="print-area mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
-        <DocLetterhead title="Payment Invoice" />
+      {/* On screen: preview sized like A6 (105×148mm) */}
+      <div className="print-area print-a6 mx-auto w-[105mm] max-w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-2 border-b-2 border-brand pb-2">
+          <Image
+            src={COMPANY.logo}
+            alt={COMPANY.name}
+            width={40}
+            height={40}
+            priority
+            className="h-10 w-10 shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-extrabold tracking-wide text-brand">
+              {COMPANY.name}
+            </p>
+            <p className="truncate text-[10px] text-slate-500">
+              {COMPANY.phone}
+            </p>
+          </div>
+          <p className="text-[11px] font-bold uppercase text-slate-800">
+            Receipt
+          </p>
+        </div>
 
-        {/* Cash receipt title (bilingual) */}
-        <div className="my-6 flex items-center justify-between rounded-lg bg-brand px-5 py-3 text-white">
-          <span className="text-lg font-bold uppercase tracking-wide">
-            Cash Receipt
-          </span>
-          <span dir="rtl" className="text-lg font-bold">
-            پسوڵەی وەرگرتنەوەی پارە
+        <div className="my-2 flex items-center justify-between rounded bg-brand px-2 py-1.5 text-white">
+          <span className="text-[11px] font-bold uppercase">Cash Receipt</span>
+          <span dir="rtl" className="text-[11px] font-bold">
+            پسوڵەی پارە
           </span>
         </div>
 
-        {/* Top meta */}
-        <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-          <Field label="Receipt No." value={receipt.receipt_no} />
-          <Field label="Date" value={formatDate(receipt.receipt_date)} />
-          <Field label="Company / Individual" value={receipt.payer_type} />
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+          <div>
+            <span className="text-slate-400">No.</span>{" "}
+            <span className="font-semibold">{receipt.receipt_no}</span>
+          </div>
+          <div className="text-right">
+            <span className="text-slate-400">Date</span>{" "}
+            <span className="font-semibold">
+              {formatDate(receipt.receipt_date)}
+            </span>
+          </div>
+          <div className="col-span-2">
+            <span className="text-slate-400">Type</span>{" "}
+            <span className="font-semibold">{receipt.payer_type}</span>
+          </div>
         </div>
 
-        {/* Bilingual rows */}
-        <div className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
-          <BiRow
-            en="Received From"
-            ku="وەرگیرا لە بەرێز"
+        <div className="mt-2 space-y-1.5 border-y border-slate-200 py-2 text-[11px]">
+          <CompactRow
+            en="From"
+            ku="وەرگیرا لە"
             value={receipt.received_from}
           />
-          <BiRow
-            en="The Sum Of"
+          <CompactRow
+            en="Sum"
             ku="بڕی پارە"
             value={formatCurrency(receipt.amount)}
+            strong
           />
-          <BiRow en="For" ku="لە جیاتی" value={receipt.for_text} />
+          <CompactRow en="For" ku="لە جیاتی" value={receipt.for_text} />
         </div>
 
         {receipt.notes && (
-          <p className="mt-4 text-sm text-slate-600" dir="auto">
+          <p className="mt-1.5 text-[10px] text-slate-600" dir="auto">
             <span className="font-semibold">Notes: </span>
             {receipt.notes}
           </p>
         )}
 
-        {/* Signatures */}
-        <div className="mt-12 grid grid-cols-2 gap-10">
-          <SignatureLine
-            label="Received / Prepared by"
-            value={receipt.prepared_by}
-          />
-          <SignatureLine label="Client Signature" value="" />
+        <div className="mt-4 grid grid-cols-2 gap-3 text-[10px]">
+          <div>
+            <div className="h-6 border-b border-slate-400" />
+            <p className="mt-0.5 text-slate-500">
+              Prepared: {receipt.prepared_by || "—"}
+            </p>
+          </div>
+          <div>
+            <div className="h-6 border-b border-slate-400" />
+            <p className="mt-0.5 text-slate-500">Client signature</p>
+          </div>
         </div>
 
-        <DocFooter disclaimer="This document confirms that payment was received by Captain ToTo. It is not a flight ticket unless attached to a valid ticket invoice." />
+        <p className="mt-3 text-center text-[9px] text-accent">
+          {COMPANY.slogan}
+        </p>
+        <p className="text-center text-[8px] leading-tight text-slate-400">
+          Payment received by Captain ToTo. Not a flight ticket.
+        </p>
       </div>
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function CompactRow({
+  en,
+  ku,
+  value,
+  strong,
+}: {
+  en: string;
+  ku: string;
+  value: string;
+  strong?: boolean;
+}) {
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <p className="mt-0.5 font-medium text-slate-800">{value}</p>
-    </div>
-  );
-}
-
-function BiRow({ en, ku, value }: { en: string; ku: string; value: string }) {
-  return (
-    <div className="flex items-center gap-4 py-3">
-      <span className="w-40 shrink-0 text-sm font-semibold text-slate-600">
-        {en}
-      </span>
+    <div className="flex items-baseline gap-1">
+      <span className="w-10 shrink-0 font-semibold text-slate-500">{en}</span>
       <span
-        className="flex-1 text-base font-medium text-slate-900"
+        className={`min-w-0 flex-1 ${strong ? "text-sm font-bold text-slate-900" : "font-medium text-slate-800"}`}
         dir="auto"
       >
         {value || "—"}
       </span>
-      <span
-        dir="rtl"
-        className="w-32 shrink-0 text-right text-sm font-semibold text-slate-600"
-      >
+      <span dir="rtl" className="shrink-0 text-[10px] text-slate-500">
         {ku}
       </span>
-    </div>
-  );
-}
-
-function SignatureLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="flex h-10 items-end">
-        <span className="text-sm font-medium text-slate-800" dir="auto">
-          {value}
-        </span>
-      </div>
-      <div className="border-t border-slate-400 pt-1 text-xs text-slate-500">
-        {label}
-      </div>
     </div>
   );
 }

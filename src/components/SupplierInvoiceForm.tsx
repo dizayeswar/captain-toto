@@ -9,13 +9,17 @@ import {
   SUPPLIER_PAYMENT_STATUSES,
 } from "@/lib/lists";
 import { formatCurrency } from "@/lib/format";
-import type { SupplierInvoice } from "@/lib/types";
+import type { SupplierLinkOption } from "@/lib/supplierLinks";
+import type { SupplierInvoice, SupplierInvoiceLine } from "@/lib/types";
 import { Card, Button } from "./ui";
+
+export type { SupplierLinkOption };
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
   invoice?: SupplierInvoice;
   suppliers: string[];
+  linkOptions?: SupplierLinkOption[];
   submitLabel?: string;
 };
 
@@ -23,27 +27,68 @@ const labelCls = "mb-1 block text-xs font-medium text-slate-600";
 const inputCls =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
+function blankLine(): SupplierInvoiceLine {
+  return {
+    service_type: "Ticket",
+    booking_ref: "",
+    description: "",
+    amount: 0,
+    notes: "",
+  };
+}
+
 export default function SupplierInvoiceForm({
   action,
   invoice,
   suppliers,
+  linkOptions = [],
   submitLabel = "Save Supplier Invoice",
 }: Props) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [invoiceAmount, setInvoiceAmount] = useState<number>(
-    invoice?.invoice_amount ?? 0
+  const [lines, setLines] = useState<SupplierInvoiceLine[]>(
+    invoice?.lines?.length ? invoice.lines : [blankLine()]
   );
   const [paidUsd, setPaidUsd] = useState<number>(invoice?.paid_usd ?? 0);
   const [refundUsd, setRefundUsd] = useState<number>(invoice?.refund_usd ?? 0);
+  const [linkPick, setLinkPick] = useState("");
 
+  const invoiceAmount = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
   const netPaid = paidUsd - refundUsd;
   const outstanding = invoiceAmount - netPaid;
 
+  function updateLine(i: number, patch: Partial<SupplierInvoiceLine>) {
+    setLines((prev) =>
+      prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l))
+    );
+  }
+
+  function addFromLink(ref: string) {
+    if (!ref) return;
+    const opt = linkOptions.find((o) => o.ref === ref);
+    if (!opt) return;
+    setLines((prev) => [
+      ...prev.filter((l) => l.booking_ref || l.description || l.amount),
+      {
+        service_type: opt.service_type,
+        booking_ref: opt.ref,
+        description: opt.description,
+        amount: opt.amount,
+        notes: "",
+      },
+    ]);
+    setLinkPick("");
+  }
+
   return (
-    <form action={action}>
+    <form action={action} className="space-y-6">
+      <input type="hidden" name="lines" value={JSON.stringify(lines)} />
+
       <Card className="p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Invoice header
+        </h2>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className={labelCls}>Invoice Date *</label>
@@ -55,7 +100,6 @@ export default function SupplierInvoiceForm({
               className={inputCls}
             />
           </div>
-
           <div>
             <label className={labelCls}>Due Date</label>
             <input
@@ -65,7 +109,6 @@ export default function SupplierInvoiceForm({
               className={inputCls}
             />
           </div>
-
           <div>
             <label className={labelCls}>Supplier *</label>
             <select
@@ -81,7 +124,6 @@ export default function SupplierInvoiceForm({
               ))}
             </select>
           </div>
-
           <div>
             <label className={labelCls}>Supplier Invoice No.</label>
             <input
@@ -91,30 +133,6 @@ export default function SupplierInvoiceForm({
               className={inputCls}
             />
           </div>
-
-          <div>
-            <label className={labelCls}>Booking Ref</label>
-            <input
-              type="text"
-              name="booking_ref"
-              defaultValue={invoice?.booking_ref ?? ""}
-              className={inputCls}
-            />
-          </div>
-
-          <div>
-            <label className={labelCls}>Service Type</label>
-            <select
-              name="service_type"
-              defaultValue={invoice?.service_type ?? SERVICE_TYPES[0]}
-              className={inputCls}
-            >
-              {SERVICE_TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
           <div>
             <label className={labelCls}>Currency</label>
             <select
@@ -127,21 +145,138 @@ export default function SupplierInvoiceForm({
               ))}
             </select>
           </div>
-
-          <div>
-            <label className={labelCls}>Invoice Amount *</label>
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className={labelCls}>Notes</label>
             <input
-              type="number"
-              name="invoice_amount"
-              min={0}
-              step="0.01"
-              required
-              value={invoiceAmount}
-              onChange={(e) => setInvoiceAmount(Number(e.target.value))}
+              type="text"
+              name="notes"
+              dir="auto"
+              defaultValue={invoice?.notes ?? ""}
               className={inputCls}
             />
           </div>
+        </div>
+      </Card>
 
+      <Card className="p-6">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+              Service line items
+            </h2>
+            <p className="mt-1 text-xs text-slate-400">
+              Ticket lines use ticket cost only (service fee is not included).
+            </p>
+          </div>
+          {linkOptions.length > 0 && (
+            <div className="flex items-end gap-2">
+              <div>
+                <label className={labelCls}>Add from booking / case</label>
+                <select
+                  value={linkPick}
+                  onChange={(e) => addFromLink(e.target.value)}
+                  className={`${inputCls} min-w-[240px]`}
+                >
+                  <option value="">— pick to add —</option>
+                  {linkOptions.map((o) => (
+                    <option key={`${o.service_type}-${o.ref}`} value={o.ref}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          {lines.map((line, i) => (
+            <div
+              key={i}
+              className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-2 lg:grid-cols-6"
+            >
+              <div>
+                <label className={labelCls}>Service</label>
+                <select
+                  value={line.service_type}
+                  onChange={(e) =>
+                    updateLine(i, { service_type: e.target.value })
+                  }
+                  className={inputCls}
+                >
+                  {SERVICE_TYPES.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Booking / Ref</label>
+                <input
+                  value={line.booking_ref}
+                  onChange={(e) =>
+                    updateLine(i, { booking_ref: e.target.value })
+                  }
+                  placeholder="CT-0001 / CTH-… / CTV-…"
+                  className={inputCls}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <label className={labelCls}>Description</label>
+                <input
+                  value={line.description}
+                  onChange={(e) =>
+                    updateLine(i, { description: e.target.value })
+                  }
+                  dir="auto"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Amount (cost) $</label>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={line.amount}
+                  onChange={(e) =>
+                    updateLine(i, { amount: Number(e.target.value) })
+                  }
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLines((prev) =>
+                      prev.length === 1
+                        ? [blankLine()]
+                        : prev.filter((_, idx) => idx !== i)
+                    )
+                  }
+                  className="text-sm font-medium text-red-600 hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setLines((prev) => [...prev, blankLine()])}
+          className="mt-4 text-sm font-semibold text-brand hover:underline"
+        >
+          + Add line
+        </button>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Payment to supplier
+        </h2>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className={labelCls}>Paid (USD)</label>
             <input
@@ -154,9 +289,8 @@ export default function SupplierInvoiceForm({
               className={inputCls}
             />
           </div>
-
           <div>
-            <label className={labelCls}>Refund (USD)</label>
+            <label className={labelCls}>Refund from supplier (USD)</label>
             <input
               type="number"
               name="refund_usd"
@@ -167,12 +301,13 @@ export default function SupplierInvoiceForm({
               className={inputCls}
             />
           </div>
-
           <div>
             <label className={labelCls}>Invoice Status</label>
             <select
               name="invoice_status"
-              defaultValue={invoice?.invoice_status ?? SUPPLIER_INVOICE_STATUSES[0]}
+              defaultValue={
+                invoice?.invoice_status ?? SUPPLIER_INVOICE_STATUSES[0]
+              }
               className={inputCls}
             >
               {SUPPLIER_INVOICE_STATUSES.map((s) => (
@@ -180,7 +315,6 @@ export default function SupplierInvoiceForm({
               ))}
             </select>
           </div>
-
           <div>
             <label className={labelCls}>Payment Status</label>
             <select
@@ -195,23 +329,12 @@ export default function SupplierInvoiceForm({
               ))}
             </select>
           </div>
-
-          <div className="md:col-span-2 lg:col-span-3">
-            <label className={labelCls}>Notes</label>
-            <input
-              type="text"
-              name="notes"
-              dir="auto"
-              defaultValue={invoice?.notes ?? ""}
-              className={inputCls}
-            />
-          </div>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Invoice amount
+              Invoice total (lines)
             </p>
             <p className="mt-1 text-xl font-bold text-slate-900">
               {formatCurrency(invoiceAmount)}
@@ -219,7 +342,7 @@ export default function SupplierInvoiceForm({
           </div>
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Net paid
+              Net paid to supplier
             </p>
             <p className="mt-1 text-xl font-bold text-emerald-600">
               {formatCurrency(netPaid)}

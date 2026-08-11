@@ -45,7 +45,9 @@ body {
     box-shadow: none !important;
     border: none !important;
   }
+  /* Default invoices / vouchers: A4. Payment receipts override with @page A6 on their page. */
   @page {
+    size: A4;
     margin: 14mm;
   }
 }

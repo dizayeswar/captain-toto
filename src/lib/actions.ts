@@ -44,6 +44,7 @@ import type {
   HotelBookingInput,
   VisaCaseInput,
   SupplierInvoiceInput,
+  SupplierInvoiceLine,
   SupplierInput,
   ExpenseInput,
 } from "./types";
@@ -352,20 +353,24 @@ export async function deleteVisaCaseAction(formData: FormData) {
 function parseSupplierInvoiceForm(formData: FormData): SupplierInvoiceInput {
   const str = (name: string) => String(formData.get(name) ?? "").trim();
   const num = (name: string) => Number(formData.get(name)) || 0;
+  let lines: SupplierInvoiceLine[] = [];
+  try {
+    lines = JSON.parse(String(formData.get("lines") ?? "[]"));
+  } catch {
+    lines = [];
+  }
   return {
     invoice_date: str("invoice_date"),
     due_date: str("due_date"),
     supplier: str("supplier"),
     supplier_invoice_no: str("supplier_invoice_no"),
-    booking_ref: str("booking_ref"),
-    service_type: str("service_type"),
     currency: str("currency"),
-    invoice_amount: num("invoice_amount"),
     paid_usd: num("paid_usd"),
     refund_usd: num("refund_usd"),
     invoice_status: str("invoice_status"),
     payment_status: str("payment_status"),
     notes: str("notes"),
+    lines,
   };
 }
 

@@ -34,7 +34,7 @@ export default async function SupplierInvoicePrintPage(
         </div>
       </div>
 
-      <div className="print-area mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
+      <div className="print-area print-a4 mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
         <DocLetterhead title="Supplier Service Invoice" />
 
         <div className="grid gap-6 border-b border-slate-200 py-6 sm:grid-cols-2">
@@ -58,9 +58,7 @@ export default async function SupplierInvoicePrintPage(
               label="Due Date"
               value={inv.due_date ? formatDate(inv.due_date) : "—"}
             />
-            <Meta label="Booking Ref" value={inv.booking_ref || "—"} />
-            <Meta label="Service Type" value={inv.service_type || "—"} />
-            <Meta label="Currency" value={inv.currency || "USD"} />
+            <Meta label="Service" value={inv.service_type || "—"} />
             <Meta label="Invoice Status" value={inv.invoice_status || "—"} />
             <Meta label="Payment Status" value={inv.payment_status || "—"} />
           </div>
@@ -68,12 +66,61 @@ export default async function SupplierInvoicePrintPage(
 
         <section className="py-6">
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Amounts
+            Service details
+          </h3>
+          {inv.lines.length === 0 ? (
+            <p className="text-sm text-slate-500">No line items.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wider text-slate-500">
+                  <th className="py-2 pr-3 font-semibold">Service</th>
+                  <th className="py-2 pr-3 font-semibold">Ref</th>
+                  <th className="py-2 pr-3 font-semibold">Description</th>
+                  <th className="py-2 text-right font-semibold">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {inv.lines.map((l, i) => (
+                  <tr key={l.id ?? i}>
+                    <td className="py-2.5 pr-3 text-slate-700">{l.service_type}</td>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">
+                      {l.booking_ref || "—"}
+                    </td>
+                    <td className="py-2.5 pr-3 text-slate-700" dir="auto">
+                      {l.description || "—"}
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums font-medium text-slate-900">
+                      {formatCurrency(l.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-slate-300">
+                  <td colSpan={3} className="pt-3 text-right text-sm font-semibold">
+                    Total (supplier cost)
+                  </td>
+                  <td className="pt-3 text-right text-base font-bold tabular-nums">
+                    {formatCurrency(inv.invoice_amount)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          )}
+          <p className="mt-2 text-xs text-slate-400">
+            Ticket amounts are ticket cost only — service fees are not included.
+          </p>
+        </section>
+
+        <section className="border-t border-slate-200 py-6">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Settlement
           </h3>
           <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-            <Amount label="Invoice Amount" value={formatCurrency(inv.invoice_amount)} />
             <Amount label="Paid" value={formatCurrency(inv.paid_usd)} />
             <Amount label="Refund" value={formatCurrency(inv.refund_usd)} />
+            <Amount label="Net paid" value={formatCurrency(inv.net_paid_usd)} />
             <Amount
               label="Outstanding"
               value={formatCurrency(inv.outstanding_usd)}
@@ -83,17 +130,13 @@ export default async function SupplierInvoicePrintPage(
         </section>
 
         {inv.notes && (
-          <section className="border-t border-slate-200 pt-6">
-            <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
-              Notes
-            </h3>
-            <p className="text-sm text-slate-600" dir="auto">
-              {inv.notes}
-            </p>
-          </section>
+          <p className="text-sm text-slate-600" dir="auto">
+            <span className="font-semibold">Notes: </span>
+            {inv.notes}
+          </p>
         )}
 
-        <DocFooter disclaimer="This document records a supplier service invoice for Captain ToTo. It is not a client payment receipt." />
+        <DocFooter disclaimer="This document records a supplier service invoice for Captain ToTo. Ticket lines exclude agency service fees. It is not a client payment receipt." />
       </div>
     </div>
   );
@@ -105,7 +148,7 @@ function Meta({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
         {label}
       </p>
-      <p className="text-slate-800">{value}</p>
+      <p className="mt-0.5 font-medium text-slate-800">{value}</p>
     </div>
   );
 }
@@ -120,12 +163,10 @@ function Amount({
   emphasize?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
+    <div className="rounded-lg bg-slate-50 px-3 py-2">
+      <p className="text-xs text-slate-500">{label}</p>
       <p
-        className={`mt-1 text-base font-semibold tabular-nums ${
+        className={`mt-0.5 font-semibold tabular-nums ${
           emphasize ? "text-amber-700" : "text-slate-900"
         }`}
       >

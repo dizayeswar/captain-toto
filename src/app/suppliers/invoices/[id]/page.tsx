@@ -3,6 +3,7 @@ import {
   getSupplierInvoice,
   getSuppliers,
 } from "@/lib/supplierFinance";
+import { getSupplierLinkOptions } from "@/lib/supplierLinks";
 import { updateSupplierInvoiceAction } from "@/lib/actions";
 import { SUPPLIERS } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
@@ -17,7 +18,10 @@ export default async function EditSupplierInvoicePage(
   const invoice = await getSupplierInvoice(id);
   if (!invoice) notFound();
 
-  const records = await getSuppliers();
+  const [records, linkOptions] = await Promise.all([
+    getSuppliers(),
+    getSupplierLinkOptions(),
+  ]);
   const names = new Set<string>([
     ...SUPPLIERS.map((s) => s.name),
     ...records.map((s) => s.name),
@@ -33,13 +37,14 @@ export default async function EditSupplierInvoicePage(
     <>
       <PageHeader
         title={`Edit ${invoice.invoice_id}`}
-        subtitle="Update this supplier invoice"
+        subtitle="Update this supplier service invoice"
       />
       <div className="p-8">
         <SupplierInvoiceForm
           action={action}
           invoice={invoice}
           suppliers={suppliers}
+          linkOptions={linkOptions}
           submitLabel="Save Changes"
         />
       </div>

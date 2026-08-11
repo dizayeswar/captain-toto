@@ -321,8 +321,19 @@ export type VisaCaseInput = {
 };
 
 // ---------------------------------------------------------------------------
-// Supplier Financial
+// Supplier Financial — service invoices (detailed line items)
+// Separate from Payment Invoice (client cash receipt).
 // ---------------------------------------------------------------------------
+
+export type SupplierInvoiceLine = {
+  id?: string;
+  service_type: string; // Ticket | Hotel | Visa | Other
+  booking_ref: string;
+  description: string;
+  /** Supplier cost only — for tickets this is ticket_cost (no service fee). */
+  amount: number;
+  notes: string;
+};
 
 export type SupplierInvoice = {
   id: string;
@@ -331,8 +342,8 @@ export type SupplierInvoice = {
   due_date: string | null;
   supplier: string;
   supplier_invoice_no: string;
-  booking_ref: string;
-  service_type: string;
+  booking_ref: string; // summary of first/main ref
+  service_type: string; // summary: Ticket / Mixed / etc.
   currency: string;
   invoice_amount: number;
   invoice_usd: number;
@@ -343,6 +354,7 @@ export type SupplierInvoice = {
   invoice_status: string;
   payment_status: string;
   notes: string;
+  lines: SupplierInvoiceLine[];
   created_at?: string;
 };
 
@@ -351,15 +363,13 @@ export type SupplierInvoiceInput = {
   due_date: string;
   supplier: string;
   supplier_invoice_no: string;
-  booking_ref: string;
-  service_type: string;
   currency: string;
-  invoice_amount: number;
   paid_usd: number;
   refund_usd: number;
   invoice_status: string;
   payment_status: string;
   notes: string;
+  lines: SupplierInvoiceLine[];
 };
 
 // ---------------------------------------------------------------------------

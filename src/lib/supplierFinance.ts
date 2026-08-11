@@ -1,5 +1,9 @@
 import { getSupabase } from "./supabase";
-import type { SupplierInvoice, SupplierInvoiceInput } from "./types";
+import type {
+  SupplierInvoice,
+  SupplierInvoiceInput,
+  SupplierInvoiceLine,
+} from "./types";
 
 // Re-export supplier directory CRUD from the shared suppliers module.
 export {
@@ -12,13 +16,33 @@ export {
 } from "./suppliers";
 
 const INV_TABLE = "supplier_invoices";
+const LINES_TABLE = "supplier_invoice_lines";
+
+function summarizeLines(lines: SupplierInvoiceLine[]) {
+  const amount = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  const types = [...new Set(lines.map((l) => l.service_type).filter(Boolean))];
+  const refs = lines.map((l) => l.booking_ref).filter(Boolean);
+  return {
+    amount,
+    service_type: types.length === 0 ? "Other" : types.length === 1 ? types[0] : "Mixed",
+    booking_ref: refs[0] ?? "",
+  };
+}
 
 export function buildSupplierInvoice(
   input: SupplierInvoiceInput,
   invoiceId: string,
   id: string
 ): SupplierInvoice {
-  const amount = Number(input.invoice_amount) || 0;
+  const lines = (input.lines ?? []).map((l) => ({
+    ...l,
+    amount: Number(l.amount) || 0,
+    description: l.description ?? "",
+    booking_ref: l.booking_ref ?? "",
+    notes: l.notes ?? "",
+    service_type: l.service_type || "Other",
+  }));
+  const summary = summarizeLines(lines);
   const paid = Number(input.paid_usd) || 0;
   const refund = Number(input.refund_usd) || 0;
   const netPaid = paid - refund;
@@ -29,18 +53,19 @@ export function buildSupplierInvoice(
     due_date: input.due_date || null,
     supplier: input.supplier,
     supplier_invoice_no: input.supplier_invoice_no,
-    booking_ref: input.booking_ref,
-    service_type: input.service_type,
+    booking_ref: summary.booking_ref,
+    service_type: summary.service_type,
     currency: input.currency || "USD",
-    invoice_amount: amount,
-    invoice_usd: amount,
+    invoice_amount: summary.amount,
+    invoice_usd: summary.amount,
     paid_usd: paid,
     refund_usd: refund,
     net_paid_usd: netPaid,
-    outstanding_usd: amount - netPaid,
+    outstanding_usd: summary.amount - netPaid,
     invoice_status: input.invoice_status,
     payment_status: input.payment_status,
     notes: input.notes,
+    lines,
   };
 }
 
@@ -55,20 +80,66 @@ const demoInvoices: SupplierInvoice[] = [
       due_date: "",
       supplier: "Morocco Travel",
       supplier_invoice_no: "",
-      booking_ref: "",
-      service_type: "Hotel",
       currency: "USD",
-      invoice_amount: 9308,
       paid_usd: 9308,
       refund_usd: 0,
       invoice_status: "Open",
       payment_status: "Settled",
       notes: "",
+      lines: [
+        {
+          service_type: "Hotel",
+          booking_ref: "CTH-0002",
+          description: "Hotel accommodation — BLUE MARINE HOTEL",
+          amount: 9308,
+          notes: "",
+        },
+      ],
     },
     "SINV-0001",
     "demo-sinv-1"
   ),
 ];
+
+async function fetchLines(
+  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  invoiceId: string
+): Promise<SupplierInvoiceLine[]> {
+  const { data, error } = await supabase
+    .from(LINES_TABLE)
+    .select("*")
+    .eq("invoice_id", invoiceId)
+    .order("sort_order", { ascending: true });
+  if (error || !data) return [];
+  return data.map((r) => ({
+    id: r.id,
+    service_type: r.service_type ?? "Other",
+    booking_ref: r.booking_ref ?? "",
+    description: r.description ?? "",
+    amount: Number(r.amount) || 0,
+    notes: r.notes ?? "",
+  }));
+}
+
+async function replaceLines(
+  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  invoiceId: string,
+  lines: SupplierInvoiceLine[]
+): Promise<void> {
+  await supabase.from(LINES_TABLE).delete().eq("invoice_id", invoiceId);
+  if (lines.length === 0) return;
+  const rows = lines.map((l, i) => ({
+    invoice_id: invoiceId,
+    service_type: l.service_type,
+    booking_ref: l.booking_ref,
+    description: l.description,
+    amount: l.amount,
+    notes: l.notes,
+    sort_order: i,
+  }));
+  const { error } = await supabase.from(LINES_TABLE).insert(rows);
+  if (error) throw new Error(error.message);
+}
 
 export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
   const supabase = getSupabase();
@@ -82,21 +153,25 @@ export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
     .select("*")
     .order("invoice_date", { ascending: false });
   if (error || !data) return [];
-  return data as SupplierInvoice[];
+  // List view does not need line details.
+  return data.map((r) => ({ ...(r as SupplierInvoice), lines: [] }));
 }
 
 export async function getSupplierInvoice(
   id: string
 ): Promise<SupplierInvoice | null> {
   const supabase = getSupabase();
-  if (!supabase) return demoInvoices.find((i) => i.id === id) ?? null;
+  if (!supabase) {
+    return demoInvoices.find((i) => i.id === id) ?? null;
+  }
   const { data, error } = await supabase
     .from(INV_TABLE)
     .select("*")
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
-  return data as SupplierInvoice;
+  const lines = await fetchLines(supabase, id);
+  return { ...(data as SupplierInvoice), lines };
 }
 
 export async function createSupplierInvoice(
@@ -111,14 +186,15 @@ export async function createSupplierInvoice(
     return row;
   }
   const row = buildSupplierInvoice(input, code, "");
-  const { id: _id, created_at: _c, ...payload } = row;
+  const { id: _id, created_at: _c, lines, ...payload } = row;
   const { data, error } = await supabase
     .from(INV_TABLE)
     .insert(payload)
     .select("*")
     .single();
   if (error) throw new Error(error.message);
-  return data as SupplierInvoice;
+  await replaceLines(supabase, data.id, lines);
+  return { ...(data as SupplierInvoice), lines };
 }
 
 export async function updateSupplierInvoice(
@@ -139,7 +215,7 @@ export async function updateSupplierInvoice(
   const existing = await getSupplierInvoice(id);
   if (!existing) throw new Error("Invoice not found");
   const row = buildSupplierInvoice(input, existing.invoice_id, id);
-  const { id: _id, created_at: _c, invoice_id: _i, ...payload } = row;
+  const { id: _id, created_at: _c, invoice_id: _i, lines, ...payload } = row;
   const { data, error } = await supabase
     .from(INV_TABLE)
     .update(payload)
@@ -147,7 +223,8 @@ export async function updateSupplierInvoice(
     .select("*")
     .single();
   if (error) throw new Error(error.message);
-  return data as SupplierInvoice;
+  await replaceLines(supabase, id, lines);
+  return { ...(data as SupplierInvoice), lines };
 }
 
 export async function deleteSupplierInvoice(id: string): Promise<void> {
@@ -157,6 +234,8 @@ export async function deleteSupplierInvoice(id: string): Promise<void> {
     if (idx >= 0) demoInvoices.splice(idx, 1);
     return;
   }
+  // Lines cascade if FK is set; delete explicitly for safety.
+  await supabase.from(LINES_TABLE).delete().eq("invoice_id", id);
   const { error } = await supabase.from(INV_TABLE).delete().eq("id", id);
   if (error) throw new Error(error.message);
 }

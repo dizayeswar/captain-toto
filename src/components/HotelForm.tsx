@@ -80,6 +80,21 @@ export default function HotelForm({
   const netEffect = (Number(netPaid) || 0) - (Number(refunded) || 0);
   const balance = finalCharge - netEffect;
   const profit = finalCharge - totalCost;
+  // If customer paid full sale then cancelled: refund due = paid − penalty.
+  const suggestedRefund = cancelled
+    ? Math.max(0, (Number(netPaid) || 0) - (Number(cancelFee) || 0))
+    : 0;
+
+  function onStatusChange(status: string) {
+    setBookingStatus(status);
+    const isCancel = status === "Cancelled" || status === "No Show";
+    if (isCancel) {
+      const fee = Number(cancelFee) || 0;
+      const paid = Number(netPaid) || 0;
+      // Auto-fill refund when they already paid more than the penalty.
+      if (paid > fee) setRefunded(paid - fee);
+    }
+  }
 
   return (
     <form action={action} className="space-y-6">
@@ -384,20 +399,37 @@ export default function HotelForm({
               onChange={(e) => setRefunded(Number(e.target.value))}
               className={inputCls}
             />
+            {cancelled && suggestedRefund > 0 && (
+              <button
+                type="button"
+                onClick={() => setRefunded(suggestedRefund)}
+                className="mt-1 text-xs font-medium text-brand hover:underline"
+              >
+                Use suggested refund {formatCurrency(suggestedRefund)} (paid −
+                penalty)
+              </button>
+            )}
           </div>
           <div>
-            <label className={labelCls}>Cancellation Fee ($)</label>
+            <label className={labelCls}>Cancellation Fee / Penalty ($)</label>
             <input
               type="number"
               name="cancellation_fee_usd"
               min={0}
               step="0.01"
               value={cancelFee}
-              onChange={(e) => setCancelFee(Number(e.target.value))}
+              onChange={(e) => {
+                const fee = Number(e.target.value);
+                setCancelFee(fee);
+                if (cancelled && Number(netPaid) > fee) {
+                  setRefunded(Number(netPaid) - fee);
+                }
+              }}
               className={inputCls}
             />
             <p className="mt-1 text-xs text-slate-400">
-              Used as final charge when status is Cancelled / No Show
+              Example: sale $1,440, penalty $360 → customer pays $360. If they
+              already paid $1,440, refund = $1,080.
             </p>
           </div>
         </div>
@@ -482,7 +514,7 @@ export default function HotelForm({
             <select
               name="booking_status"
               value={bookingStatus}
-              onChange={(e) => setBookingStatus(e.target.value)}
+              onChange={(e) => onStatusChange(e.target.value)}
               className={inputCls}
             >
               {HOTEL_BOOKING_STATUSES.map((s) => (
