@@ -37,10 +37,9 @@ export function Button({
   type?: "button" | "submit";
 }) {
   const styles: Record<string, string> = {
-    primary: "bg-brand text-white hover:bg-brand-dark",
-    secondary:
-      "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
-    danger: "border border-red-200 bg-white text-red-600 hover:bg-red-50",
+    primary: "bg-brand text-white",
+    secondary: "border border-slate-300 bg-white text-slate-700",
+    danger: "border border-red-200 bg-white text-red-600",
   };
   const cls = `page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold ${styles[variant]}`;
 
