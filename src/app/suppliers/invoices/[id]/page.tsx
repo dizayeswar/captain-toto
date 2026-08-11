@@ -5,7 +5,6 @@ import {
 } from "@/lib/supplierFinance";
 import { getSupplierLinkOptions } from "@/lib/supplierLinks";
 import { updateSupplierInvoiceAction } from "@/lib/actions";
-import { SUPPLIERS } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
 import SupplierInvoiceForm from "@/components/SupplierInvoiceForm";
 
@@ -23,8 +22,7 @@ export default async function EditSupplierInvoicePage(
     getSupplierLinkOptions(),
   ]);
   const names = new Set<string>([
-    ...SUPPLIERS.map((s) => s.name),
-    ...records.map((s) => s.name),
+    ...records.filter((s) => s.active).map((s) => s.name),
     invoice.supplier,
   ]);
   const suppliers = [...names].filter(Boolean).sort((a, b) =>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getHotelBooking } from "@/lib/hotels";
+import { getSupplierOptions } from "@/lib/suppliers";
 import { updateHotelBookingAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import HotelForm from "@/components/HotelForm";
@@ -10,10 +11,17 @@ export default async function EditHotelBookingPage(
   props: PageProps<"/hotel/bookings/[id]">
 ) {
   const { id } = await props.params;
-  const booking = await getHotelBooking(id);
+  const [booking, suppliers] = await Promise.all([
+    getHotelBooking(id),
+    getSupplierOptions(),
+  ]);
   if (!booking) notFound();
 
   const action = updateHotelBookingAction.bind(null, booking.id);
+  const options =
+    booking.supplier && !suppliers.some((s) => s.name === booking.supplier)
+      ? [...suppliers, { code: "—", name: booking.supplier }]
+      : suppliers;
 
   return (
     <>
@@ -25,6 +33,7 @@ export default async function EditHotelBookingPage(
         <HotelForm
           action={action}
           booking={booking}
+          suppliers={options}
           submitLabel="Save Changes"
         />
       </div>

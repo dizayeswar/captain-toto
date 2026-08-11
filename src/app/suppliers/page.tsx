@@ -20,7 +20,7 @@ export default async function SuppliersPage() {
     <>
       <PageHeader
         title="Suppliers"
-        subtitle="Directory of suppliers used across supplier finance"
+        subtitle="Shared directory — suppliers appear in Booking, Hotel, Visa, and Supplier Invoices"
       />
       <div className="space-y-8 p-8">
         <Card className="p-6">

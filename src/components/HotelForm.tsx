@@ -9,15 +9,16 @@ import {
   MEAL_PLANS,
   ROOM_TYPES,
   STAFF,
-  SUPPLIERS,
 } from "@/lib/lists";
 import { formatCurrency } from "@/lib/format";
 import type { HotelBooking } from "@/lib/types";
 import { Card, Button } from "./ui";
+import type { SupplierOption } from "./BookingForm";
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
   booking?: HotelBooking;
+  suppliers?: SupplierOption[];
   submitLabel?: string;
 };
 
@@ -37,6 +38,7 @@ function nightsBetween(checkIn: string, checkOut: string): number {
 export default function HotelForm({
   action,
   booking,
+  suppliers = [],
   submitLabel = "Save Hotel Booking",
 }: Props) {
   const router = useRouter();
@@ -304,14 +306,18 @@ export default function HotelForm({
             <label className={labelCls}>Supplier</label>
             <select
               name="supplier"
-              defaultValue={booking?.supplier ?? SUPPLIERS[0]?.name ?? ""}
+              defaultValue={booking?.supplier || suppliers[0]?.name || ""}
               className={inputCls}
             >
-              {SUPPLIERS.map((s) => (
-                <option key={s.code} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
+              {suppliers.length === 0 ? (
+                <option value="">No suppliers — add in Suppliers Directory</option>
+              ) : (
+                suppliers.map((s) => (
+                  <option key={s.code} value={s.name}>
+                    {s.name}
+                  </option>
+                ))
+              )}
             </select>
           </div>
         </div>

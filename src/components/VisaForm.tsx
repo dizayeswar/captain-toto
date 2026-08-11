@@ -6,7 +6,6 @@ import {
   CURRENCIES,
   DOCUMENT_RESULTS,
   ENTRY_TYPES,
-  SUPPLIERS,
   VISA_CASE_STATUSES,
   VISA_PAYMENT_STATUSES,
   VISA_PRIORITIES,
@@ -17,10 +16,12 @@ import {
 import { formatCurrency } from "@/lib/format";
 import type { VisaCase } from "@/lib/types";
 import { Card, Button } from "./ui";
+import type { SupplierOption } from "./BookingForm";
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
   visa?: VisaCase;
+  suppliers?: SupplierOption[];
   submitLabel?: string;
 };
 
@@ -31,13 +32,14 @@ const inputCls =
 export default function VisaForm({
   action,
   visa,
+  suppliers = [],
   submitLabel = "Save Case",
 }: Props) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
 
   const [supplierName, setSupplierName] = useState(
-    visa?.supplier_name ?? SUPPLIERS[0].name
+    visa?.supplier_name || suppliers[0]?.name || ""
   );
   const [appointmentFee, setAppointmentFee] = useState(
     visa?.appointment_fee ?? 0
@@ -47,7 +49,7 @@ export default function VisaForm({
   const [amountPaid, setAmountPaid] = useState(visa?.amount_paid_usd ?? 0);
 
   const supplierCode =
-    SUPPLIERS.find((s) => s.name === supplierName)?.code ??
+    suppliers.find((s) => s.name === supplierName)?.code ??
     visa?.supplier_code ??
     "";
 
@@ -385,12 +387,18 @@ export default function VisaForm({
               onChange={(e) => setSupplierName(e.target.value)}
               className={inputCls}
             >
-              {SUPPLIERS.map((s) => (
-                <option key={s.code}>{s.name}</option>
-              ))}
+              {suppliers.length === 0 ? (
+                <option value="">No suppliers — add in Suppliers Directory</option>
+              ) : (
+                suppliers.map((s) => (
+                  <option key={s.code} value={s.name}>
+                    {s.name}
+                  </option>
+                ))
+              )}
             </select>
             <input type="hidden" name="supplier_code" value={supplierCode} />
-            <p className="mt-1 text-xs text-slate-400">Code: {supplierCode}</p>
+            <p className="mt-1 text-xs text-slate-400">Code: {supplierCode || "—"}</p>
           </div>
 
           <div className="lg:col-span-3">

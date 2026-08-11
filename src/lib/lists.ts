@@ -33,6 +33,7 @@ export const ROUTES = [
 
 export type Supplier = { name: string; code: string };
 
+/** @deprecated Prefer getSupplierOptions() from @/lib/suppliers — directory is the source of truth. */
 export const SUPPLIERS: Supplier[] = [
   { name: "Captain ToTo", code: "SUP-0001" },
   { name: "Morocco Travel", code: "SUP-0002" },

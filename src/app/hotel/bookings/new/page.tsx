@@ -1,10 +1,13 @@
 import { createHotelBookingAction } from "@/lib/actions";
+import { getSupplierOptions } from "@/lib/suppliers";
 import { PageHeader } from "@/components/ui";
 import HotelForm from "@/components/HotelForm";
 
 export const dynamic = "force-dynamic";
 
-export default function NewHotelBookingPage() {
+export default async function NewHotelBookingPage() {
+  const suppliers = await getSupplierOptions();
+
   return (
     <>
       <PageHeader
@@ -14,6 +17,7 @@ export default function NewHotelBookingPage() {
       <div className="p-8">
         <HotelForm
           action={createHotelBookingAction}
+          suppliers={suppliers}
           submitLabel="Create Booking"
         />
       </div>

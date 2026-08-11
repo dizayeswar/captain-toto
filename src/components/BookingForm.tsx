@@ -9,15 +9,17 @@ import {
   STAFF,
   AIRLINES,
   ROUTES,
-  SUPPLIERS,
 } from "@/lib/lists";
 import { formatCurrency } from "@/lib/format";
 import type { Booking } from "@/lib/types";
 import { Card, Button } from "./ui";
 
+export type SupplierOption = { code: string; name: string };
+
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
   booking?: Booking;
+  suppliers?: SupplierOption[];
   submitLabel?: string;
 };
 
@@ -28,17 +30,20 @@ const inputCls =
 export default function BookingForm({
   action,
   booking,
+  suppliers = [],
   submitLabel = "Save Booking",
 }: Props) {
   const router = useRouter();
   const [ticket, setTicket] = useState(booking?.ticket_cost ?? 0);
   const [fee, setFee] = useState(booking?.service_fee ?? 0);
-  const [supplierName, setSupplierName] = useState(
-    booking?.supplier_name ?? SUPPLIERS[0].name
-  );
+  const defaultSupplier =
+    booking?.supplier_name || suppliers[0]?.name || "";
+  const [supplierName, setSupplierName] = useState(defaultSupplier);
 
   const supplierCode =
-    SUPPLIERS.find((s) => s.name === supplierName)?.code ?? "";
+    suppliers.find((s) => s.name === supplierName)?.code ??
+    booking?.supplier_code ??
+    "";
   const total = (Number(ticket) || 0) + (Number(fee) || 0);
   const profit = total - (Number(ticket) || 0);
   const today = new Date().toISOString().slice(0, 10);
@@ -202,12 +207,18 @@ export default function BookingForm({
               onChange={(e) => setSupplierName(e.target.value)}
               className={inputCls}
             >
-              {SUPPLIERS.map((s) => (
-                <option key={s.code}>{s.name}</option>
-              ))}
+              {suppliers.length === 0 ? (
+                <option value="">No suppliers — add in Suppliers Directory</option>
+              ) : (
+                suppliers.map((s) => (
+                  <option key={s.code} value={s.name}>
+                    {s.name}
+                  </option>
+                ))
+              )}
             </select>
             <input type="hidden" name="supplier_code" value={supplierCode} />
-            <p className="mt-1 text-xs text-slate-400">Code: {supplierCode}</p>
+            <p className="mt-1 text-xs text-slate-400">Code: {supplierCode || "—"}</p>
           </div>
 
           <div className="flex items-center gap-2 pt-6">

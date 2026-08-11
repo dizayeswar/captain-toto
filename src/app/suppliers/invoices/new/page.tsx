@@ -1,7 +1,6 @@
 import { createSupplierInvoiceAction } from "@/lib/actions";
 import { getSuppliers } from "@/lib/supplierFinance";
 import { getSupplierLinkOptions } from "@/lib/supplierLinks";
-import { SUPPLIERS } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
 import SupplierInvoiceForm from "@/components/SupplierInvoiceForm";
 
@@ -12,13 +11,11 @@ export default async function NewSupplierInvoicePage() {
     getSuppliers(),
     getSupplierLinkOptions(),
   ]);
-  const names = new Set<string>([
-    ...SUPPLIERS.map((s) => s.name),
-    ...records.map((s) => s.name),
-  ]);
-  const suppliers = [...names].filter(Boolean).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const suppliers = records
+    .filter((s) => s.active)
+    .map((s) => s.name)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
 
   return (
     <>
