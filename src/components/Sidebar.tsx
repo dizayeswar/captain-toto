@@ -123,8 +123,17 @@ function sectionOwnsPath(section: NavSection, pathname: string): boolean {
 
 function openStateForPath(pathname: string): Record<string, boolean> {
   const next: Record<string, boolean> = {};
-  for (const s of SECTIONS) next[s.id] = sectionOwnsPath(s, pathname);
-  if (!Object.values(next).some(Boolean)) next[SECTIONS[0].id] = true;
+  for (const s of SECTIONS) next[s.id] = false;
+
+  let best: { id: string; len: number } | null = null;
+  for (const s of SECTIONS) {
+    for (const item of s.items) {
+      if (!pathMatches(pathname, item.href)) continue;
+      const len = item.href.length;
+      if (!best || len > best.len) best = { id: s.id, len };
+    }
+  }
+  next[best?.id ?? SECTIONS[0].id] = true;
   return next;
 }
 
@@ -134,19 +143,20 @@ export default function Sidebar() {
     openStateForPath(pathname)
   );
 
-  // Expand the section that owns the current page (e.g. after Dashboard card click)
+  // Keep only the section for the current page open (accordion)
   useEffect(() => {
-    setOpen((prev) => {
-      const owned = SECTIONS.filter((s) => sectionOwnsPath(s, pathname));
-      if (owned.length === 0) return prev;
-      const next = { ...prev };
-      for (const s of owned) next[s.id] = true;
-      return next;
-    });
+    setOpen(openStateForPath(pathname));
   }, [pathname]);
 
   const toggle = (id: string) =>
-    setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+    setOpen((prev) => {
+      const willOpen = !prev[id];
+      const next: Record<string, boolean> = {};
+      for (const s of SECTIONS) {
+        next[s.id] = willOpen ? s.id === id : false;
+      }
+      return next;
+    });
 
   return (
     <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
