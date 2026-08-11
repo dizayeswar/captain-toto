@@ -95,6 +95,39 @@ function nextCode(count: number) {
   return `CTH-${String(count + 1).padStart(4, "0")}`;
 }
 
+/**
+ * Recompute final charge / profit / balance from source fields.
+ * Keeps dashboard correct even if the row was saved before cancel-cost logic.
+ */
+export function refreshHotelFinancials(row: HotelBooking): HotelBooking {
+  const cancelled =
+    row.booking_status === "Cancelled" || row.booking_status === "No Show";
+  const cancelFee = Number(row.cancellation_fee_usd) || 0;
+  const serviceFee = Number(row.service_fee_usd) || 0;
+  const cancelCost = Number(row.cancel_cost_usd) || 0;
+  const totalCost = Number(row.total_cost_usd) || 0;
+  const totalSale = Number(row.total_sale_usd) || 0;
+  const netPaid = Number(row.net_paid_usd) || 0;
+  const refunded = Number(row.refunded_usd) || 0;
+
+  const finalCharge = cancelled ? cancelFee + serviceFee : totalSale;
+  const profitCost = cancelled ? cancelCost : totalCost;
+  const netEffect = netPaid - refunded;
+
+  return {
+    ...row,
+    service_fee_usd: serviceFee,
+    cancel_cost_usd: cancelCost,
+    final_charge_usd: finalCharge,
+    profit_usd: finalCharge - profitCost,
+    balance_usd: finalCharge - netEffect,
+  };
+}
+
+function mapHotelRows(rows: HotelBooking[]): HotelBooking[] {
+  return rows.map(refreshHotelFinancials);
+}
+
 const demoStore: HotelBooking[] = [
   buildHotelBooking(
     {
@@ -140,8 +173,8 @@ const demoStore: HotelBooking[] = [
 export async function getHotelBookings(): Promise<HotelBooking[]> {
   const supabase = getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      b.created_date.localeCompare(a.created_date)
+    return mapHotelRows(
+      [...demoStore].sort((a, b) => b.created_date.localeCompare(a.created_date))
     );
   }
   const { data, error } = await supabase
@@ -149,19 +182,22 @@ export async function getHotelBookings(): Promise<HotelBooking[]> {
     .select("*")
     .order("created_date", { ascending: false });
   if (error || !data) return [];
-  return data as HotelBooking[];
+  return mapHotelRows(data as HotelBooking[]);
 }
 
 export async function getHotelBooking(id: string): Promise<HotelBooking | null> {
   const supabase = getSupabase();
-  if (!supabase) return demoStore.find((b) => b.id === id) ?? null;
+  if (!supabase) {
+    const row = demoStore.find((b) => b.id === id) ?? null;
+    return row ? refreshHotelFinancials(row) : null;
+  }
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
-  return data as HotelBooking;
+  return refreshHotelFinancials(data as HotelBooking);
 }
 
 export async function createHotelBooking(
@@ -233,12 +269,18 @@ export type HotelSummary = {
 };
 
 export function summarizeHotels(rows: HotelBooking[]): HotelSummary {
+  const refreshed = mapHotelRows(rows);
   return {
-    total: rows.length,
-    confirmed: rows.filter((r) => r.booking_status === "Confirmed").length,
-    cancelled: rows.filter((r) => r.booking_status === "Cancelled").length,
-    totalSale: rows.reduce((s, r) => s + (r.total_sale_usd || 0), 0),
-    totalProfit: rows.reduce((s, r) => s + (r.profit_usd || 0), 0),
-    outstanding: rows.reduce((s, r) => s + (r.balance_usd || 0), 0),
+    total: refreshed.length,
+    confirmed: refreshed.filter((r) => r.booking_status === "Confirmed").length,
+    cancelled: refreshed.filter((r) => r.booking_status === "Cancelled").length,
+    // Cancelled bookings count final charge (what client actually owes), not full stay sale.
+    totalSale: refreshed.reduce((s, r) => {
+      const cancelled =
+        r.booking_status === "Cancelled" || r.booking_status === "No Show";
+      return s + (cancelled ? r.final_charge_usd || 0 : r.total_sale_usd || 0);
+    }, 0),
+    totalProfit: refreshed.reduce((s, r) => s + (r.profit_usd || 0), 0),
+    outstanding: refreshed.reduce((s, r) => s + (r.balance_usd || 0), 0),
   };
 }

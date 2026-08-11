@@ -478,6 +478,12 @@ export default function HotelForm({
             <p className="mt-1 text-xs text-slate-400">
               What you pay the supplier on cancel (e.g. $320). Used for profit.
             </p>
+            {cancelled && !(Number(cancelCost) > 0) && (
+              <p className="mt-1 text-xs font-semibold text-amber-700">
+                Required for correct profit — without this, profit ignores the
+                supplier cost.
+              </p>
+            )}
           </div>
         </div>
 

@@ -40,7 +40,13 @@ export default async function HotelDashboardPage() {
           <StatCard
             label="Profit"
             value={formatCurrency(summary.totalProfit)}
-            tone="green"
+            tone={
+              summary.totalProfit < 0
+                ? "red"
+                : summary.totalProfit > 0
+                  ? "green"
+                  : "default"
+            }
           />
           <StatCard
             label="Outstanding"
@@ -113,7 +119,12 @@ export default async function HotelDashboardPage() {
                           {formatDate(b.check_in)}
                         </td>
                         <td className="px-5 py-3 text-right tabular-nums text-slate-800">
-                          {formatCurrency(b.total_sale_usd)}
+                          {formatCurrency(
+                            b.booking_status === "Cancelled" ||
+                              b.booking_status === "No Show"
+                              ? b.final_charge_usd
+                              : b.total_sale_usd
+                          )}
                         </td>
                         <td className="px-5 py-3">
                           <StatusBadge status={b.booking_status} />
