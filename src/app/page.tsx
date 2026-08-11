@@ -15,7 +15,7 @@ import {
   computeOwedToOthers,
 } from "@/lib/financeBalance";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { PageHeader, StatCard, Card, Button } from "@/components/ui";
+import { PageHeader, StatCard, Button } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -71,8 +71,7 @@ export default async function DashboardPage() {
   const balance = computeFinanceBalance(deposits, expenses);
   const owed = computeOwedToOthers(expenses);
 
-  const companyProfit =
-    ticket.profit + hotel.totalProfit; /* visa has no profit in summary */
+  const companyProfit = ticket.profit + hotel.totalProfit;
 
   return (
     <>
@@ -83,37 +82,42 @@ export default async function DashboardPage() {
       />
 
       <div className="space-y-10 p-8">
-        {/* Top snapshot */}
         <section>
           <h2 className="mb-3 text-lg font-semibold text-slate-900">
             At a glance
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard
+              href="/bookings"
               label="Ticket bookings"
               value={String(ticket.bookings)}
               hint={`${ticket.pending} pending`}
             />
             <StatCard
+              href="/bookings"
               label="Ticket profit"
               value={formatCurrency(ticket.profit)}
               tone={ticket.profit >= 0 ? "green" : "red"}
             />
             <StatCard
+              href="/hotel"
               label="Hotel profit"
               value={formatCurrency(hotel.totalProfit)}
               tone={hotel.totalProfit >= 0 ? "green" : "red"}
             />
             <StatCard
+              href="/visa"
               label="Visa sales"
               value={formatCurrency(visa.totalSales)}
             />
             <StatCard
+              href="/finance"
               label="Cash balance IQD"
               value={`${formatNumber(balance.balanceIqd)} IQD`}
               tone={balance.balanceIqd < 0 ? "red" : "green"}
             />
             <StatCard
+              href="/finance"
               label="Owed to staff"
               value={`${formatNumber(owed.totalIqd)} IQD`}
               tone={owed.totalIqd > 0 ? "amber" : "default"}
@@ -132,18 +136,27 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* Booking / tickets */}
         <section>
           <SectionHeader title="Booking" href="/bookings" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Bookings" value={String(ticket.bookings)} />
-            <StatCard label="Revenue" value={formatCurrency(ticket.revenue)} />
             <StatCard
+              href="/bookings"
+              label="Bookings"
+              value={String(ticket.bookings)}
+            />
+            <StatCard
+              href="/bookings"
+              label="Revenue"
+              value={formatCurrency(ticket.revenue)}
+            />
+            <StatCard
+              href="/bookings"
               label="Profit"
               value={formatCurrency(ticket.profit)}
               tone="green"
             />
             <StatCard
+              href="/bookings"
               label="Pending"
               value={String(ticket.pending)}
               tone={ticket.pending > 0 ? "amber" : "default"}
@@ -151,73 +164,90 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* Ticket invoices + payment invoices */}
         <section>
           <SectionHeader title="Ticket Invoice" href="/invoices" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard label="Invoices" value={String(invoices.length)} />
-            <Card className="flex items-center justify-between p-5 sm:col-span-2">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Quick links
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Create or review ticket invoices and airline policies.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button href="/invoices/new" variant="secondary">
-                  New invoice
-                </Button>
-                <Button href="/invoices/policies" variant="secondary">
-                  Policies
-                </Button>
-              </div>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              href="/invoices"
+              label="Invoices"
+              value={String(invoices.length)}
+            />
+            <StatCard
+              href="/invoices/new"
+              label="New invoice"
+              value="+"
+              hint="Create ticket invoice"
+            />
+            <StatCard
+              href="/invoices/policies"
+              label="Policies"
+              value="→"
+              hint="Airline policies"
+            />
+            <StatCard
+              href="/invoices"
+              label="All invoices"
+              value="Open"
+              hint="View invoice list"
+            />
           </div>
         </section>
 
         <section>
           <SectionHeader title="Payment Invoice" href="/payments" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Receipts" value={String(payment.count)} />
             <StatCard
+              href="/payments"
+              label="Receipts"
+              value={String(payment.count)}
+            />
+            <StatCard
+              href="/payments"
               label="Total received"
               value={formatCurrency(payment.totalReceived)}
               tone="green"
             />
             <StatCard
+              href="/payments/summary"
               label="This month"
               value={formatCurrency(payment.thisMonthTotal)}
               hint={`${payment.thisMonthCount} receipts`}
             />
-            <Card className="flex items-center p-5">
-              <Link
-                href="/payments/summary"
-                className="text-sm font-medium text-brand hover:underline"
-              >
-                Payments summary →
-              </Link>
-            </Card>
+            <StatCard
+              href="/payments/summary"
+              label="Payments summary"
+              value="→"
+              hint="Full breakdown"
+            />
           </div>
         </section>
 
-        {/* Hotel */}
         <section>
           <SectionHeader title="Hotel" href="/hotel" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <StatCard label="Bookings" value={String(hotel.total)} />
-            <StatCard label="Confirmed" value={String(hotel.confirmed)} />
             <StatCard
+              href="/hotel/bookings"
+              label="Bookings"
+              value={String(hotel.total)}
+            />
+            <StatCard
+              href="/hotel/bookings"
+              label="Confirmed"
+              value={String(hotel.confirmed)}
+            />
+            <StatCard
+              href="/hotel"
               label="Sale"
               value={formatCurrency(hotel.totalSale)}
             />
             <StatCard
+              href="/hotel"
               label="Profit"
               value={formatCurrency(hotel.totalProfit)}
               tone={hotel.totalProfit < 0 ? "red" : "green"}
             />
             <StatCard
+              href="/hotel/bookings"
               label="Outstanding"
               value={formatCurrency(hotel.outstanding)}
               tone={hotel.outstanding > 0 ? "amber" : "default"}
@@ -225,22 +255,32 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* Visa */}
         <section>
           <SectionHeader title="Visa" href="/visa" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <StatCard label="Cases" value={String(visa.total)} />
-            <StatCard label="Approved" value={String(visa.approved)} />
             <StatCard
+              href="/visa/cases"
+              label="Cases"
+              value={String(visa.total)}
+            />
+            <StatCard
+              href="/visa/cases"
+              label="Approved"
+              value={String(visa.approved)}
+            />
+            <StatCard
+              href="/visa"
               label="Appointments (30d)"
               value={String(visa.appointments)}
               tone={visa.appointments > 0 ? "amber" : "default"}
             />
             <StatCard
+              href="/visa"
               label="Sales"
               value={formatCurrency(visa.totalSales)}
             />
             <StatCard
+              href="/visa/cases"
               label="Outstanding"
               value={formatCurrency(visa.outstanding)}
               tone={visa.outstanding > 0 ? "amber" : "default"}
@@ -248,67 +288,72 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* Supplier finance */}
         <section>
           <SectionHeader title="Supplier Finance" href="/suppliers/dashboard" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
+              href="/suppliers/invoices"
               label="Open invoices"
               value={String(supplier.openInvoices)}
             />
             <StatCard
+              href="/suppliers/dashboard"
               label="Outstanding"
               value={formatCurrency(supplier.outstanding)}
               tone={supplier.outstanding > 0 ? "amber" : "default"}
             />
             <StatCard
+              href="/suppliers/receipts"
               label="Paid to suppliers"
               value={formatCurrency(supplier.paidToSuppliers)}
             />
             <StatCard
+              href="/suppliers/invoices"
               label="Refunded"
               value={formatCurrency(supplier.refunded)}
             />
           </div>
         </section>
 
-        {/* Finance / expenses */}
         <section>
           <SectionHeader title="Finance" href="/finance" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard
+              href="/finance"
               label="Balance IQD"
               value={`${formatNumber(balance.balanceIqd)} IQD`}
               tone={balance.balanceIqd < 0 ? "red" : "green"}
             />
             <StatCard
+              href="/finance"
               label="Balance USD"
               value={formatCurrency(balance.balanceUsd)}
               tone={balance.balanceUsd < 0 ? "red" : "green"}
             />
             <StatCard
+              href="/finance"
               label="Expenses"
               value={String(expense.count)}
               hint={`${formatCurrency(expense.totalUsd)} · ${formatNumber(expense.totalIqd)} IQD`}
             />
             <StatCard
+              href="/finance"
               label="Owed IQD"
               value={`${formatNumber(owed.totalIqd)} IQD`}
               tone={owed.totalIqd > 0 ? "amber" : "default"}
             />
             <StatCard
+              href="/finance"
               label="Owed USD"
               value={formatCurrency(owed.totalUsd)}
               tone={owed.totalUsd > 0 ? "amber" : "default"}
             />
-            <Card className="flex items-center p-5">
-              <Link
-                href="/finance/summary"
-                className="text-sm font-medium text-brand hover:underline"
-              >
-                Expense summary →
-              </Link>
-            </Card>
+            <StatCard
+              href="/finance/summary"
+              label="Expense summary"
+              value="→"
+              hint="By month & category"
+            />
           </div>
         </section>
       </div>

@@ -79,11 +79,13 @@ export function StatCard({
   value,
   hint,
   tone = "default",
+  href,
 }: {
   label: string;
   value: string;
   hint?: string;
   tone?: "default" | "green" | "amber" | "red";
+  href?: string;
 }) {
   const tones: Record<string, string> = {
     default: "text-slate-900",
@@ -91,15 +93,28 @@ export function StatCard({
     amber: "text-amber-600",
     red: "text-red-600",
   };
-  return (
-    <Card className="p-5">
+  const inner = (
+    <>
       <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
         {label}
       </p>
       <p className={`mt-2 text-3xl font-bold ${tones[tone]}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
-    </Card>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-brand/40 hover:bg-slate-50"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return <Card className="p-5">{inner}</Card>;
 }
 
 export function StatusBadge({ status }: { status: string }) {
