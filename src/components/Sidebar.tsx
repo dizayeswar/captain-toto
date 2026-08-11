@@ -72,6 +72,8 @@ const SECTIONS: NavSection[] = [
       { href: "/suppliers/dashboard", label: "Dashboard" },
       { href: "/suppliers/invoices", label: "Supplier Invoices" },
       { href: "/suppliers/invoices/new", label: "New Invoice" },
+      { href: "/suppliers/receipts", label: "Payment Receipts" },
+      { href: "/suppliers/receipts/new", label: "New Payment Receipt" },
       { href: "/suppliers", label: "Suppliers Directory" },
     ],
   },

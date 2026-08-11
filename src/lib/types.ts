@@ -385,6 +385,29 @@ export type SupplierInvoiceInput = {
 };
 
 // ---------------------------------------------------------------------------
+// Supplier Payment Receipt (A6 printable)
+// ---------------------------------------------------------------------------
+
+export type SupplierPaymentReceipt = {
+  id: string;
+  receipt_no: string; // SPR-0001
+  receipt_date: string;
+  supplier: string;
+  amount: number;
+  signature: string;
+  notes: string;
+  created_at?: string;
+};
+
+export type SupplierPaymentReceiptInput = {
+  receipt_date: string;
+  supplier: string;
+  amount: number;
+  signature: string;
+  notes: string;
+};
+
+// ---------------------------------------------------------------------------
 // Finance Control (daily expenses)
 // ---------------------------------------------------------------------------
 

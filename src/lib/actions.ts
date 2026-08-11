@@ -31,6 +31,11 @@ import {
 } from "./supplierFinance";
 import { createSupplier, deleteSupplier } from "./suppliers";
 import {
+  createSupplierPaymentReceipt,
+  updateSupplierPaymentReceipt,
+  deleteSupplierPaymentReceipt,
+} from "./supplierReceipts";
+import {
   createExpense,
   updateExpense,
   deleteExpense,
@@ -46,6 +51,7 @@ import type {
   SupplierInvoiceInput,
   SupplierInvoiceLine,
   SupplierInput,
+  SupplierPaymentReceiptInput,
   ExpenseInput,
 } from "./types";
 
@@ -424,6 +430,49 @@ export async function deleteSupplierAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplier(id);
+    revalidatePath("/", "layout");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Supplier Payment Receipt actions
+// ---------------------------------------------------------------------------
+
+function parseSupplierReceiptForm(
+  formData: FormData
+): SupplierPaymentReceiptInput {
+  const str = (name: string) => String(formData.get(name) ?? "").trim();
+  const num = (name: string) => Number(formData.get(name)) || 0;
+  return {
+    receipt_date: str("receipt_date"),
+    supplier: str("supplier"),
+    amount: num("amount"),
+    signature: str("signature"),
+    notes: str("notes"),
+  };
+}
+
+export async function createSupplierPaymentReceiptAction(formData: FormData) {
+  const receipt = await createSupplierPaymentReceipt(
+    parseSupplierReceiptForm(formData)
+  );
+  revalidatePath("/", "layout");
+  redirect(`/suppliers/receipts/${receipt.id}`);
+}
+
+export async function updateSupplierPaymentReceiptAction(
+  id: string,
+  formData: FormData
+) {
+  await updateSupplierPaymentReceipt(id, parseSupplierReceiptForm(formData));
+  revalidatePath("/", "layout");
+  redirect(`/suppliers/receipts/${id}`);
+}
+
+export async function deleteSupplierPaymentReceiptAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await deleteSupplierPaymentReceipt(id);
     revalidatePath("/", "layout");
   }
 }
