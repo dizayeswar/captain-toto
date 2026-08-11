@@ -107,7 +107,7 @@ export function StatCard({
     return (
       <Link
         href={href}
-        className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-brand/40 hover:bg-slate-50"
+        className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-150 hover:-translate-y-0.5 hover:border-brand/40 hover:bg-slate-50 hover:shadow-md"
       >
         {inner}
       </Link>

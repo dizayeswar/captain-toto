@@ -171,7 +171,7 @@ export default function Sidebar() {
               <button
                 type="button"
                 onClick={() => toggle(section.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
+                className={`nav-section flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
                   sectionActive
                     ? "bg-brand/10 text-brand"
                     : "bg-transparent text-slate-700 hover:bg-slate-100"
@@ -222,7 +222,7 @@ function Chevron({ open }: { open: boolean }) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`nav-chevron transition-none ${open ? "rotate-180" : ""}`}
+      className={`transition-transform ${open ? "rotate-180" : ""}`}
     >
       <path d="m6 9 6 6 6-6" />
     </svg>

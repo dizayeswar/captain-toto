@@ -28,26 +28,24 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Allow color/background hover, but never lift / slide / scale */
+/* Smooth hover lift for sidebar + header chrome buttons */
 aside a,
-aside button,
+aside button.nav-section,
 .page-chrome-btn {
-  transform: none !important;
-  translate: none !important;
-  scale: none !important;
-  box-shadow: none !important;
+  transition: transform 0.15s ease, background-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 aside a:hover,
-aside button:hover,
-.page-chrome-btn:hover,
+aside button.nav-section:hover,
+.page-chrome-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
 aside a:active,
-aside button:active,
-.page-chrome-btn:active {
-  transform: none !important;
-  translate: none !important;
-  scale: none !important;
-  box-shadow: none !important;
+aside button.nav-section:active,
+.page-chrome-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 @media print {
