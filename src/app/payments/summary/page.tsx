@@ -28,7 +28,7 @@ export default async function PaymentsSummaryPage() {
           <EmptyState message="No payment invoices yet." />
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 label="Total Received"
                 value={formatCurrency(s.totalReceived)}
@@ -39,10 +39,6 @@ export default async function PaymentsSummaryPage() {
                 label="This Month"
                 value={formatCurrency(s.thisMonthTotal)}
                 hint={`${s.thisMonthCount} receipts`}
-              />
-              <StatCard
-                label="Average Receipt"
-                value={formatCurrency(s.averageReceipt)}
               />
               <StatCard label="Total Receipts" value={String(s.count)} />
             </div>
