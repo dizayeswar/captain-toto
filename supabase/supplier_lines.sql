@@ -7,9 +7,23 @@ create table if not exists public.supplier_invoice_lines (
   booking_ref  text not null default '',
   description  text not null default '',
   amount       numeric not null default 0,
+  client_name  text not null default '',
+  pnr          text not null default '',
+  route        text not null default '',
+  issue_date   date,
   notes        text not null default '',
   sort_order   integer not null default 0
 );
+
+-- Add columns if table already existed from an earlier version
+alter table public.supplier_invoice_lines
+  add column if not exists client_name text not null default '';
+alter table public.supplier_invoice_lines
+  add column if not exists pnr text not null default '';
+alter table public.supplier_invoice_lines
+  add column if not exists route text not null default '';
+alter table public.supplier_invoice_lines
+  add column if not exists issue_date date;
 
 create index if not exists supplier_invoice_lines_invoice_idx
   on public.supplier_invoice_lines (invoice_id);

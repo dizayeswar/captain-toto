@@ -332,6 +332,10 @@ export type SupplierInvoiceLine = {
   description: string;
   /** Supplier cost only — for tickets this is ticket_cost (no service fee). */
   amount: number;
+  client_name: string;
+  pnr: string;
+  route: string;
+  issue_date: string; // ISO date
   notes: string;
 };
 

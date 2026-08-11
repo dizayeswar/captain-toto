@@ -33,6 +33,10 @@ function blankLine(): SupplierInvoiceLine {
     booking_ref: "",
     description: "",
     amount: 0,
+    client_name: "",
+    pnr: "",
+    route: "",
+    issue_date: "",
     notes: "",
   };
 }
@@ -69,12 +73,23 @@ export default function SupplierInvoiceForm({
     const opt = linkOptions.find((o) => o.ref === ref);
     if (!opt) return;
     setLines((prev) => [
-      ...prev.filter((l) => l.booking_ref || l.description || l.amount),
+      ...prev.filter(
+        (l) =>
+          l.booking_ref ||
+          l.description ||
+          l.amount ||
+          l.client_name ||
+          l.route
+      ),
       {
         service_type: opt.service_type,
         booking_ref: opt.ref,
         description: opt.description,
         amount: opt.amount,
+        client_name: opt.client_name,
+        pnr: opt.pnr,
+        route: opt.route,
+        issue_date: opt.issue_date,
         notes: "",
       },
     ]);
@@ -193,72 +208,111 @@ export default function SupplierInvoiceForm({
           {lines.map((line, i) => (
             <div
               key={i}
-              className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-2 lg:grid-cols-6"
+              className="space-y-3 rounded-xl border border-slate-200 p-4"
             >
-              <div>
-                <label className={labelCls}>Service</label>
-                <select
-                  value={line.service_type}
-                  onChange={(e) =>
-                    updateLine(i, { service_type: e.target.value })
-                  }
-                  className={inputCls}
-                >
-                  {SERVICE_TYPES.map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <label className={labelCls}>Service</label>
+                  <select
+                    value={line.service_type}
+                    onChange={(e) =>
+                      updateLine(i, { service_type: e.target.value })
+                    }
+                    className={inputCls}
+                  >
+                    {SERVICE_TYPES.map((t) => (
+                      <option key={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>ID / Ref</label>
+                  <input
+                    value={line.booking_ref}
+                    onChange={(e) =>
+                      updateLine(i, { booking_ref: e.target.value })
+                    }
+                    placeholder="CT-0001 / CTH-… / CTV-…"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Issue Date</label>
+                  <input
+                    type="date"
+                    value={line.issue_date || ""}
+                    onChange={(e) =>
+                      updateLine(i, { issue_date: e.target.value })
+                    }
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Amount (cost) $</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={line.amount}
+                    onChange={(e) =>
+                      updateLine(i, { amount: Number(e.target.value) })
+                    }
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Name</label>
+                  <input
+                    value={line.client_name}
+                    onChange={(e) =>
+                      updateLine(i, { client_name: e.target.value })
+                    }
+                    dir="auto"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>PNR / Confirmation</label>
+                  <input
+                    value={line.pnr}
+                    onChange={(e) => updateLine(i, { pnr: e.target.value })}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Route / Destination</label>
+                  <input
+                    value={line.route}
+                    onChange={(e) => updateLine(i, { route: e.target.value })}
+                    placeholder="EBL - CGK or city"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Description / Notes</label>
+                  <input
+                    value={line.description}
+                    onChange={(e) =>
+                      updateLine(i, { description: e.target.value })
+                    }
+                    dir="auto"
+                    className={inputCls}
+                  />
+                </div>
               </div>
-              <div>
-                <label className={labelCls}>Booking / Ref</label>
-                <input
-                  value={line.booking_ref}
-                  onChange={(e) =>
-                    updateLine(i, { booking_ref: e.target.value })
-                  }
-                  placeholder="CT-0001 / CTH-… / CTV-…"
-                  className={inputCls}
-                />
-              </div>
-              <div className="lg:col-span-2">
-                <label className={labelCls}>Description</label>
-                <input
-                  value={line.description}
-                  onChange={(e) =>
-                    updateLine(i, { description: e.target.value })
-                  }
-                  dir="auto"
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Amount (cost) $</label>
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={line.amount}
-                  onChange={(e) =>
-                    updateLine(i, { amount: Number(e.target.value) })
-                  }
-                  className={inputCls}
-                />
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setLines((prev) =>
-                      prev.length === 1
-                        ? [blankLine()]
-                        : prev.filter((_, idx) => idx !== i)
-                    )
-                  }
-                  className="text-sm font-medium text-red-600 hover:underline"
-                >
-                  Remove
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setLines((prev) =>
+                    prev.length === 1
+                      ? [blankLine()]
+                      : prev.filter((_, idx) => idx !== i)
+                  )
+                }
+                className="text-sm font-medium text-red-600 hover:underline"
+              >
+                Remove line
+              </button>
             </div>
           ))}
         </div>

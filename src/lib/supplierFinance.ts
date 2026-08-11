@@ -40,6 +40,10 @@ export function buildSupplierInvoice(
     description: l.description ?? "",
     booking_ref: l.booking_ref ?? "",
     notes: l.notes ?? "",
+    client_name: l.client_name ?? "",
+    pnr: l.pnr ?? "",
+    route: l.route ?? "",
+    issue_date: l.issue_date ?? "",
     service_type: l.service_type || "Other",
   }));
   const summary = summarizeLines(lines);
@@ -90,8 +94,12 @@ const demoInvoices: SupplierInvoice[] = [
         {
           service_type: "Hotel",
           booking_ref: "CTH-0002",
-          description: "Hotel accommodation — BLUE MARINE HOTEL",
+          description: "HOTEL — BLUE MARINE HOTEL",
           amount: 9308,
+          client_name: "DIAKO MOGHTADERI",
+          pnr: "997679627",
+          route: "HAMMAMET / TUNIS",
+          issue_date: "2026-07-14",
           notes: "",
         },
       ],
@@ -117,6 +125,10 @@ async function fetchLines(
     booking_ref: r.booking_ref ?? "",
     description: r.description ?? "",
     amount: Number(r.amount) || 0,
+    client_name: r.client_name ?? "",
+    pnr: r.pnr ?? "",
+    route: r.route ?? "",
+    issue_date: r.issue_date ?? "",
     notes: r.notes ?? "",
   }));
 }
@@ -134,6 +146,10 @@ async function replaceLines(
     booking_ref: l.booking_ref,
     description: l.description,
     amount: l.amount,
+    client_name: l.client_name,
+    pnr: l.pnr,
+    route: l.route,
+    issue_date: l.issue_date || null,
     notes: l.notes,
     sort_order: i,
   }));
