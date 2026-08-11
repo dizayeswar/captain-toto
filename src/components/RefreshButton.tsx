@@ -24,7 +24,7 @@ export default function RefreshButton({
           router.refresh();
         });
       }}
-      className={`page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70 ${className}`}
+      className={`page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 ${className}`}
       aria-busy={pending}
       title="Refresh page data"
     >

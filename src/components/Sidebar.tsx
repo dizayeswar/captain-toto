@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+import ThemeToggle from "./ThemeToggle";
+
 type NavItem = { href: string; label: string };
 type NavSection = { id: string; title: string; icon: string; items: NavItem[] };
 
@@ -147,7 +149,7 @@ export default function Sidebar() {
     setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-center gap-3 px-6 py-5">
         <Image
           src="/logo.png"
@@ -157,12 +159,16 @@ export default function Sidebar() {
           className="h-10 w-10"
         />
         <div className="leading-tight">
-          <p className="text-sm font-semibold text-slate-900">Captain ToTo</p>
-          <p className="text-xs text-slate-500">Booking System</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Captain ToTo
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Booking System
+          </p>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-6">
+      <nav className="flex-1 overflow-y-auto px-3 pb-4">
         {SECTIONS.map((section) => {
           const expanded = open[section.id];
           const sectionActive = sectionOwnsPath(section, pathname);
@@ -173,8 +179,8 @@ export default function Sidebar() {
                 onClick={() => toggle(section.id)}
                 className={`nav-section flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
                   sectionActive
-                    ? "bg-brand/10 text-brand"
-                    : "bg-transparent text-slate-700 hover:bg-slate-100"
+                    ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-sky-300"
+                    : "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
                 <Icon name={section.icon} />
@@ -193,7 +199,7 @@ export default function Sidebar() {
                           className={`block rounded-lg px-3 py-2 text-sm ${
                             active
                               ? "bg-brand font-medium text-white"
-                              : "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                              : "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                           }`}
                         >
                           {item.label}
@@ -207,6 +213,10 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="border-t border-slate-200 p-3 dark:border-slate-700">
+        <ThemeToggle />
+      </div>
     </aside>
   );
 }
