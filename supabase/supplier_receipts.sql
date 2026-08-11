@@ -9,6 +9,8 @@ create table if not exists public.supplier_payment_receipts (
   amount        numeric not null default 0,
   signature     text not null default '',
   notes         text not null default '',
+  source_invoice_id text not null default '',
+  source_invoice_no text not null default '',
   created_at    timestamptz not null default now()
 );
 

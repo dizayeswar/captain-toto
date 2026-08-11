@@ -34,6 +34,7 @@ import {
   createSupplierPaymentReceipt,
   updateSupplierPaymentReceipt,
   deleteSupplierPaymentReceipt,
+  ensureReceiptForSettledInvoice,
 } from "./supplierReceipts";
 import {
   createExpense,
@@ -383,8 +384,10 @@ function parseSupplierInvoiceForm(formData: FormData): SupplierInvoiceInput {
 }
 
 export async function createSupplierInvoiceAction(formData: FormData) {
-  await createSupplierInvoice(parseSupplierInvoiceForm(formData));
+  const invoice = await createSupplierInvoice(parseSupplierInvoiceForm(formData));
+  const receipt = await ensureReceiptForSettledInvoice(invoice);
   revalidatePath("/", "layout");
+  if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
 }
 
@@ -392,8 +395,13 @@ export async function updateSupplierInvoiceAction(
   id: string,
   formData: FormData
 ) {
-  await updateSupplierInvoice(id, parseSupplierInvoiceForm(formData));
+  const invoice = await updateSupplierInvoice(
+    id,
+    parseSupplierInvoiceForm(formData)
+  );
+  const receipt = await ensureReceiptForSettledInvoice(invoice);
   revalidatePath("/", "layout");
+  if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
 }
 

@@ -396,6 +396,9 @@ export type SupplierPaymentReceipt = {
   amount: number;
   signature: string;
   notes: string;
+  /** Linked supplier invoice id when auto-created from Settled payment */
+  source_invoice_id: string;
+  source_invoice_no: string;
   created_at?: string;
 };
 
@@ -405,6 +408,8 @@ export type SupplierPaymentReceiptInput = {
   amount: number;
   signature: string;
   notes: string;
+  source_invoice_id?: string;
+  source_invoice_no?: string;
 };
 
 // ---------------------------------------------------------------------------

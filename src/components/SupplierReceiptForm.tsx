@@ -81,13 +81,12 @@ export default function SupplierReceiptForm({
             </select>
           </div>
           <div className="sm:col-span-2">
-            <label className={labelCls}>Signature *</label>
+            <label className={labelCls}>Signature</label>
             <input
               type="text"
               name="signature"
-              required
               defaultValue={receipt?.signature ?? ""}
-              placeholder="Name of person signing"
+              placeholder="Name of person signing (optional)"
               dir="auto"
               className={inputCls}
             />

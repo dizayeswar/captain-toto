@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import type {
+  SupplierInvoice,
   SupplierPaymentReceipt,
   SupplierPaymentReceiptInput,
 } from "./types";
@@ -25,6 +26,8 @@ function buildReceipt(
     amount: Number(input.amount) || 0,
     signature: input.signature.trim(),
     notes: input.notes.trim(),
+    source_invoice_id: input.source_invoice_id?.trim() || "",
+    source_invoice_no: input.source_invoice_no?.trim() || "",
   };
 }
 
@@ -42,7 +45,11 @@ export async function getSupplierPaymentReceipts(): Promise<
     .select("*")
     .order("receipt_date", { ascending: false });
   if (error || !data) return [];
-  return data as SupplierPaymentReceipt[];
+  return (data as SupplierPaymentReceipt[]).map((r) => ({
+    ...r,
+    source_invoice_id: r.source_invoice_id ?? "",
+    source_invoice_no: r.source_invoice_no ?? "",
+  }));
 }
 
 export async function getSupplierPaymentReceipt(
@@ -56,7 +63,34 @@ export async function getSupplierPaymentReceipt(
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
-  return data as SupplierPaymentReceipt;
+  const r = data as SupplierPaymentReceipt;
+  return {
+    ...r,
+    source_invoice_id: r.source_invoice_id ?? "",
+    source_invoice_no: r.source_invoice_no ?? "",
+  };
+}
+
+export async function findReceiptBySourceInvoice(
+  invoiceId: string
+): Promise<SupplierPaymentReceipt | null> {
+  if (!invoiceId) return null;
+  const supabase = getSupabase();
+  if (!supabase) {
+    return demoStore.find((r) => r.source_invoice_id === invoiceId) ?? null;
+  }
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("source_invoice_id", invoiceId)
+    .maybeSingle();
+  if (error || !data) return null;
+  const r = data as SupplierPaymentReceipt;
+  return {
+    ...r,
+    source_invoice_id: r.source_invoice_id ?? "",
+    source_invoice_no: r.source_invoice_no ?? "",
+  };
 }
 
 export async function createSupplierPaymentReceipt(
@@ -116,4 +150,42 @@ export async function deleteSupplierPaymentReceipt(id: string): Promise<void> {
   }
   const { error } = await supabase.from(TABLE).delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+/**
+ * When a supplier invoice is Settled, create (or refresh) a printable payment receipt.
+ * Amount uses net paid to the supplier. Returns the receipt, or null if not settled.
+ */
+export async function ensureReceiptForSettledInvoice(
+  invoice: SupplierInvoice
+): Promise<SupplierPaymentReceipt | null> {
+  if (invoice.payment_status !== "Settled") return null;
+
+  const amount =
+    Number(invoice.net_paid_usd) ||
+    Number(invoice.paid_usd) ||
+    Number(invoice.invoice_usd) ||
+    0;
+  const today = new Date().toISOString().slice(0, 10);
+  const payload: SupplierPaymentReceiptInput = {
+    receipt_date: invoice.invoice_date || today,
+    supplier: invoice.supplier,
+    amount,
+    signature: "",
+    notes: `Auto from ${invoice.invoice_id}`,
+    source_invoice_id: invoice.id,
+    source_invoice_no: invoice.invoice_id,
+  };
+
+  const existing = await findReceiptBySourceInvoice(invoice.id);
+  if (existing) {
+    // Keep any signature the user already wrote; refresh amount/supplier/date.
+    return updateSupplierPaymentReceipt(existing.id, {
+      ...payload,
+      signature: existing.signature || payload.signature,
+      notes: existing.notes || payload.notes,
+    });
+  }
+
+  return createSupplierPaymentReceipt(payload);
 }

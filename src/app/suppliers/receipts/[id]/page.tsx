@@ -102,6 +102,11 @@ export default async function SupplierReceiptPrintPage(
               {receipt.signature || "—"}
             </span>
           </p>
+          {receipt.source_invoice_no ? (
+            <p className="mt-0.5 text-[9px] text-slate-400">
+              From invoice {receipt.source_invoice_no}
+            </p>
+          ) : null}
         </div>
 
         <p className="mt-4 text-center text-[9px] text-accent">

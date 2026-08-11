@@ -35,6 +35,7 @@ export default async function SupplierReceiptsPage() {
                       Amount
                     </th>
                     <th className="px-5 py-3 font-semibold">Signature</th>
+                    <th className="px-5 py-3 font-semibold">Invoice</th>
                     <th className="px-5 py-3 text-right font-semibold">
                       Actions
                     </th>
@@ -57,6 +58,9 @@ export default async function SupplierReceiptsPage() {
                       </td>
                       <td className="px-5 py-3 text-slate-700" dir="auto">
                         {r.signature || "—"}
+                      </td>
+                      <td className="px-5 py-3 text-slate-600">
+                        {r.source_invoice_no || "—"}
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-3">
