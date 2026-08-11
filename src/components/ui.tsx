@@ -42,7 +42,7 @@ export function Button({
       "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
     danger: "border border-red-200 bg-white text-red-600 hover:bg-red-50",
   };
-  const cls = `inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${styles[variant]}`;
+  const cls = `page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold ${styles[variant]}`;
 
   if (href) {
     return (

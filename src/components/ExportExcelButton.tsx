@@ -48,7 +48,7 @@ export default function ExportExcelButton({
         }
       }}
       title={empty ? "Nothing to export yet" : "Download Excel (.xlsx)"}
-      className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+      className="page-chrome-btn inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <svg
         className={`h-4 w-4 ${busy ? "animate-spin" : ""}`}

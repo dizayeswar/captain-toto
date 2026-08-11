@@ -28,6 +28,24 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Keep chrome controls flat — no hover lift / jump */
+aside a,
+aside button,
+.page-chrome-btn {
+  transform: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, opacity 0.15s ease !important;
+}
+
+aside a:hover,
+aside button:hover,
+.page-chrome-btn:hover,
+aside a:active,
+aside button:active,
+.page-chrome-btn:active {
+  transform: none !important;
+}
+
 @media print {
   .no-print {
     display: none !important;

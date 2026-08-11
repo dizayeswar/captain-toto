@@ -171,10 +171,10 @@ export default function Sidebar() {
               <button
                 type="button"
                 onClick={() => toggle(section.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
                   sectionActive
                     ? "bg-brand/10 text-brand"
-                    : "text-slate-700 hover:bg-slate-100"
+                    : "bg-transparent text-slate-700 hover:bg-slate-100"
                 }`}
               >
                 <Icon name={section.icon} />
@@ -190,10 +190,10 @@ export default function Sidebar() {
                       <li key={item.href}>
                         <Link
                           href={item.href}
-                          className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                          className={`block rounded-lg px-3 py-2 text-sm ${
                             active
                               ? "bg-brand font-medium text-white"
-                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                              : "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                           }`}
                         >
                           {item.label}
