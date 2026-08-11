@@ -5,7 +5,20 @@ const TABLE = "finance_deposits";
 
 const demoStore: FinanceDeposit[] = [];
 
-export const BALANCE_BROUGHT_BY = ["Osman", "Sherwani", "Ali", "Staff1", "Other"] as const;
+/** Expenses with this Paid By value deduct from cash balance. */
+export const TOTO_BALANCE_PAID_BY = "ToTo Balance";
+
+export const BALANCE_BROUGHT_BY = [
+  "Osman",
+  "Sherwani",
+  "Ali",
+  "Staff1",
+  "Other",
+] as const;
+
+export function isPaidFromTotoBalance(paidBy: string): boolean {
+  return (paidBy || "").trim() === TOTO_BALANCE_PAID_BY;
+}
 
 export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
   const supabase = getSupabase();
@@ -61,10 +74,26 @@ export async function deleteFinanceDeposit(id: string): Promise<void> {
 export type FinanceBalance = {
   depositedUsd: number;
   depositedIqd: number;
+  /** Spent from ToTo Balance only */
   spentUsd: number;
   spentIqd: number;
   balanceUsd: number;
   balanceIqd: number;
+};
+
+export type OwedToPerson = {
+  person: string;
+  usd: number;
+  iqd: number;
+  count: number;
+};
+
+export type OwedToOthers = {
+  totalUsd: number;
+  totalIqd: number;
+  count: number;
+  byPerson: OwedToPerson[];
+  expenses: Expense[];
 };
 
 export type BalanceActivity = {
@@ -75,7 +104,7 @@ export type BalanceActivity = {
   detail: string;
   amount: number;
   currency: string;
-  signedAmount: number; // + for deposit, − for expense
+  signedAmount: number;
 };
 
 export function computeFinanceBalance(
@@ -92,7 +121,10 @@ export function computeFinanceBalance(
     if (d.currency === "IQD") depositedIqd += a;
     else depositedUsd += a;
   }
+
+  // Only expenses paid from ToTo Balance reduce cash
   for (const e of expenses) {
+    if (!isPaidFromTotoBalance(e.paid_by)) continue;
     const a = Number(e.amount) || 0;
     if (e.currency === "IQD") spentIqd += a;
     else spentUsd += a;
@@ -108,7 +140,48 @@ export function computeFinanceBalance(
   };
 }
 
-/** Combined timeline: deposits (in) and expenses (out), newest first. */
+/** Expenses paid by staff/others — ToTo still owes them reimbursement. */
+export function computeOwedToOthers(expenses: Expense[]): OwedToOthers {
+  const staffPaid = expenses.filter((e) => !isPaidFromTotoBalance(e.paid_by));
+  const byPersonMap = new Map<string, OwedToPerson>();
+  let totalUsd = 0;
+  let totalIqd = 0;
+
+  for (const e of staffPaid) {
+    const a = Number(e.amount) || 0;
+    const person = (e.paid_by || "—").trim() || "—";
+    if (e.currency === "IQD") totalIqd += a;
+    else totalUsd += a;
+
+    const row = byPersonMap.get(person) ?? {
+      person,
+      usd: 0,
+      iqd: 0,
+      count: 0,
+    };
+    row.count += 1;
+    if (e.currency === "IQD") row.iqd += a;
+    else row.usd += a;
+    byPersonMap.set(person, row);
+  }
+
+  return {
+    totalUsd,
+    totalIqd,
+    count: staffPaid.length,
+    byPerson: [...byPersonMap.values()].sort((a, b) =>
+      a.person.localeCompare(b.person)
+    ),
+    expenses: [...staffPaid].sort((a, b) =>
+      b.expense_date.localeCompare(a.expense_date)
+    ),
+  };
+}
+
+/**
+ * Balance timeline: deposits (anyone) + expenses paid from ToTo Balance only.
+ * Staff-paid expenses are tracked under "owed to others", not here.
+ */
 export function buildBalanceActivity(
   deposits: FinanceDeposit[],
   expenses: Expense[]
@@ -130,6 +203,7 @@ export function buildBalanceActivity(
   }
 
   for (const e of expenses) {
+    if (!isPaidFromTotoBalance(e.paid_by)) continue;
     const amount = Number(e.amount) || 0;
     items.push({
       id: `exp-${e.id}`,

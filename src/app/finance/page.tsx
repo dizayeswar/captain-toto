@@ -3,6 +3,7 @@ import { getExpenses, summarizeExpenses } from "@/lib/expenses";
 import {
   getFinanceDeposits,
   computeFinanceBalance,
+  computeOwedToOthers,
   buildBalanceActivity,
 } from "@/lib/financeBalance";
 import {
@@ -29,6 +30,7 @@ export default async function FinancePage() {
   ]);
   const s = summarizeExpenses(expenses);
   const bal = computeFinanceBalance(deposits, expenses);
+  const owed = computeOwedToOthers(expenses);
   const activity = buildBalanceActivity(deposits, expenses);
 
   return (
@@ -53,7 +55,10 @@ export default async function FinancePage() {
               Cash balance
             </h2>
             <p className="text-sm text-slate-500">
-              Deposits add money. Every expense deducts from the same balance.
+              Anyone can deposit cash. Only expenses paid by{" "}
+              <span className="font-medium text-slate-700">ToTo Balance</span>{" "}
+              reduce this cash. Staff-paid expenses are tracked below as money
+              ToTo owes.
             </p>
           </div>
 
@@ -61,13 +66,13 @@ export default async function FinancePage() {
             <StatCard
               label="Balance IQD"
               value={`${formatNumber(bal.balanceIqd)} IQD`}
-              hint={`In ${formatNumber(bal.depositedIqd)} − Out ${formatNumber(bal.spentIqd)}`}
+              hint={`In ${formatNumber(bal.depositedIqd)} − Out ${formatNumber(bal.spentIqd)} (ToTo Balance)`}
               tone={bal.balanceIqd < 0 ? "red" : "green"}
             />
             <StatCard
               label="Balance USD"
               value={formatCurrency(bal.balanceUsd)}
-              hint={`In ${formatCurrency(bal.depositedUsd)} − Out ${formatCurrency(bal.spentUsd)}`}
+              hint={`In ${formatCurrency(bal.depositedUsd)} − Out ${formatCurrency(bal.spentUsd)} (ToTo Balance)`}
               tone={bal.balanceUsd < 0 ? "red" : "green"}
             />
             <StatCard
@@ -160,6 +165,121 @@ export default async function FinancePage() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </section>
+
+        {/* ToTo owes staff / others */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              ToTo owes others
+            </h2>
+            <p className="text-sm text-slate-500">
+              Expenses paid by Osman, Sherwani, Ali, etc. — not taken from cash
+              balance. ToTo still needs to reimburse them.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <StatCard
+              label="Owed IQD"
+              value={`${formatNumber(owed.totalIqd)} IQD`}
+              hint={`${owed.count} staff-paid expense${owed.count === 1 ? "" : "s"}`}
+              tone={owed.totalIqd > 0 ? "amber" : "default"}
+            />
+            <StatCard
+              label="Owed USD"
+              value={formatCurrency(owed.totalUsd)}
+              tone={owed.totalUsd > 0 ? "amber" : "default"}
+            />
+            <StatCard
+              label="People owed"
+              value={String(owed.byPerson.length)}
+              hint={
+                owed.byPerson.length
+                  ? owed.byPerson.map((p) => p.person).join(", ")
+                  : "None"
+              }
+            />
+          </div>
+
+          {owed.byPerson.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {owed.byPerson.map((p) => (
+                <Card key={p.person} className="p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Owe {p.person}
+                  </div>
+                  <div className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
+                    {p.iqd > 0 && `${formatNumber(p.iqd)} IQD`}
+                    {p.iqd > 0 && p.usd > 0 && " · "}
+                    {p.usd > 0 && formatCurrency(p.usd)}
+                    {p.iqd === 0 && p.usd === 0 && "—"}
+                  </div>
+                  <div className="mt-0.5 text-xs text-slate-500">
+                    {p.count} expense{p.count === 1 ? "" : "s"}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {owed.expenses.length === 0 ? (
+            <EmptyState message="No staff-paid expenses. Nothing owed yet." />
+          ) : (
+            <Card className="overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
+                      <th className="px-5 py-3 font-semibold">Date</th>
+                      <th className="px-5 py-3 font-semibold">Owe to</th>
+                      <th className="px-5 py-3 font-semibold">Category</th>
+                      <th className="px-5 py-3 font-semibold">Description</th>
+                      <th className="px-5 py-3 font-semibold">Method</th>
+                      <th className="px-5 py-3 text-right font-semibold">
+                        Amount
+                      </th>
+                      <th className="px-5 py-3 text-right font-semibold">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {owed.expenses.map((e) => (
+                      <tr key={e.id} className="hover:bg-slate-50">
+                        <td className="whitespace-nowrap px-5 py-3 text-slate-600">
+                          {formatDate(e.expense_date)}
+                        </td>
+                        <td className="px-5 py-3 font-medium text-slate-800">
+                          {e.paid_by || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-slate-800">
+                          {e.category || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-slate-600" dir="auto">
+                          {e.description || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-slate-600">
+                          {e.payment_method || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-right font-medium tabular-nums text-amber-800">
+                          {formatAmount(e.amount, e.currency)}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <Link
+                            href={`/finance/${e.id}`}
+                            className="font-medium text-brand hover:underline"
+                          >
+                            Edit
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

@@ -21,8 +21,8 @@ export default function FinanceDepositForm({ action }: Props) {
         Add to balance
       </h2>
       <p className="mb-4 text-xs text-slate-500">
-        Record cash brought in (who / date / amount). Expenses deduct from this
-        balance automatically.
+        Record cash brought in by anyone (who / date / amount). Only expenses
+        with Paid by = ToTo Balance deduct from this cash.
       </p>
       <form action={action} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
