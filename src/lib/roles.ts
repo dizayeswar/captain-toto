@@ -26,6 +26,11 @@ export function canPurgeRecycleBin(role: AppRole): boolean {
   return role === "ceo" || role === "admin";
 }
 
+/** Full system data wipe — CEO only. */
+export function canResetData(role: AppRole): boolean {
+  return role === "ceo";
+}
+
 export function canAssignRole(
   actor: AppRole,
   targetRole: AppRole,

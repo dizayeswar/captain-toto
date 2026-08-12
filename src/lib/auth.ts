@@ -12,6 +12,7 @@ export {
   canAccessFinance,
   canManageUsers,
   canPurgeRecycleBin,
+  canResetData,
   canAssignRole,
 } from "./roles";
 

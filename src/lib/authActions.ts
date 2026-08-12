@@ -52,3 +52,24 @@ export async function updateUserRoleAction(formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/settings/users");
 }
+
+export async function resetDataAction(
+  _prev: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "").trim();
+
+  if (confirm !== "RESET") {
+    return { error: 'Type RESET in capital letters to confirm.' };
+  }
+
+  const { resetAllData } = await import("./resetData");
+  const result = await resetAllData(password);
+  if (!result.ok) {
+    return { error: result.error };
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
