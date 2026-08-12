@@ -3,8 +3,6 @@ import { getCurrentProfile, canAccessFinance } from "@/lib/auth";
 import { getBookings, computeTotals } from "@/lib/bookings";
 import { getHotelBookings, summarizeHotels } from "@/lib/hotels";
 import { getVisaCases, summarizeVisas } from "@/lib/visas";
-import { getInvoices } from "@/lib/invoices";
-import { getPaymentInvoices, summarizePayments } from "@/lib/payments";
 import {
   getSupplierInvoices,
   summarizeSupplierFinance,
@@ -50,8 +48,6 @@ export default async function DashboardPage() {
     bookings,
     hotels,
     visas,
-    invoices,
-    payments,
     supplierInvoices,
     expenses,
     deposits,
@@ -59,8 +55,6 @@ export default async function DashboardPage() {
     getBookings(),
     getHotelBookings(),
     getVisaCases(),
-    getInvoices(),
-    getPaymentInvoices(),
     getSupplierInvoices(),
     showFinance ? getExpenses() : Promise.resolve([]),
     showFinance ? getFinanceDeposits() : Promise.resolve([]),
@@ -69,81 +63,20 @@ export default async function DashboardPage() {
   const ticket = computeTotals(bookings);
   const hotel = summarizeHotels(hotels);
   const visa = summarizeVisas(visas);
-  const payment = summarizePayments(payments);
   const supplier = summarizeSupplierFinance(supplierInvoices);
   const expense = summarizeExpenses(expenses);
   const balance = computeFinanceBalance(deposits, expenses);
   const owed = computeOwedToOthers(expenses);
 
-  const companyProfit = ticket.profit + hotel.totalProfit;
-
   return (
     <>
       <PageHeader
         title="Dashboard"
-        subtitle="Summary of ticket bookings, invoices, hotel, visa, suppliers, and finance"
+        subtitle="Summary of ticket bookings, hotel, visa, suppliers, and finance"
         action={<Button href="/bookings/new">+ New Ticket booking</Button>}
       />
 
       <div className="space-y-10 p-8">
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-slate-900">
-            At a glance
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <StatCard
-              href="/bookings"
-              label="Ticket bookings"
-              value={String(ticket.bookings)}
-              hint={`${ticket.pending} pending`}
-            />
-            <StatCard
-              href="/bookings"
-              label="Ticket profit"
-              value={formatCurrency(ticket.profit)}
-              tone={ticket.profit >= 0 ? "green" : "red"}
-            />
-            <StatCard
-              href="/hotel"
-              label="Hotel profit"
-              value={formatCurrency(hotel.totalProfit)}
-              tone={hotel.totalProfit >= 0 ? "green" : "red"}
-            />
-            <StatCard
-              href="/visa"
-              label="Visa sales"
-              value={formatCurrency(visa.totalSales)}
-            />
-            {showFinance && (
-              <>
-                <StatCard
-                  href="/finance"
-                  label="Cash balance IQD"
-                  value={`${formatNumber(balance.balanceIqd)} IQD`}
-                  tone={balance.balanceIqd < 0 ? "red" : "green"}
-                />
-                <StatCard
-                  href="/finance"
-                  label="Owed to staff"
-                  value={`${formatNumber(owed.totalIqd)} IQD`}
-                  tone={owed.totalIqd > 0 ? "amber" : "default"}
-                  hint={
-                    owed.totalUsd > 0 ? formatCurrency(owed.totalUsd) : undefined
-                  }
-                />
-              </>
-            )}
-          </div>
-          {(companyProfit !== 0 || ticket.revenue > 0) && (
-            <p className="mt-3 text-xs text-slate-500">
-              Combined ticket + hotel profit:{" "}
-              <span className="font-medium text-slate-700">
-                {formatCurrency(companyProfit)}
-              </span>
-            </p>
-          )}
-        </section>
-
         <section>
           <SectionHeader title="Ticket" href="/bookings" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -168,64 +101,6 @@ export default async function DashboardPage() {
               label="Pending"
               value={String(ticket.pending)}
               tone={ticket.pending > 0 ? "amber" : "default"}
-            />
-          </div>
-        </section>
-
-        <section>
-          <SectionHeader title="Ticket Invoice" href="/invoices" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              href="/invoices"
-              label="Invoices"
-              value={String(invoices.length)}
-            />
-            <StatCard
-              href="/invoices/new"
-              label="New invoice"
-              value="+"
-              hint="Create ticket invoice"
-            />
-            <StatCard
-              href="/invoices/policies"
-              label="Policies"
-              value="→"
-              hint="Airline policies"
-            />
-            <StatCard
-              href="/invoices"
-              label="All invoices"
-              value="Open"
-              hint="View invoice list"
-            />
-          </div>
-        </section>
-
-        <section>
-          <SectionHeader title="Payment Invoice" href="/payments" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              href="/payments"
-              label="Receipts"
-              value={String(payment.count)}
-            />
-            <StatCard
-              href="/payments"
-              label="Total received"
-              value={formatCurrency(payment.totalReceived)}
-              tone="green"
-            />
-            <StatCard
-              href="/payments/summary"
-              label="This month"
-              value={formatCurrency(payment.thisMonthTotal)}
-              hint={`${payment.thisMonthCount} receipts`}
-            />
-            <StatCard
-              href="/payments/summary"
-              label="Payments summary"
-              value="→"
-              hint="Full breakdown"
             />
           </div>
         </section>
