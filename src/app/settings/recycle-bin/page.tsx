@@ -20,7 +20,7 @@ function RestoreButton({ id, label }: { id: string; label: string }) {
       <input type="hidden" name="id" value={id} />
       <button
         type="submit"
-        className="font-medium text-brand hover:underline dark:text-sky-300"
+        className="font-medium text-brand hover:underline dark:text-accent"
       >
         {label}
       </button>

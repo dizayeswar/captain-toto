@@ -234,7 +234,7 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
                 onClick={() => toggle(section.id)}
                 className={`nav-section flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
                   sectionActive
-                    ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-sky-300"
+                    ? "bg-brand/10 text-brand dark:bg-accent/15 dark:text-accent"
                     : "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >

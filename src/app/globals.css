@@ -3,29 +3,39 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
-  --brand: #1e3a5f;
-  --brand-dark: #14273f;
-  --accent: #c8a13e;
-  --surface: #ffffff;
-  --surface-muted: #f8fafc;
-  --border: #e2e8f0;
+  /* Brand palette: navy + golds (red/green status colors stay Tailwind defaults) */
+  --navy: #061b30;
+  --gold: #c79b54;
+  --gold-deep: #a47c36;
+
+  --background: #f5f0e6;
+  --foreground: #061b30;
+  --brand: #061b30;
+  --brand-dark: #04111f;
+  --accent: #c79b54;
+  --accent-deep: #a47c36;
+  --surface: #fffcf7;
+  --surface-muted: #efe8da;
+  --border: #ddd0b8;
 }
 
 html.dark {
   color-scheme: dark;
-  /* Soft dark navy (lighter than near-black) */
-  --background: #1a3352;
-  --foreground: #e8eef6;
-  --brand: #6b9fd4;
-  --brand-dark: #5488bd;
-  --accent: #d4af4a;
-  --surface: #243b5c;
-  --surface-muted: #1e3858;
-  --surface-hover: #2d4a6e;
-  --border: #3d5678;
-  --border-strong: #4a668a;
+  --navy: #061b30;
+  --gold: #c79b54;
+  --gold-deep: #a47c36;
+
+  --background: #061b30;
+  --foreground: #f5efe3;
+  --brand: #c79b54;
+  --brand-dark: #a47c36;
+  --accent: #c79b54;
+  --accent-deep: #a47c36;
+  --surface: #0a243c;
+  --surface-muted: #071929;
+  --surface-hover: #0f3050;
+  --border: #1a3d5c;
+  --border-strong: #2a5080;
 }
 
 @theme inline {
@@ -34,6 +44,9 @@ html.dark {
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
   --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
   --font-sans: var(--font-geist-sans);
 }
 
@@ -90,26 +103,26 @@ html.dark .border-dashed.border-slate-300 {
 }
 html.dark .text-slate-900,
 html.dark .text-slate-100 {
-  color: #f4f7fb !important;
+  color: #f5efe3 !important;
 }
 html.dark .text-slate-800 {
-  color: #e8eef6 !important;
+  color: #ebe4d4 !important;
 }
 html.dark .text-slate-700,
 html.dark .text-slate-200 {
-  color: #d7e1ee !important;
+  color: #d9d0bc !important;
 }
 html.dark .text-slate-600,
 html.dark .text-slate-300 {
-  color: #b8c7db !important;
+  color: #c4b89e !important;
 }
 html.dark .text-slate-500,
 html.dark .text-slate-400 {
-  color: #9aadbf !important;
+  color: #a89878 !important;
 }
 html.dark .hover\:text-slate-900:hover,
 html.dark .hover\:text-slate-100:hover {
-  color: #f4f7fb !important;
+  color: #f5efe3 !important;
 }
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-y.divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
@@ -171,16 +184,16 @@ html.dark textarea {
 }
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #8da0b8;
+  color: #8a7d64;
 }
 
 /* Only remap dark-end slate tokens used as surfaces (keep 50–500 for text) */
 html.dark {
-  --color-slate-600: #4a668a;
-  --color-slate-700: #2d4a6e;
-  --color-slate-800: #243b5c;
-  --color-slate-900: #1e3858;
-  --color-slate-950: #1a3352;
+  --color-slate-600: #2a5080;
+  --color-slate-700: #0f3050;
+  --color-slate-800: #0a243c;
+  --color-slate-900: #071929;
+  --color-slate-950: #061b30;
 }
 
 /* Smooth hover lift for sidebar + header chrome buttons */
