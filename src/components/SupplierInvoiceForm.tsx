@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/format";
 import {
   filterSupplierLinkOptions,
   type SupplierLinkOption,
-} from "@/lib/supplierLinks";
+} from "@/lib/supplierLinkOptions";
 import type { SupplierInvoice, SupplierInvoiceLine } from "@/lib/types";
 import { Card, Button } from "./ui";
 import AmountInput from "./AmountInput";

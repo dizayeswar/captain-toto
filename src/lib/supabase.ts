@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { createServerSupabaseClient } from "./supabase/server";
 import { isSupabaseConfigured } from "./supabaseConfig";
 
 export { isSupabaseConfigured } from "./supabaseConfig";
@@ -7,9 +6,11 @@ export { isSupabaseConfigured } from "./supabaseConfig";
 /**
  * Session-aware Supabase client for Server Components / actions / route handlers.
  * Returns null in demo mode (env not configured).
+ * Uses dynamic import so client bundles never pull in next/headers.
  */
 export async function getSupabase(): Promise<SupabaseClient | null> {
   if (!isSupabaseConfigured) return null;
+  const { createServerSupabaseClient } = await import("./supabase/server");
   return createServerSupabaseClient();
 }
 

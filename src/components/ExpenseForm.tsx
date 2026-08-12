@@ -8,7 +8,7 @@ import {
   EXPENSE_PAYMENT_METHODS,
   EXPENSE_PAID_BY,
 } from "@/lib/lists";
-import { TOTO_BALANCE_PAID_BY } from "@/lib/financeBalance";
+import { TOTO_BALANCE_PAID_BY } from "@/lib/financeConstants";
 import type { Expense } from "@/lib/types";
 import { Card, Button } from "./ui";
 import AmountInput from "./AmountInput";

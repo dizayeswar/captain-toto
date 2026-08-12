@@ -1,6 +1,6 @@
 "use client";
 
-import { BALANCE_BROUGHT_BY } from "@/lib/financeBalance";
+import { BALANCE_BROUGHT_BY } from "@/lib/financeConstants";
 import { CURRENCIES } from "@/lib/lists";
 import { Button, Card } from "./ui";
 import AmountInput from "./AmountInput";

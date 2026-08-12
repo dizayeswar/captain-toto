@@ -1,25 +1,21 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
 import type { Expense, FinanceDeposit, FinanceDepositInput } from "./types";
+import {
+  TOTO_BALANCE_PAID_BY,
+  BALANCE_BROUGHT_BY,
+  isPaidFromTotoBalance,
+} from "./financeConstants";
+
+export {
+  TOTO_BALANCE_PAID_BY,
+  BALANCE_BROUGHT_BY,
+  isPaidFromTotoBalance,
+} from "./financeConstants";
 
 const TABLE = "finance_deposits";
 
 const demoStore: FinanceDeposit[] = [];
-
-/** Expenses with this Paid By value deduct from cash balance. */
-export const TOTO_BALANCE_PAID_BY = "ToTo Balance";
-
-export const BALANCE_BROUGHT_BY = [
-  "Osman",
-  "Sherwani",
-  "Ali",
-  "Staff1",
-  "Other",
-] as const;
-
-export function isPaidFromTotoBalance(paidBy: string): boolean {
-  return (paidBy || "").trim() === TOTO_BALANCE_PAID_BY;
-}
 
 export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
   const supabase = await getSupabase();
