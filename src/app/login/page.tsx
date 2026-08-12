@@ -26,7 +26,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
         <p className="mt-6 text-center text-xs text-[#a47c36]/80">
-          Accounts are created by an administrator.
+          Accounts are created by the CEO in Settings → Users.
         </p>
       </div>
     </div>

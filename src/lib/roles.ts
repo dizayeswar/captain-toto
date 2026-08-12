@@ -31,6 +31,11 @@ export function canResetData(role: AppRole): boolean {
   return role === "ceo";
 }
 
+/** Create login accounts from the app — CEO only. */
+export function canCreateUsers(role: AppRole): boolean {
+  return role === "ceo";
+}
+
 export function canAssignRole(
   actor: AppRole,
   targetRole: AppRole,

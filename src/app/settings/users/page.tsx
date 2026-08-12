@@ -1,5 +1,6 @@
 import {
   canAssignRole,
+  canCreateUsers,
   listProfiles,
   requireRole,
   ROLE_LABELS,
@@ -7,22 +8,44 @@ import {
 } from "@/lib/auth";
 import { updateUserRoleAction } from "@/lib/authActions";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
+import CreateUserForm from "@/components/CreateUserForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function UsersSettingsPage() {
   const actor = await requireRole(["ceo", "admin"]);
   const profiles = await listProfiles();
+  const showCreate = canCreateUsers(actor.role);
+  const createRoles = (["ceo", "admin", "staff"] as AppRole[]).filter((r) =>
+    canAssignRole(actor.role, r, "staff")
+  );
 
   return (
     <>
       <PageHeader
         title="Users"
-        subtitle="Manage account roles. Create new users in the Supabase Dashboard."
+        subtitle={
+          showCreate
+            ? "Add accounts and manage roles."
+            : "Manage account roles."
+        }
       />
-      <div className="px-8 py-8">
+      <div className="space-y-8 px-8 py-8">
+        {showCreate && (
+          <Card className="p-6">
+            <h2 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">
+              Add user
+            </h2>
+            <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">
+              Creates a login they can use immediately. Share the email and
+              temporary password with them.
+            </p>
+            <CreateUserForm roles={createRoles} />
+          </Card>
+        )}
+
         {profiles.length === 0 ? (
-          <EmptyState message="No users found. Create accounts in Supabase Authentication." />
+          <EmptyState message="No users found yet." />
         ) : (
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
@@ -38,8 +61,12 @@ export default async function UsersSettingsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {profiles.map((user) => {
-                    const options = (["ceo", "admin", "staff"] as AppRole[]).filter(
-                      (r) => canAssignRole(actor.role, r, user.role) || r === user.role
+                    const options = (
+                      ["ceo", "admin", "staff"] as AppRole[]
+                    ).filter(
+                      (r) =>
+                        canAssignRole(actor.role, r, user.role) ||
+                        r === user.role
                     );
                     const canEdit =
                       user.id !== actor.id &&
@@ -99,13 +126,13 @@ export default async function UsersSettingsPage() {
             </div>
           </Card>
         )}
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-          New accounts: Supabase → Authentication → Users → Add user. They start
-          as Staff until you change their role here.
-          {actor.role === "ceo"
-            ? ""
-            : " Only the CEO can assign the CEO role."}
-        </p>
+
+        {!showCreate && (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Only the CEO can add new users. Only the CEO can assign the CEO
+            role.
+          </p>
+        )}
       </div>
     </>
   );
