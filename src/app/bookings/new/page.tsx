@@ -11,14 +11,14 @@ export default async function NewBookingPage() {
   return (
     <>
       <PageHeader
-        title="New Booking"
-        subtitle="Enter the details of a new flight booking"
+        title="New Ticket booking"
+        subtitle="Enter the details of a new flight ticket booking"
       />
       <div className="p-8">
         <BookingForm
           action={createBookingAction}
           suppliers={suppliers}
-          submitLabel="Create Booking"
+          submitLabel="Create Ticket booking"
         />
       </div>
     </>

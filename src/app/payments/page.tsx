@@ -41,7 +41,7 @@ export default async function PaymentInvoicesPage() {
                     <th className="px-5 py-3 font-semibold">Date</th>
                     <th className="px-5 py-3 font-semibold">Received From</th>
                     <th className="px-5 py-3 font-semibold">For</th>
-                    <th className="px-5 py-3 font-semibold">Booking</th>
+                    <th className="px-5 py-3 font-semibold">Ticket</th>
                     <th className="px-5 py-3 text-right font-semibold">Amount</th>
                     <th className="px-5 py-3 text-right font-semibold">Actions</th>
                   </tr>

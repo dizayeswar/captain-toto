@@ -12,16 +12,16 @@ export default async function BookingsPage() {
   return (
     <>
       <PageHeader
-        title="Bookings"
-        subtitle="All flight bookings entered into the system"
+        title="Ticket bookings"
+        subtitle="All flight ticket bookings entered into the system"
         action={
           <div className="flex items-center gap-3">
             <ExportExcelButton
-              filename="bookings"
-              sheetName="Bookings"
+              filename="ticket-bookings"
+              sheetName="Ticket bookings"
               rows={bookingsToExcel(bookings)}
             />
-            <Button href="/bookings/new">+ New Booking</Button>
+            <Button href="/bookings/new">+ New Ticket booking</Button>
           </div>
         }
       />

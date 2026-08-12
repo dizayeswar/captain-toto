@@ -81,8 +81,8 @@ export default async function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        subtitle="Summary of bookings, invoices, hotel, visa, suppliers, and finance"
-        action={<Button href="/bookings/new">+ New Booking</Button>}
+        subtitle="Summary of ticket bookings, invoices, hotel, visa, suppliers, and finance"
+        action={<Button href="/bookings/new">+ New Ticket booking</Button>}
       />
 
       <div className="space-y-10 p-8">
@@ -145,11 +145,11 @@ export default async function DashboardPage() {
         </section>
 
         <section>
-          <SectionHeader title="Booking" href="/bookings" />
+          <SectionHeader title="Ticket" href="/bookings" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               href="/bookings"
-              label="Bookings"
+              label="Ticket bookings"
               value={String(ticket.bookings)}
             />
             <StatCard

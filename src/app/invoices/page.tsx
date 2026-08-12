@@ -39,7 +39,7 @@ export default async function InvoicesPage() {
                   <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
                     <th className="px-5 py-3 font-semibold">Invoice No.</th>
                     <th className="px-5 py-3 font-semibold">Date</th>
-                    <th className="px-5 py-3 font-semibold">Booking</th>
+                    <th className="px-5 py-3 font-semibold">Ticket</th>
                     <th className="px-5 py-3 font-semibold">Client</th>
                     <th className="px-5 py-3 font-semibold">Airline</th>
                     <th className="px-5 py-3 font-semibold">PNR</th>

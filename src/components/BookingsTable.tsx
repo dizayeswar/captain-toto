@@ -48,14 +48,14 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState message="No bookings match your search." />
+        <EmptyState message="No ticket bookings match your search." />
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 font-semibold">Booking</th>
+                  <th className="px-4 py-3 font-semibold">Ticket</th>
                   <th className="px-4 py-3 font-semibold">Date</th>
                   <th className="px-4 py-3 font-semibold">Client</th>
                   <th className="px-4 py-3 font-semibold">Route</th>
@@ -114,7 +114,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                           onSubmit={(e) => {
                             if (
                               !confirm(
-                                `Move booking ${b.booking_id} to Recycle Bin?`
+                                `Move ticket booking ${b.booking_id} to Recycle Bin?`
                               )
                             ) {
                               e.preventDefault();

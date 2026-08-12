@@ -25,11 +25,11 @@ const SECTIONS: NavSection[] = [
   },
   {
     id: "booking",
-    title: "Booking",
+    title: "Ticket",
     icon: "ticket",
     items: [
-      { href: "/bookings", label: "Bookings" },
-      { href: "/bookings/new", label: "New Booking" },
+      { href: "/bookings", label: "Ticket bookings" },
+      { href: "/bookings/new", label: "New Ticket booking" },
       { href: "/reports/monthly", label: "Monthly Summary" },
       { href: "/reports/payments", label: "Payment Report" },
       { href: "/reports/clients", label: "Client Analysis" },

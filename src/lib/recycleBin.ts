@@ -34,7 +34,7 @@ export type RecycleBinItem = {
 };
 
 export const RECYCLE_ENTITY_LABELS: Record<RecycleEntityType, string> = {
-  booking: "Booking",
+  booking: "Ticket booking",
   invoice: "Ticket Invoice",
   payment_invoice: "Payment Invoice",
   hotel_booking: "Hotel Booking",

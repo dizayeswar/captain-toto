@@ -22,7 +22,7 @@ export default async function EditBookingPage(props: PageProps<"/bookings/[id]">
     <>
       <PageHeader
         title={`Edit ${booking.booking_id}`}
-        subtitle="Update the details of this booking"
+        subtitle="Update the details of this ticket booking"
         action={
           <Button
             href={`/payments/new?booking=${encodeURIComponent(

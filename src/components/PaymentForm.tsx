@@ -104,7 +104,7 @@ export default function PaymentForm({
           </div>
 
           <div>
-            <label className={labelCls}>Linked Booking (optional)</label>
+            <label className={labelCls}>Linked Ticket (optional)</label>
             <select
               value={bookingId}
               onChange={(e) => onBookingChange(e.target.value)}

@@ -32,7 +32,7 @@ export default function BookingForm({
   action,
   booking,
   suppliers = [],
-  submitLabel = "Save Booking",
+  submitLabel = "Save Ticket booking",
 }: Props) {
   const router = useRouter();
   const [ticket, setTicket] = useState(booking?.ticket_cost ?? 0);
