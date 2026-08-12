@@ -54,9 +54,9 @@ export async function updateUserRoleAction(formData: FormData) {
 }
 
 export async function resetDataAction(
-  _prev: { error?: string; success?: boolean } | null,
+  _prev: { error?: string; success?: boolean; moved?: number } | null,
   formData: FormData
-): Promise<{ error?: string; success?: boolean }> {
+): Promise<{ error?: string; success?: boolean; moved?: number }> {
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "").trim();
 
@@ -71,5 +71,8 @@ export async function resetDataAction(
   }
 
   revalidatePath("/", "layout");
-  return { success: true };
+  return {
+    success: true,
+    moved: result.moved,
+  };
 }

@@ -49,7 +49,11 @@ export default function ResetDataForm() {
       )}
       {state?.success && (
         <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
-          All business data has been cleared. Accounts were not deleted.
+          Cleared live data
+          {typeof state.moved === "number"
+            ? ` (${state.moved} item${state.moved === 1 ? "" : "s"})`
+            : ""}
+          . Items are in Recycle Bin — restore them from there if needed.
         </p>
       )}
 

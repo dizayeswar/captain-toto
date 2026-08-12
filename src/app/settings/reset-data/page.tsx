@@ -19,12 +19,14 @@ export default async function ResetDataPage() {
             Danger zone
           </h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            This deletes all operational data: bookings, ticket/payment invoices,
-            hotels, visas, suppliers, expenses, deposits, recycle bin, and airline
-            policies. Login accounts and user roles are kept.
+            This moves all operational data into the Recycle Bin, then clears the
+            live lists: bookings, invoices, hotels, visas, suppliers, expenses,
+            deposits, and airline policies. Login accounts and user roles are
+            kept. You can restore items from Recycle Bin afterward.
           </p>
           <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
-            This cannot be undone.
+            Permanent delete from Recycle Bin is still required to erase items
+            forever.
           </p>
           <div className="mt-6">
             <ResetDataForm />
