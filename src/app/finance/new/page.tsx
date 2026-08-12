@@ -1,3 +1,4 @@
+import { requireRole } from "@/lib/auth";
 import { createExpenseAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import ExpenseForm from "@/components/ExpenseForm";
@@ -5,6 +6,7 @@ import ExpenseForm from "@/components/ExpenseForm";
 export const dynamic = "force-dynamic";
 
 export default async function NewExpensePage() {
+  await requireRole(["ceo", "admin"]);
   return (
     <>
       <PageHeader

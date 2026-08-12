@@ -97,7 +97,7 @@ const demoStore: VisaCase[] = [
 ];
 
 export async function getVisaCases(): Promise<VisaCase[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.created_date.localeCompare(a.created_date)
@@ -112,7 +112,7 @@ export async function getVisaCases(): Promise<VisaCase[]> {
 }
 
 export async function getVisaCase(id: string): Promise<VisaCase | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((v) => v.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -126,7 +126,7 @@ export async function getVisaCase(id: string): Promise<VisaCase | null> {
 export async function createVisaCase(input: VisaCaseInput): Promise<VisaCase> {
   const all = await getVisaCases();
   const code = nextCode(all.length);
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row = buildVisaCase(input, code, `demo-visa-${Date.now()}`);
     demoStore.push(row);
@@ -147,7 +147,7 @@ export async function updateVisaCase(
   id: string,
   input: VisaCaseInput
 ): Promise<VisaCase> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((v) => v.id === id);
     if (idx < 0) throw new Error("Visa case not found");
@@ -178,7 +178,7 @@ export async function deleteVisaCase(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((v) => v.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -189,7 +189,7 @@ export async function deleteVisaCase(id: string): Promise<void> {
 }
 
 export async function restoreVisaCase(row: VisaCase): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((v) => v.id === row.id)) demoStore.push(row);
     return;

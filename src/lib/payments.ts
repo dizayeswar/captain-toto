@@ -25,7 +25,7 @@ function nextReceiptCode(count: number): string {
 }
 
 export async function getPaymentInvoices(): Promise<PaymentInvoice[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.receipt_date.localeCompare(a.receipt_date)
@@ -42,7 +42,7 @@ export async function getPaymentInvoices(): Promise<PaymentInvoice[]> {
 export async function getPaymentInvoice(
   id: string
 ): Promise<PaymentInvoice | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((p) => p.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -59,7 +59,7 @@ export async function createPaymentInvoice(
   const all = await getPaymentInvoices();
   const code = nextReceiptCode(all.length);
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const receipt: PaymentInvoice = {
       id: `demo-pay-${Date.now()}`,
@@ -83,7 +83,7 @@ export async function updatePaymentInvoice(
   id: string,
   input: PaymentInvoiceInput
 ): Promise<PaymentInvoice> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((p) => p.id === id);
     if (idx >= 0) {
@@ -182,7 +182,7 @@ export async function deletePaymentInvoice(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((p) => p.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -193,7 +193,7 @@ export async function deletePaymentInvoice(id: string): Promise<void> {
 }
 
 export async function restorePaymentInvoice(row: PaymentInvoice): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((p) => p.id === row.id)) demoStore.push(row);
     return;

@@ -514,12 +514,16 @@ function parseExpenseForm(formData: FormData): ExpenseInput {
 }
 
 export async function createExpenseAction(formData: FormData) {
+  const { requireRole } = await import("./auth");
+  await requireRole(["ceo", "admin"]);
   await createExpense(parseExpenseForm(formData));
   revalidatePath("/", "layout");
   redirect("/finance");
 }
 
 export async function updateExpenseAction(id: string, formData: FormData) {
+  const { requireRole } = await import("./auth");
+  await requireRole(["ceo", "admin"]);
   await updateExpense(id, parseExpenseForm(formData));
   revalidatePath("/", "layout");
   redirect("/finance");
@@ -528,6 +532,8 @@ export async function updateExpenseAction(id: string, formData: FormData) {
 export async function deleteExpenseAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
+    const { requireRole } = await import("./auth");
+    await requireRole(["ceo", "admin"]);
     await deleteExpense(id);
     revalidatePath("/", "layout");
   }
@@ -549,6 +555,8 @@ function parseDepositForm(formData: FormData): FinanceDepositInput {
 }
 
 export async function createFinanceDepositAction(formData: FormData) {
+  const { requireRole } = await import("./auth");
+  await requireRole(["ceo", "admin"]);
   await createFinanceDeposit(parseDepositForm(formData));
   revalidatePath("/", "layout");
   redirect("/finance");
@@ -557,6 +565,8 @@ export async function createFinanceDepositAction(formData: FormData) {
 export async function deleteFinanceDepositAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
+    const { requireRole } = await import("./auth");
+    await requireRole(["ceo", "admin"]);
     await deleteFinanceDeposit(id);
     revalidatePath("/", "layout");
   }
@@ -578,6 +588,8 @@ export async function restoreRecycleBinItemAction(formData: FormData) {
 export async function purgeRecycleBinItemAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
+    const { requireRole } = await import("./auth");
+    await requireRole(["ceo", "admin"]);
     const { purgeRecycleBinItem } = await import("./recycleBin");
     await purgeRecycleBinItem(id);
     revalidatePath("/", "layout");

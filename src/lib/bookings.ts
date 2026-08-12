@@ -85,7 +85,7 @@ function nextBookingCode(count: number): string {
 // ---------------------------------------------------------------------------
 
 export async function getBookings(): Promise<Booking[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.booking_date.localeCompare(a.booking_date)
@@ -102,7 +102,7 @@ export async function getBookings(): Promise<Booking[]> {
 }
 
 export async function getBooking(id: string): Promise<Booking | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return demoStore.find((b) => b.id === id) ?? null;
   }
@@ -122,7 +122,7 @@ export async function createBooking(input: BookingInput): Promise<Booking> {
   const all = await getBookings();
   const code = nextBookingCode(all.length);
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const booking = buildBooking(input, code, `demo-${Date.now()}`);
     demoStore.push(booking);
@@ -150,7 +150,7 @@ export async function updateBooking(
   const existing = await getBooking(id);
   const code = existing?.booking_id ?? "CT-0000";
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
     const updated = buildBooking(input, code, id);
@@ -183,7 +183,7 @@ export async function deleteBooking(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -195,7 +195,7 @@ export async function deleteBooking(id: string): Promise<void> {
 }
 
 export async function restoreBooking(row: Booking): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((b) => b.id === row.id)) demoStore.push(row);
     return;

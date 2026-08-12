@@ -88,7 +88,7 @@ function nextInvoiceCode(count: number): string {
 // ---------------------------------------------------------------------------
 
 export async function getInvoices(): Promise<Invoice[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoInvoices].sort((a, b) =>
       b.invoice_date.localeCompare(a.invoice_date)
@@ -109,7 +109,7 @@ export async function getInvoices(): Promise<Invoice[]> {
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return demoInvoices.find((i) => i.id === id) ?? null;
   }
@@ -148,7 +148,7 @@ export async function createInvoice(input: InvoiceInput): Promise<Invoice> {
   const all = await getInvoices();
   const code = nextInvoiceCode(all.length);
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const invoice: Invoice = {
       id: `demo-inv-${Date.now()}`,
@@ -193,7 +193,7 @@ export async function updateInvoice(
   id: string,
   input: InvoiceInput
 ): Promise<Invoice> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
     if (idx >= 0) {
@@ -230,7 +230,7 @@ export async function updateInvoice(
 }
 
 async function insertChildren(
-  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabase>>>,
   invoiceId: string,
   input: InvoiceInput
 ): Promise<void> {
@@ -285,7 +285,7 @@ export async function deleteInvoice(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
     if (idx >= 0) demoInvoices.splice(idx, 1);
@@ -296,7 +296,7 @@ export async function deleteInvoice(id: string): Promise<void> {
 }
 
 export async function restoreInvoice(row: Invoice): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   const { passengers, segments, ...head } = row;
 
   if (!supabase) {
@@ -356,7 +356,7 @@ export async function restoreInvoice(row: Invoice): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function getAirlinePolicies(): Promise<AirlinePolicy[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return [...demoPolicies];
 
   const { data, error } = await supabase
@@ -379,7 +379,7 @@ export async function upsertPolicy(
   airline: string,
   policyText: string
 ): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoPolicies.findIndex((p) => p.airline === airline);
     if (idx >= 0) demoPolicies[idx].policy_text = policyText;

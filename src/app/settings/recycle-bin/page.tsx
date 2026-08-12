@@ -7,6 +7,7 @@ import {
   restoreRecycleBinItemAction,
   purgeRecycleBinItemAction,
 } from "@/lib/actions";
+import { getCurrentProfile, canPurgeRecycleBin } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
@@ -28,7 +29,11 @@ function RestoreButton({ id, label }: { id: string; label: string }) {
 }
 
 export default async function RecycleBinPage() {
-  const items = await listRecycleBin();
+  const [items, profile] = await Promise.all([
+    listRecycleBin(),
+    getCurrentProfile(),
+  ]);
+  const allowPurge = profile ? canPurgeRecycleBin(profile.role) : false;
 
   return (
     <>
@@ -73,12 +78,14 @@ export default async function RecycleBinPage() {
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-4">
                           <RestoreButton id={item.id} label="Restore" />
-                          <DeleteButton
-                            action={purgeRecycleBinItemAction}
-                            id={item.id}
-                            label="Delete forever"
-                            confirmMessage={`Permanently delete "${item.label}"? This cannot be undone.`}
-                          />
+                          {allowPurge && (
+                            <DeleteButton
+                              action={purgeRecycleBinItemAction}
+                              id={item.id}
+                              label="Delete forever"
+                              confirmMessage={`Permanently delete "${item.label}"? This cannot be undone.`}
+                            />
+                          )}
                         </div>
                       </td>
                     </tr>

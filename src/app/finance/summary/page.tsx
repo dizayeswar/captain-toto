@@ -1,3 +1,4 @@
+import { requireRole } from "@/lib/auth";
 import { getExpenses, summarizeExpenses } from "@/lib/expenses";
 import type { ExpenseGroup } from "@/lib/expenses";
 import {
@@ -12,6 +13,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 export const dynamic = "force-dynamic";
 
 export default async function FinanceSummaryPage() {
+  await requireRole(["ceo", "admin"]);
   const expenses = await getExpenses();
   const s = summarizeExpenses(expenses);
 

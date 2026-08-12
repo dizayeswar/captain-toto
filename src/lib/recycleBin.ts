@@ -63,7 +63,7 @@ export async function addToRecycleBin(input: {
     payload: input.payload,
   };
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     demoStore.unshift({
       id: `demo-rb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -78,7 +78,7 @@ export async function addToRecycleBin(input: {
 }
 
 export async function listRecycleBin(): Promise<RecycleBinItem[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.deleted_at.localeCompare(a.deleted_at)
@@ -95,7 +95,7 @@ export async function listRecycleBin(): Promise<RecycleBinItem[]> {
 export async function getRecycleBinItem(
   id: string
 ): Promise<RecycleBinItem | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((r) => r.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -107,7 +107,7 @@ export async function getRecycleBinItem(
 }
 
 export async function purgeRecycleBinItem(id: string): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((r) => r.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);

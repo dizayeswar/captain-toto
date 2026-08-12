@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { requireRole } from "@/lib/auth";
 import { getExpense } from "@/lib/expenses";
 import { updateExpenseAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function EditExpensePage(
   props: PageProps<"/finance/[id]">
 ) {
+  await requireRole(["ceo", "admin"]);
   const { id } = await props.params;
   const expense = await getExpense(id);
   if (!expense) notFound();

@@ -41,7 +41,7 @@ function nextCode(count: number): string {
 }
 
 export async function getSuppliers(): Promise<SupplierRecord[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       a.supplier_code.localeCompare(b.supplier_code)
@@ -66,7 +66,7 @@ export async function getSupplierOptions(): Promise<
 }
 
 export async function getSupplier(id: string): Promise<SupplierRecord | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((s) => s.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -82,7 +82,7 @@ export async function createSupplier(
 ): Promise<SupplierRecord> {
   const all = await getSuppliers();
   const code = nextCode(all.length);
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const rec: SupplierRecord = {
       id: `demo-${Date.now()}`,
@@ -105,7 +105,7 @@ export async function updateSupplier(
   id: string,
   input: SupplierInput
 ): Promise<SupplierRecord> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((s) => s.id === id);
     if (idx >= 0) {
@@ -134,7 +134,7 @@ export async function deleteSupplier(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((s) => s.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -145,7 +145,7 @@ export async function deleteSupplier(id: string): Promise<void> {
 }
 
 export async function restoreSupplier(row: SupplierRecord): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((s) => s.id === row.id)) demoStore.push(row);
     return;

@@ -22,7 +22,7 @@ const demoStore: Expense[] = [
 ];
 
 export async function getExpenses(): Promise<Expense[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.expense_date.localeCompare(a.expense_date)
@@ -40,7 +40,7 @@ export async function getExpenses(): Promise<Expense[]> {
 }
 
 export async function getExpense(id: string): Promise<Expense | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((e) => e.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -52,7 +52,7 @@ export async function getExpense(id: string): Promise<Expense | null> {
 }
 
 export async function createExpense(input: ExpenseInput): Promise<Expense> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row: Expense = { id: `demo-exp-${Date.now()}`, ...input };
     demoStore.push(row);
@@ -71,7 +71,7 @@ export async function updateExpense(
   id: string,
   input: ExpenseInput
 ): Promise<Expense> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((e) => e.id === id);
     if (idx < 0) throw new Error("Expense not found");
@@ -98,7 +98,7 @@ export async function deleteExpense(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((e) => e.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -109,7 +109,7 @@ export async function deleteExpense(id: string): Promise<void> {
 }
 
 export async function restoreExpense(row: Expense): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((e) => e.id === row.id)) demoStore.push(row);
     return;

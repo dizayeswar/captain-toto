@@ -35,7 +35,7 @@ function buildReceipt(
 export async function getSupplierPaymentReceipts(): Promise<
   SupplierPaymentReceipt[]
 > {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.receipt_date.localeCompare(a.receipt_date)
@@ -56,7 +56,7 @@ export async function getSupplierPaymentReceipts(): Promise<
 export async function getSupplierPaymentReceipt(
   id: string
 ): Promise<SupplierPaymentReceipt | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((r) => r.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -76,7 +76,7 @@ export async function findReceiptBySourceInvoice(
   invoiceId: string
 ): Promise<SupplierPaymentReceipt | null> {
   if (!invoiceId) return null;
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return demoStore.find((r) => r.source_invoice_id === invoiceId) ?? null;
   }
@@ -99,7 +99,7 @@ export async function createSupplierPaymentReceipt(
 ): Promise<SupplierPaymentReceipt> {
   const all = await getSupplierPaymentReceipts();
   const code = nextCode(all.length);
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row = buildReceipt(input, code, `demo-spr-${Date.now()}`);
     demoStore.push(row);
@@ -120,7 +120,7 @@ export async function updateSupplierPaymentReceipt(
   id: string,
   input: SupplierPaymentReceiptInput
 ): Promise<SupplierPaymentReceipt> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((r) => r.id === id);
     if (idx < 0) throw new Error("Receipt not found");
@@ -152,7 +152,7 @@ export async function deleteSupplierPaymentReceipt(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((r) => r.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -165,7 +165,7 @@ export async function deleteSupplierPaymentReceipt(id: string): Promise<void> {
 export async function restoreSupplierPaymentReceipt(
   row: SupplierPaymentReceipt
 ): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((r) => r.id === row.id)) demoStore.push(row);
     return;

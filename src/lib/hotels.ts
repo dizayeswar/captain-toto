@@ -178,7 +178,7 @@ const demoStore: HotelBooking[] = [
 ];
 
 export async function getHotelBookings(): Promise<HotelBooking[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return mapHotelRows(
       [...demoStore].sort((a, b) => b.created_date.localeCompare(a.created_date))
@@ -193,7 +193,7 @@ export async function getHotelBookings(): Promise<HotelBooking[]> {
 }
 
 export async function getHotelBooking(id: string): Promise<HotelBooking | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row = demoStore.find((b) => b.id === id) ?? null;
     return row ? refreshHotelFinancials(row) : null;
@@ -212,7 +212,7 @@ export async function createHotelBooking(
 ): Promise<HotelBooking> {
   const all = await getHotelBookings();
   const code = nextCode(all.length);
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row = buildHotelBooking(input, code, `demo-hotel-${Date.now()}`);
     demoStore.push(row);
@@ -233,7 +233,7 @@ export async function updateHotelBooking(
   id: string,
   input: HotelBookingInput
 ): Promise<HotelBooking> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
     if (idx < 0) throw new Error("Hotel booking not found");
@@ -265,7 +265,7 @@ export async function deleteHotelBooking(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((b) => b.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -276,7 +276,7 @@ export async function deleteHotelBooking(id: string): Promise<void> {
 }
 
 export async function restoreHotelBooking(row: HotelBooking): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((b) => b.id === row.id)) demoStore.push(row);
     return;

@@ -22,7 +22,7 @@ export function isPaidFromTotoBalance(paidBy: string): boolean {
 }
 
 export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
       b.deposit_date.localeCompare(a.deposit_date)
@@ -46,7 +46,7 @@ export async function createFinanceDeposit(
     currency: input.currency || "IQD",
     notes: input.notes.trim(),
   };
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const rec: FinanceDeposit = { id: `demo-dep-${Date.now()}`, ...row };
     demoStore.push(rec);
@@ -64,7 +64,7 @@ export async function createFinanceDeposit(
 export async function getFinanceDeposit(
   id: string
 ): Promise<FinanceDeposit | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return demoStore.find((d) => d.id === id) ?? null;
   const { data, error } = await supabase
     .from(TABLE)
@@ -85,7 +85,7 @@ export async function deleteFinanceDeposit(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoStore.findIndex((d) => d.id === id);
     if (idx >= 0) demoStore.splice(idx, 1);
@@ -96,7 +96,7 @@ export async function deleteFinanceDeposit(id: string): Promise<void> {
 }
 
 export async function restoreFinanceDeposit(row: FinanceDeposit): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!demoStore.some((d) => d.id === row.id)) demoStore.push(row);
     return;

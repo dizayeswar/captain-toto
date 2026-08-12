@@ -111,7 +111,7 @@ const demoInvoices: SupplierInvoice[] = [
 ];
 
 async function fetchLines(
-  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabase>>>,
   invoiceId: string
 ): Promise<SupplierInvoiceLine[]> {
   const { data, error } = await supabase
@@ -135,7 +135,7 @@ async function fetchLines(
 }
 
 async function replaceLines(
-  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabase>>>,
   invoiceId: string,
   lines: SupplierInvoiceLine[]
 ): Promise<void> {
@@ -159,7 +159,7 @@ async function replaceLines(
 }
 
 export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return [...demoInvoices].sort((a, b) =>
       b.invoice_date.localeCompare(a.invoice_date)
@@ -177,7 +177,7 @@ export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
 export async function getSupplierInvoice(
   id: string
 ): Promise<SupplierInvoice | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return demoInvoices.find((i) => i.id === id) ?? null;
   }
@@ -196,7 +196,7 @@ export async function createSupplierInvoice(
 ): Promise<SupplierInvoice> {
   const all = await getSupplierInvoices();
   const code = nextInvCode(all.length);
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const row = buildSupplierInvoice(input, code, `demo-sinv-${Date.now()}`);
     demoInvoices.push(row);
@@ -218,7 +218,7 @@ export async function updateSupplierInvoice(
   id: string,
   input: SupplierInvoiceInput
 ): Promise<SupplierInvoice> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
     if (idx < 0) throw new Error("Invoice not found");
@@ -254,7 +254,7 @@ export async function deleteSupplierInvoice(id: string): Promise<void> {
     payload: row,
   });
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     const idx = demoInvoices.findIndex((i) => i.id === id);
     if (idx >= 0) demoInvoices.splice(idx, 1);
@@ -269,7 +269,7 @@ export async function deleteSupplierInvoice(id: string): Promise<void> {
 export async function restoreSupplierInvoice(
   row: SupplierInvoice
 ): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   const { lines, ...head } = row;
 
   if (!supabase) {

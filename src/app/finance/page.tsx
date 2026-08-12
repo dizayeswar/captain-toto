@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireRole } from "@/lib/auth";
 import { getExpenses, summarizeExpenses } from "@/lib/expenses";
 import {
   getFinanceDeposits,
@@ -26,6 +27,7 @@ function formatAmount(amount: number, currency: string): string {
 }
 
 export default async function FinancePage() {
+  await requireRole(["ceo", "admin"]);
   const [expenses, deposits] = await Promise.all([
     getExpenses(),
     getFinanceDeposits(),

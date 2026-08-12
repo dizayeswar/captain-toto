@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCurrentProfile, canAccessFinance } from "@/lib/auth";
 import { getBookings, computeTotals } from "@/lib/bookings";
 import { getHotelBookings, summarizeHotels } from "@/lib/hotels";
 import { getVisaCases, summarizeVisas } from "@/lib/visas";
@@ -42,6 +43,9 @@ function SectionHeader({
 }
 
 export default async function DashboardPage() {
+  const profile = await getCurrentProfile();
+  const showFinance = profile ? canAccessFinance(profile.role) : false;
+
   const [
     bookings,
     hotels,
@@ -58,8 +62,8 @@ export default async function DashboardPage() {
     getInvoices(),
     getPaymentInvoices(),
     getSupplierInvoices(),
-    getExpenses(),
-    getFinanceDeposits(),
+    showFinance ? getExpenses() : Promise.resolve([]),
+    showFinance ? getFinanceDeposits() : Promise.resolve([]),
   ]);
 
   const ticket = computeTotals(bookings);
@@ -110,21 +114,25 @@ export default async function DashboardPage() {
               label="Visa sales"
               value={formatCurrency(visa.totalSales)}
             />
-            <StatCard
-              href="/finance"
-              label="Cash balance IQD"
-              value={`${formatNumber(balance.balanceIqd)} IQD`}
-              tone={balance.balanceIqd < 0 ? "red" : "green"}
-            />
-            <StatCard
-              href="/finance"
-              label="Owed to staff"
-              value={`${formatNumber(owed.totalIqd)} IQD`}
-              tone={owed.totalIqd > 0 ? "amber" : "default"}
-              hint={
-                owed.totalUsd > 0 ? formatCurrency(owed.totalUsd) : undefined
-              }
-            />
+            {showFinance && (
+              <>
+                <StatCard
+                  href="/finance"
+                  label="Cash balance IQD"
+                  value={`${formatNumber(balance.balanceIqd)} IQD`}
+                  tone={balance.balanceIqd < 0 ? "red" : "green"}
+                />
+                <StatCard
+                  href="/finance"
+                  label="Owed to staff"
+                  value={`${formatNumber(owed.totalIqd)} IQD`}
+                  tone={owed.totalIqd > 0 ? "amber" : "default"}
+                  hint={
+                    owed.totalUsd > 0 ? formatCurrency(owed.totalUsd) : undefined
+                  }
+                />
+              </>
+            )}
           </div>
           {(companyProfit !== 0 || ticket.revenue > 0) && (
             <p className="mt-3 text-xs text-slate-500">
@@ -315,47 +323,49 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <section>
-          <SectionHeader title="Finance" href="/finance" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <StatCard
-              href="/finance"
-              label="Balance IQD"
-              value={`${formatNumber(balance.balanceIqd)} IQD`}
-              tone={balance.balanceIqd < 0 ? "red" : "green"}
-            />
-            <StatCard
-              href="/finance"
-              label="Balance USD"
-              value={formatCurrency(balance.balanceUsd)}
-              tone={balance.balanceUsd < 0 ? "red" : "green"}
-            />
-            <StatCard
-              href="/finance"
-              label="Expenses"
-              value={String(expense.count)}
-              hint={`${formatCurrency(expense.totalUsd)} · ${formatNumber(expense.totalIqd)} IQD`}
-            />
-            <StatCard
-              href="/finance"
-              label="Owed IQD"
-              value={`${formatNumber(owed.totalIqd)} IQD`}
-              tone={owed.totalIqd > 0 ? "amber" : "default"}
-            />
-            <StatCard
-              href="/finance"
-              label="Owed USD"
-              value={formatCurrency(owed.totalUsd)}
-              tone={owed.totalUsd > 0 ? "amber" : "default"}
-            />
-            <StatCard
-              href="/finance/summary"
-              label="Expense summary"
-              value="→"
-              hint="By month & category"
-            />
-          </div>
-        </section>
+        {showFinance && (
+          <section>
+            <SectionHeader title="Finance" href="/finance" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              <StatCard
+                href="/finance"
+                label="Balance IQD"
+                value={`${formatNumber(balance.balanceIqd)} IQD`}
+                tone={balance.balanceIqd < 0 ? "red" : "green"}
+              />
+              <StatCard
+                href="/finance"
+                label="Balance USD"
+                value={formatCurrency(balance.balanceUsd)}
+                tone={balance.balanceUsd < 0 ? "red" : "green"}
+              />
+              <StatCard
+                href="/finance"
+                label="Expenses"
+                value={String(expense.count)}
+                hint={`${formatCurrency(expense.totalUsd)} · ${formatNumber(expense.totalIqd)} IQD`}
+              />
+              <StatCard
+                href="/finance"
+                label="Owed IQD"
+                value={`${formatNumber(owed.totalIqd)} IQD`}
+                tone={owed.totalIqd > 0 ? "amber" : "default"}
+              />
+              <StatCard
+                href="/finance"
+                label="Owed USD"
+                value={formatCurrency(owed.totalUsd)}
+                tone={owed.totalUsd > 0 ? "amber" : "default"}
+              />
+              <StatCard
+                href="/finance/summary"
+                label="Expense summary"
+                value="→"
+                hint="By month & category"
+              />
+            </div>
+          </section>
+        )}
       </div>
     </>
   );

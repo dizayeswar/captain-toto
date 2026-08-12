@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import {
+  canAccessFinance,
+  canManageUsers,
+  ROLE_LABELS,
+  type Profile,
+} from "@/lib/roles";
+import { signOutAction } from "@/lib/authActions";
 
 type NavItem = { href: string; label: string };
 type NavSection = { id: string; title: string; icon: string; items: NavItem[] };
@@ -100,21 +107,38 @@ const SECTIONS: NavSection[] = [
     items: [
       { href: "/settings/appearance", label: "Appearance" },
       { href: "/settings/recycle-bin", label: "Recycle Bin" },
+      { href: "/settings/users", label: "Users" },
     ],
   },
 ];
 
-const ALL_HREFS = SECTIONS.flatMap((s) => s.items.map((i) => i.href));
+function sectionsForProfile(profile: Profile | null): NavSection[] {
+  const role = profile?.role ?? "staff";
+  return SECTIONS.map((section) => {
+    if (section.id === "finance" && !canAccessFinance(role)) return null;
+    if (section.id === "settings") {
+      const items = section.items.filter((item) => {
+        if (item.href === "/settings/users") return canManageUsers(role);
+        return true;
+      });
+      return { ...section, items };
+    }
+    return section;
+  }).filter(Boolean) as NavSection[];
+}
 
 function pathMatches(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-/** Highlight the most specific nav item for the current path. */
-function isActive(pathname: string, href: string): boolean {
+function isActive(
+  pathname: string,
+  href: string,
+  allHrefs: string[]
+): boolean {
   if (!pathMatches(pathname, href)) return false;
-  const better = ALL_HREFS.some(
+  const better = allHrefs.some(
     (other) =>
       other !== href &&
       other.length > href.length &&
@@ -128,42 +152,53 @@ function sectionOwnsPath(section: NavSection, pathname: string): boolean {
   return section.items.some((item) => pathMatches(pathname, item.href));
 }
 
-function openStateForPath(pathname: string): Record<string, boolean> {
+function openStateForPath(
+  pathname: string,
+  sections: NavSection[]
+): Record<string, boolean> {
   const next: Record<string, boolean> = {};
-  for (const s of SECTIONS) next[s.id] = false;
+  for (const s of sections) next[s.id] = false;
 
   let best: { id: string; len: number } | null = null;
-  for (const s of SECTIONS) {
+  for (const s of sections) {
     for (const item of s.items) {
       if (!pathMatches(pathname, item.href)) continue;
       const len = item.href.length;
       if (!best || len > best.len) best = { id: s.id, len };
     }
   }
-  next[best?.id ?? SECTIONS[0].id] = true;
+  next[best?.id ?? sections[0]?.id ?? "dashboard"] = true;
   return next;
 }
 
-export default function Sidebar() {
+export default function Sidebar({ profile }: { profile: Profile | null }) {
   const pathname = usePathname();
+  const sections = useMemo(() => sectionsForProfile(profile), [profile]);
+  const allHrefs = useMemo(
+    () => sections.flatMap((s) => s.items.map((i) => i.href)),
+    [sections]
+  );
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
-    openStateForPath(pathname)
+    openStateForPath(pathname, sections)
   );
 
-  // Keep only the section for the current page open (accordion)
   useEffect(() => {
-    setOpen(openStateForPath(pathname));
-  }, [pathname]);
+    setOpen(openStateForPath(pathname, sections));
+  }, [pathname, sections]);
 
   const toggle = (id: string) =>
     setOpen((prev) => {
       const willOpen = !prev[id];
       const next: Record<string, boolean> = {};
-      for (const s of SECTIONS) {
+      for (const s of sections) {
         next[s.id] = willOpen ? s.id === id : false;
       }
       return next;
     });
+
+  const displayName =
+    profile?.full_name?.trim() || profile?.email || "Signed in";
+  const roleLabel = profile ? ROLE_LABELS[profile.role] : "";
 
   return (
     <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
@@ -186,7 +221,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        {SECTIONS.map((section) => {
+        {sections.map((section) => {
           const expanded = open[section.id];
           const sectionActive = sectionOwnsPath(section, pathname);
           return (
@@ -208,7 +243,7 @@ export default function Sidebar() {
               {expanded && (
                 <ul className="mt-1 space-y-1 pl-4">
                   {section.items.map((item) => {
-                    const active = isActive(pathname, item.href);
+                    const active = isActive(pathname, item.href, allHrefs);
                     return (
                       <li key={item.href}>
                         <Link
@@ -230,6 +265,28 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="border-t border-slate-200 p-3 dark:border-slate-700">
+        <div className="mb-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
+          <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+            {displayName}
+          </p>
+          {roleLabel && (
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+              {roleLabel}
+              {profile?.email ? ` · ${profile.email}` : ""}
+            </p>
+          )}
+        </div>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="page-chrome-btn w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Sign out
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }
