@@ -13,8 +13,17 @@ import {
   computeFinanceBalance,
   computeOwedToOthers,
 } from "@/lib/financeBalance";
+import {
+  bookingsToExcel,
+  hotelsToExcel,
+  visasToExcel,
+  supplierInvoicesToExcel,
+  expensesToExcel,
+  depositsToExcel,
+} from "@/lib/excelRows";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { PageHeader, StatCard, Button } from "@/components/ui";
+import { PageHeader, StatCard } from "@/components/ui";
+import ExportExcelButton from "@/components/ExportExcelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -68,12 +77,34 @@ export default async function DashboardPage() {
   const balance = computeFinanceBalance(deposits, expenses);
   const owed = computeOwedToOthers(expenses);
 
+  const exportSheets = [
+    { name: "Ticket bookings", rows: bookingsToExcel(bookings) },
+    { name: "Hotels", rows: hotelsToExcel(hotels) },
+    { name: "Visas", rows: visasToExcel(visas) },
+    {
+      name: "Supplier invoices",
+      rows: supplierInvoicesToExcel(supplierInvoices),
+    },
+    ...(showFinance
+      ? [
+          { name: "Expenses", rows: expensesToExcel(expenses) },
+          { name: "Deposits", rows: depositsToExcel(deposits) },
+        ]
+      : []),
+  ];
+
   return (
     <>
       <PageHeader
         title="Dashboard"
         subtitle="Summary of ticket bookings, hotel, visa, suppliers, and finance"
-        action={<Button href="/bookings/new">+ New Ticket booking</Button>}
+        action={
+          <ExportExcelButton
+            filename="dashboard-overview"
+            label="Export to Excel"
+            sheets={exportSheets}
+          />
+        }
       />
 
       <div className="space-y-10 p-8">
