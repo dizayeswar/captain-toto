@@ -13,6 +13,10 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Captain ToTo — Booking System",
   description: "Internal booking management system for Captain ToTo travel.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 const themeInitScript = `
