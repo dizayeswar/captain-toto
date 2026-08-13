@@ -23,6 +23,7 @@ type Props = {
   action: (formData: FormData) => void | Promise<void>;
   visa?: VisaCase;
   suppliers?: SupplierOption[];
+  staffNames?: string[];
   submitLabel?: string;
 };
 
@@ -34,6 +35,7 @@ export default function VisaForm({
   action,
   visa,
   suppliers = [],
+  staffNames = [...VISA_STAFF],
   submitLabel = "Save Case",
 }: Props) {
   const router = useRouter();
@@ -233,10 +235,10 @@ export default function VisaForm({
             <label className={labelCls}>Staff</label>
             <select
               name="staff"
-              defaultValue={visa?.staff ?? VISA_STAFF[0]}
+              defaultValue={visa?.staff ?? staffNames[0]}
               className={inputCls}
             >
-              {VISA_STAFF.map((s) => (
+              {staffNames.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>

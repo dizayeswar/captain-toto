@@ -20,6 +20,7 @@ type Props = {
   action: (formData: FormData) => void | Promise<void>;
   receipt?: PaymentInvoice;
   bookings: PaymentBookingOption[];
+  staffNames?: string[];
   submitLabel?: string;
   initialBookingId?: string;
 };
@@ -32,6 +33,7 @@ export default function PaymentForm({
   action,
   receipt,
   bookings,
+  staffNames = [...STAFF],
   submitLabel = "Save Payment Invoice",
   initialBookingId,
 }: Props) {
@@ -145,10 +147,10 @@ export default function PaymentForm({
             <label className={labelCls}>Prepared By</label>
             <select
               name="prepared_by"
-              defaultValue={receipt?.prepared_by ?? STAFF[0]}
+              defaultValue={receipt?.prepared_by ?? staffNames[0]}
               className={inputCls}
             >
-              {STAFF.map((s) => (
+              {staffNames.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>

@@ -1,27 +1,13 @@
-import * as XLSX from "xlsx";
+import type { ExcelCell } from "./excelTypes";
 
-export type ExcelCell = string | number | boolean | null | undefined;
+export type { ExcelCell } from "./excelTypes";
 
-/** Build sheet rows from labeled column getters (run on the server). */
-export function mapExcelRows<T>(
-  data: T[],
-  columns: { label: string; value: (row: T) => ExcelCell }[]
-): Record<string, ExcelCell>[] {
-  return data.map((row) => {
-    const out: Record<string, ExcelCell> = {};
-    for (const col of columns) {
-      const v = col.value(row);
-      out[col.label] = v ?? "";
-    }
-    return out;
-  });
-}
-
-/** Download one or more sheets as a .xlsx file (browser only). */
-export function downloadExcel(
+/** Download one or more sheets as a .xlsx file (browser only; loads xlsx on demand). */
+export async function downloadExcel(
   filename: string,
   sheets: { name: string; rows: Record<string, ExcelCell>[] }[]
-): void {
+): Promise<void> {
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
   for (const sheet of sheets) {
     const ws = XLSX.utils.json_to_sheet(

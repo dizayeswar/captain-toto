@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "./supabase/server";
 import { isSupabaseConfigured } from "./supabaseConfig";
 import { updateProfileRole } from "./auth";
+import { revalidatePaths } from "./revalidate";
 import type { AppRole } from "./roles";
 
 export async function signInAction(
@@ -29,7 +29,7 @@ export async function signInAction(
     return { error: error.message };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePaths("/");
   redirect(next.startsWith("/") ? next : "/");
 }
 
@@ -38,7 +38,7 @@ export async function signOutAction() {
     const supabase = await createServerSupabaseClient();
     await supabase.auth.signOut();
   }
-  revalidatePath("/", "layout");
+  revalidatePaths("/");
   redirect("/login");
 }
 
@@ -49,7 +49,7 @@ export async function updateUserRoleAction(formData: FormData) {
     throw new Error("Invalid role update");
   }
   await updateProfileRole(id, role);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/settings/users");
   redirect("/settings/users");
 }
 
@@ -114,8 +114,7 @@ export async function createUserAction(
     };
   }
 
-  revalidatePath("/", "layout");
-  revalidatePath("/settings/users");
+  revalidatePaths("/settings/users");
   return {
     success: `Created ${email} as ${ROLE_LABELS[role]}.`,
   };
@@ -138,9 +137,44 @@ export async function resetDataAction(
     return { error: result.error };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePaths("/");
   return {
     success: true,
     moved: result.moved,
+  };
+}
+
+export async function requestPasswordResetAction(
+  _prev: { error?: string; success?: string } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: string }> {
+  if (!isSupabaseConfigured) {
+    return { error: "Supabase is not configured." };
+  }
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) {
+    return { error: "Enter your email address." };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const origin =
+    siteUrl ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/login?reset=1`,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return {
+    success:
+      "If that email has an account, a reset link was sent. Check your inbox.",
   };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { BALANCE_BROUGHT_BY } from "@/lib/financeConstants";
 import { CURRENCIES } from "@/lib/lists";
 import { Button, Card } from "./ui";
 import AmountInput from "./AmountInput";
@@ -11,9 +10,13 @@ const inputCls =
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
+  broughtByOptions?: string[];
 };
 
-export default function FinanceDepositForm({ action }: Props) {
+export default function FinanceDepositForm({
+  action,
+  broughtByOptions = ["Osman", "Sherwani", "Ali", "Other"],
+}: Props) {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -43,12 +46,12 @@ export default function FinanceDepositForm({ action }: Props) {
             name="brought_by"
             required
             list="brought-by-list"
-            defaultValue={BALANCE_BROUGHT_BY[0]}
+            defaultValue={broughtByOptions[0]}
             placeholder="Name"
             className={inputCls}
           />
           <datalist id="brought-by-list">
-            {BALANCE_BROUGHT_BY.map((n) => (
+            {broughtByOptions.map((n) => (
               <option key={n} value={n} />
             ))}
           </datalist>

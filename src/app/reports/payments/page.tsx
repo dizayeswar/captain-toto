@@ -1,4 +1,4 @@
-import { getBookings, computeTotals } from "@/lib/bookings";
+import { getBookings, computeTotals, BOOKING_REPORT_SELECT } from "@/lib/bookings";
 import { bookingsToExcel } from "@/lib/excelRows";
 import { formatCurrency } from "@/lib/format";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
@@ -7,7 +7,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 export const dynamic = "force-dynamic";
 
 export default async function PaymentReportPage() {
-  const bookings = await getBookings();
+  const bookings = await getBookings(BOOKING_REPORT_SELECT);
   const totals = computeTotals(bookings);
   const ticketTotal = bookings.reduce((s, b) => s + b.ticket_cost, 0);
   const feeTotal = bookings.reduce((s, b) => s + b.service_fee, 0);

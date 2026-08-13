@@ -204,7 +204,7 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
   const roleLabel = profile ? ROLE_LABELS[profile.role] : "";
 
   return (
-    <aside className="no-print flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+    <aside className="no-print flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-center gap-3 px-6 py-5">
         <Image
           src="/logo.png"

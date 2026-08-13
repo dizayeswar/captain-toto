@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getVisaCase } from "@/lib/visas";
 import { getSupplierOptions } from "@/lib/suppliers";
+import { getStaffNames } from "@/lib/staffNames";
 import { updateVisaCaseAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import VisaForm from "@/components/VisaForm";
@@ -11,9 +12,10 @@ export default async function EditVisaCasePage(
   props: PageProps<"/visa/cases/[id]">
 ) {
   const { id } = await props.params;
-  const [visa, suppliers] = await Promise.all([
+  const [visa, suppliers, staffNames] = await Promise.all([
     getVisaCase(id),
     getSupplierOptions(),
+    getStaffNames(),
   ]);
   if (!visa) notFound();
 
@@ -41,6 +43,7 @@ export default async function EditVisaCasePage(
           action={action}
           visa={visa}
           suppliers={options}
+          staffNames={staffNames}
           submitLabel="Save Changes"
         />
       </div>

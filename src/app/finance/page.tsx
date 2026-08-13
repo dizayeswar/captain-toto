@@ -12,6 +12,7 @@ import {
   createFinanceDepositAction,
   deleteFinanceDepositAction,
 } from "@/lib/actions";
+import { getBroughtByOptions } from "@/lib/staffNames";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PageHeader, Button, Card, StatCard, EmptyState } from "@/components/ui";
 import DeleteButton from "@/components/DeleteButton";
@@ -28,9 +29,10 @@ function formatAmount(amount: number, currency: string): string {
 
 export default async function FinancePage() {
   await requireRole(["ceo", "admin"]);
-  const [expenses, deposits] = await Promise.all([
+  const [expenses, deposits, broughtByOptions] = await Promise.all([
     getExpenses(),
     getFinanceDeposits(),
+    getBroughtByOptions(),
   ]);
   const s = summarizeExpenses(expenses);
   const bal = computeFinanceBalance(deposits, expenses);
@@ -98,7 +100,10 @@ export default async function FinancePage() {
             />
           </div>
 
-          <FinanceDepositForm action={createFinanceDepositAction} />
+          <FinanceDepositForm
+            action={createFinanceDepositAction}
+            broughtByOptions={broughtByOptions}
+          />
 
           {activity.length > 0 && (
             <Card className="overflow-hidden">

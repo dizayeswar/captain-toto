@@ -1,4 +1,5 @@
 import { getBookings } from "@/lib/bookings";
+import { getStaffNames } from "@/lib/staffNames";
 import { createPaymentInvoiceAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import PaymentForm, { type PaymentBookingOption } from "@/components/PaymentForm";
@@ -11,7 +12,10 @@ export default async function NewPaymentInvoicePage(
   const { booking } = await props.searchParams;
   const initialBookingId = Array.isArray(booking) ? booking[0] : booking;
 
-  const bookings = await getBookings();
+  const [bookings, staffNames] = await Promise.all([
+    getBookings(),
+    getStaffNames(),
+  ]);
   const options: PaymentBookingOption[] = bookings.map((b) => ({
     booking_id: b.booking_id,
     client_name: b.client_name,
@@ -30,6 +34,7 @@ export default async function NewPaymentInvoicePage(
         <PaymentForm
           action={createPaymentInvoiceAction}
           bookings={options}
+          staffNames={staffNames}
           submitLabel="Create Payment Invoice"
           initialBookingId={initialBookingId}
         />

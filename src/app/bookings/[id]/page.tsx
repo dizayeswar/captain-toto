@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBooking } from "@/lib/bookings";
 import { getSupplierOptions } from "@/lib/suppliers";
+import { getStaffNames } from "@/lib/staffNames";
 import { updateBookingAction } from "@/lib/actions";
 import { PageHeader, Button } from "@/components/ui";
 import BookingForm from "@/components/BookingForm";
@@ -9,9 +10,10 @@ export const dynamic = "force-dynamic";
 
 export default async function EditBookingPage(props: PageProps<"/bookings/[id]">) {
   const { id } = await props.params;
-  const [booking, suppliers] = await Promise.all([
+  const [booking, suppliers, staffNames] = await Promise.all([
     getBooking(id),
     getSupplierOptions(),
+    getStaffNames(),
   ]);
   if (!booking) notFound();
 
@@ -39,6 +41,7 @@ export default async function EditBookingPage(props: PageProps<"/bookings/[id]">
           action={action}
           booking={booking}
           suppliers={options}
+          staffNames={staffNames}
           submitLabel="Save Changes"
         />
       </div>

@@ -1,6 +1,6 @@
-import { getBookings, groupByKeys } from "@/lib/bookings";
+import { getBookings, groupByKeys, BOOKING_REPORT_SELECT } from "@/lib/bookings";
 import { groupRowsToExcel } from "@/lib/excelRows";
-import { STAFF } from "@/lib/lists";
+import { getStaffNames } from "@/lib/staffNames";
 import { PageHeader } from "@/components/ui";
 import GroupReport from "@/components/GroupReport";
 import ExportExcelButton from "@/components/ExportExcelButton";
@@ -8,8 +8,11 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 export const dynamic = "force-dynamic";
 
 export default async function StaffReportPage() {
-  const bookings = await getBookings();
-  const rows = groupByKeys(bookings, (b) => b.handled_by, STAFF);
+  const [bookings, staffNames] = await Promise.all([
+    getBookings(BOOKING_REPORT_SELECT),
+    getStaffNames(),
+  ]);
+  const rows = groupByKeys(bookings, (b) => b.handled_by, staffNames);
 
   return (
     <>

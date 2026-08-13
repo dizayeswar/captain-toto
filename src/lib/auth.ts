@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import {
@@ -27,7 +28,8 @@ export async function getSessionUser() {
   return user;
 }
 
-export async function getCurrentProfile(): Promise<Profile | null> {
+/** Deduped per request so layout + page share one profile fetch. */
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   if (!isSupabaseConfigured) {
     return {
       id: "demo",
@@ -64,7 +66,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     role: (data.role as AppRole) || "staff",
     email: user.email ?? "",
   };
-}
+});
 
 export async function requireUser(): Promise<Profile> {
   const profile = await getCurrentProfile();

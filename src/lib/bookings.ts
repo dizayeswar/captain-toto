@@ -84,7 +84,9 @@ function nextBookingCode(count: number): string {
 // CRUD
 // ---------------------------------------------------------------------------
 
-export async function getBookings(): Promise<Booking[]> {
+export async function getBookings(
+  columns: string = "*"
+): Promise<Booking[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
@@ -94,12 +96,24 @@ export async function getBookings(): Promise<Booking[]> {
 
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*")
+    .select(columns)
     .order("booking_date", { ascending: false });
 
   if (error || !data) return [];
-  return (data as Booking[]).map((b) => ({ ...b, pnr: b.pnr ?? "", debt: b.debt ?? 0 }));
+  return (data as unknown as Booking[]).map((b) => ({
+    ...b,
+    pnr: b.pnr ?? "",
+    debt: b.debt ?? 0,
+  }));
 }
+
+/** Columns needed for dashboard StatCards. */
+export const BOOKING_SUMMARY_SELECT =
+  "total_paid,profit,payment_status,issued,debt";
+
+/** Columns needed for report grouping pages. */
+export const BOOKING_REPORT_SELECT =
+  "total_paid,profit,payment_status,issued,client_name,airline,route,handled_by,booking_date,month,year,ticket_cost,service_fee,booking_id,id";
 
 export async function getBooking(id: string): Promise<Booking | null> {
   const supabase = await getSupabase();

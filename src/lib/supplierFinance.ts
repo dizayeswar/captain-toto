@@ -158,7 +158,9 @@ async function replaceLines(
   if (error) throw new Error(error.message);
 }
 
-export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
+export async function getSupplierInvoices(
+  columns: string = "*"
+): Promise<SupplierInvoice[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return [...demoInvoices].sort((a, b) =>
@@ -167,12 +169,21 @@ export async function getSupplierInvoices(): Promise<SupplierInvoice[]> {
   }
   const { data, error } = await supabase
     .from(INV_TABLE)
-    .select("*")
+    .select(columns)
     .order("invoice_date", { ascending: false });
   if (error || !data) return [];
   // List view does not need line details.
-  return data.map((r) => ({ ...(r as SupplierInvoice), lines: [] }));
+  return (data as unknown as SupplierInvoice[]).map((r) => ({
+    ...r,
+    lines: [],
+  }));
 }
+
+export const SUPPLIER_INVOICE_SUMMARY_SELECT =
+  "invoice_status,outstanding_usd,paid_usd,refund_usd";
+
+export const SUPPLIER_INVOICE_LIST_SELECT =
+  "id,invoice_id,invoice_date,supplier,service_type,invoice_status,payment_status,invoice_amount,outstanding_usd,paid_usd,refund_usd,currency";
 
 export async function getSupplierInvoice(
   id: string

@@ -1,4 +1,4 @@
-import { getBookings, groupByKeys } from "@/lib/bookings";
+import { getBookings, groupByKeys, BOOKING_REPORT_SELECT } from "@/lib/bookings";
 import { groupRowsToExcel } from "@/lib/excelRows";
 import { ROUTES } from "@/lib/lists";
 import { PageHeader } from "@/components/ui";
@@ -8,7 +8,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 export const dynamic = "force-dynamic";
 
 export default async function RouteReportPage() {
-  const bookings = await getBookings();
+  const bookings = await getBookings(BOOKING_REPORT_SELECT);
   const rows = groupByKeys(bookings, (b) => b.route, ROUTES);
 
   return (

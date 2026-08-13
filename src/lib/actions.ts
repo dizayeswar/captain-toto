@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { revalidatePaths } from "./revalidate";
 import { createBooking, updateBooking, deleteBooking, getBookings } from "./bookings";
 import {
   createInvoice,
@@ -86,14 +86,14 @@ function parseForm(formData: FormData): BookingInput {
 export async function createBookingAction(formData: FormData) {
   const input = parseForm(formData);
   await createBooking(input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   redirect("/bookings");
 }
 
 export async function updateBookingAction(id: string, formData: FormData) {
   const input = parseForm(formData);
   await updateBooking(id, input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   redirect("/bookings");
 }
 
@@ -101,7 +101,7 @@ export async function deleteBookingAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteBooking(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   }
 }
 
@@ -164,14 +164,14 @@ export async function createInvoiceAction(formData: FormData) {
     prepared_by: "Osman",
   });
 
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/invoices", "/payments");
   redirect(`/invoices/${invoice.id}`);
 }
 
 export async function updateInvoiceAction(id: string, formData: FormData) {
   const input = parseInvoiceForm(formData);
   await updateInvoice(id, input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/invoices", `/invoices/${id}`);
   redirect(`/invoices/${id}`);
 }
 
@@ -179,7 +179,7 @@ export async function deleteInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteInvoice(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/invoices", "/payments");
   }
 }
 
@@ -188,7 +188,7 @@ export async function updatePolicyAction(formData: FormData) {
   const policyText = String(formData.get("policy_text") ?? "").trim();
   if (airline) {
     await upsertPolicy(airline, policyText);
-    revalidatePath("/", "layout");
+    revalidatePaths("/invoices/policies");
   }
 }
 
@@ -213,7 +213,7 @@ function parsePaymentForm(formData: FormData): PaymentInvoiceInput {
 export async function createPaymentInvoiceAction(formData: FormData) {
   const input = parsePaymentForm(formData);
   const receipt = await createPaymentInvoice(input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/payments");
   redirect(`/payments/${receipt.id}`);
 }
 
@@ -223,7 +223,7 @@ export async function updatePaymentInvoiceAction(
 ) {
   const input = parsePaymentForm(formData);
   await updatePaymentInvoice(id, input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/payments", `/payments/${id}`);
   redirect(`/payments/${id}`);
 }
 
@@ -231,7 +231,7 @@ export async function deletePaymentInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deletePaymentInvoice(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/payments");
   }
 }
 
@@ -281,13 +281,13 @@ function parseHotelForm(formData: FormData): HotelBookingInput {
 
 export async function createHotelBookingAction(formData: FormData) {
   await createHotelBooking(parseHotelForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/hotel", "/hotel/bookings");
   redirect("/hotel");
 }
 
 export async function updateHotelBookingAction(id: string, formData: FormData) {
   await updateHotelBooking(id, parseHotelForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/hotel", "/hotel/bookings", `/hotel/bookings/${id}`);
   redirect("/hotel");
 }
 
@@ -295,7 +295,7 @@ export async function deleteHotelBookingAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteHotelBooking(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/hotel", "/hotel/bookings");
   }
 }
 
@@ -342,13 +342,13 @@ function parseVisaForm(formData: FormData): VisaCaseInput {
 
 export async function createVisaCaseAction(formData: FormData) {
   await createVisaCase(parseVisaForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/visa", "/visa/cases");
   redirect("/visa");
 }
 
 export async function updateVisaCaseAction(id: string, formData: FormData) {
   await updateVisaCase(id, parseVisaForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/visa", "/visa/cases", `/visa/cases/${id}`);
   redirect("/visa");
 }
 
@@ -356,7 +356,7 @@ export async function deleteVisaCaseAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteVisaCase(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/visa", "/visa/cases");
   }
 }
 
@@ -391,7 +391,7 @@ function parseSupplierInvoiceForm(formData: FormData): SupplierInvoiceInput {
 export async function createSupplierInvoiceAction(formData: FormData) {
   const invoice = await createSupplierInvoice(parseSupplierInvoiceForm(formData));
   const receipt = await ensureReceiptForSettledInvoice(invoice);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices", "/suppliers/receipts");
   if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
 }
@@ -405,7 +405,7 @@ export async function updateSupplierInvoiceAction(
     parseSupplierInvoiceForm(formData)
   );
   const receipt = await ensureReceiptForSettledInvoice(invoice);
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices", "/suppliers/receipts", `/suppliers/invoices/${id}`);
   if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
 }
@@ -414,7 +414,7 @@ export async function deleteSupplierInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplierInvoice(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices");
   }
 }
 
@@ -435,7 +435,7 @@ export async function createSupplierAction(formData: FormData) {
     notes: str("notes"),
   };
   await createSupplier(input);
-  revalidatePath("/", "layout");
+  revalidatePaths("/suppliers", "/suppliers/new");
   redirect("/suppliers");
 }
 
@@ -443,7 +443,7 @@ export async function deleteSupplierAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplier(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/suppliers");
   }
 }
 
@@ -469,7 +469,7 @@ export async function createSupplierPaymentReceiptAction(formData: FormData) {
   const receipt = await createSupplierPaymentReceipt(
     parseSupplierReceiptForm(formData)
   );
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/suppliers/receipts", "/suppliers/dashboard");
   redirect(`/suppliers/receipts/${receipt.id}`);
 }
 
@@ -478,7 +478,7 @@ export async function updateSupplierPaymentReceiptAction(
   formData: FormData
 ) {
   await updateSupplierPaymentReceipt(id, parseSupplierReceiptForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/suppliers/receipts", `/suppliers/receipts/${id}`);
   redirect(`/suppliers/receipts/${id}`);
 }
 
@@ -486,7 +486,7 @@ export async function deleteSupplierPaymentReceiptAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplierPaymentReceipt(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/suppliers/receipts", "/suppliers/dashboard");
   }
 }
 
@@ -517,7 +517,7 @@ export async function createExpenseAction(formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
   await createExpense(parseExpenseForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/finance", "/finance/summary");
   redirect("/finance");
 }
 
@@ -525,7 +525,7 @@ export async function updateExpenseAction(id: string, formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
   await updateExpense(id, parseExpenseForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/finance", "/finance/summary", `/finance/${id}`);
   redirect("/finance");
 }
 
@@ -535,7 +535,7 @@ export async function deleteExpenseAction(formData: FormData) {
     const { requireRole } = await import("./auth");
     await requireRole(["ceo", "admin"]);
     await deleteExpense(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/finance", "/finance/summary");
   }
 }
 
@@ -558,7 +558,7 @@ export async function createFinanceDepositAction(formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
   await createFinanceDeposit(parseDepositForm(formData));
-  revalidatePath("/", "layout");
+  revalidatePaths("/", "/finance");
   redirect("/finance");
 }
 
@@ -568,7 +568,7 @@ export async function deleteFinanceDepositAction(formData: FormData) {
     const { requireRole } = await import("./auth");
     await requireRole(["ceo", "admin"]);
     await deleteFinanceDeposit(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/finance");
   }
 }
 
@@ -581,7 +581,7 @@ export async function restoreRecycleBinItemAction(formData: FormData) {
   if (id) {
     const { restoreRecycleBinItem } = await import("./recycleBin");
     await restoreRecycleBinItem(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/", "/settings/recycle-bin");
   }
 }
 
@@ -592,6 +592,6 @@ export async function purgeRecycleBinItemAction(formData: FormData) {
     await requireRole(["ceo", "admin"]);
     const { purgeRecycleBinItem } = await import("./recycleBin");
     await purgeRecycleBinItem(id);
-    revalidatePath("/", "layout");
+    revalidatePaths("/settings/recycle-bin");
   }
 }

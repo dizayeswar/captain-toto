@@ -16,6 +16,7 @@ import AmountInput from "./AmountInput";
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
   expense?: Expense;
+  paidByOptions?: string[];
   submitLabel?: string;
 };
 
@@ -26,12 +27,13 @@ const inputCls =
 export default function ExpenseForm({
   action,
   expense,
+  paidByOptions = [...EXPENSE_PAID_BY],
   submitLabel = "Save Expense",
 }: Props) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
   const [paidBy, setPaidBy] = useState(
-    expense?.paid_by ?? EXPENSE_PAID_BY[0]
+    expense?.paid_by ?? paidByOptions[0]
   );
   const showOweCheckbox = paidBy !== TOTO_BALANCE_PAID_BY;
 
@@ -121,7 +123,7 @@ export default function ExpenseForm({
               onChange={(e) => setPaidBy(e.target.value)}
               className={inputCls}
             >
-              {EXPENSE_PAID_BY.map((p) => (
+              {paidByOptions.map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>

@@ -21,6 +21,7 @@ type Props = {
   action: (formData: FormData) => void | Promise<void>;
   booking?: Booking;
   suppliers?: SupplierOption[];
+  staffNames?: string[];
   submitLabel?: string;
 };
 
@@ -32,6 +33,7 @@ export default function BookingForm({
   action,
   booking,
   suppliers = [],
+  staffNames = [...STAFF],
   submitLabel = "Save Ticket booking",
 }: Props) {
   const router = useRouter();
@@ -127,10 +129,10 @@ export default function BookingForm({
             <label className={labelCls}>Handled By</label>
             <select
               name="handled_by"
-              defaultValue={booking?.handled_by ?? STAFF[0]}
+              defaultValue={booking?.handled_by ?? staffNames[0]}
               className={inputCls}
             >
-              {STAFF.map((s) => (
+              {staffNames.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>

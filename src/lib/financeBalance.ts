@@ -17,7 +17,9 @@ const TABLE = "finance_deposits";
 
 const demoStore: FinanceDeposit[] = [];
 
-export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
+export async function getFinanceDeposits(
+  columns: string = "*"
+): Promise<FinanceDeposit[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
@@ -26,11 +28,14 @@ export async function getFinanceDeposits(): Promise<FinanceDeposit[]> {
   }
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*")
+    .select(columns)
     .order("deposit_date", { ascending: false });
   if (error || !data) return [];
-  return data as FinanceDeposit[];
+  return data as unknown as FinanceDeposit[];
 }
+
+export const DEPOSIT_SUMMARY_SELECT =
+  "id,deposit_date,brought_by,amount,currency,notes";
 
 export async function createFinanceDeposit(
   input: FinanceDepositInput

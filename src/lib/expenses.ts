@@ -21,7 +21,7 @@ const demoStore: Expense[] = [
   },
 ];
 
-export async function getExpenses(): Promise<Expense[]> {
+export async function getExpenses(columns: string = "*"): Promise<Expense[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
@@ -30,14 +30,17 @@ export async function getExpenses(): Promise<Expense[]> {
   }
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*")
+    .select(columns)
     .order("expense_date", { ascending: false });
   if (error || !data) return [];
-  return (data as Expense[]).map((e) => ({
+  return (data as unknown as Expense[]).map((e) => ({
     ...e,
     owe_to_staff: Boolean(e.owe_to_staff),
   }));
 }
+
+export const EXPENSE_SUMMARY_SELECT =
+  "amount,currency,paid_by,owe_to_staff,expense_date,category,description,payment_method";
 
 export async function getExpense(id: string): Promise<Expense | null> {
   const supabase = await getSupabase();

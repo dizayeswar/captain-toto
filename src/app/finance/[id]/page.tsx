@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { getExpense } from "@/lib/expenses";
+import { getExpensePaidByOptions } from "@/lib/staffNames";
 import { updateExpenseAction } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import ExpenseForm from "@/components/ExpenseForm";
@@ -12,7 +13,10 @@ export default async function EditExpensePage(
 ) {
   await requireRole(["ceo", "admin"]);
   const { id } = await props.params;
-  const expense = await getExpense(id);
+  const [expense, paidByOptions] = await Promise.all([
+    getExpense(id),
+    getExpensePaidByOptions(),
+  ]);
   if (!expense) notFound();
 
   const action = updateExpenseAction.bind(null, expense.id);
@@ -27,6 +31,7 @@ export default async function EditExpensePage(
         <ExpenseForm
           action={action}
           expense={expense}
+          paidByOptions={paidByOptions}
           submitLabel="Save Changes"
         />
       </div>

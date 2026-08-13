@@ -96,7 +96,7 @@ const demoStore: VisaCase[] = [
   ),
 ];
 
-export async function getVisaCases(): Promise<VisaCase[]> {
+export async function getVisaCases(columns: string = "*"): Promise<VisaCase[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return [...demoStore].sort((a, b) =>
@@ -105,11 +105,17 @@ export async function getVisaCases(): Promise<VisaCase[]> {
   }
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*")
+    .select(columns)
     .order("created_date", { ascending: false });
   if (error || !data) return [];
-  return data as VisaCase[];
+  return data as unknown as VisaCase[];
 }
+
+export const VISA_SUMMARY_SELECT =
+  "case_status,appointment_date,balance_usd,total_sale_usd";
+
+export const VISA_LIST_SELECT =
+  "id,visa_id,created_date,client_name,destination_country,visa_type,case_status,total_sale_usd,balance_usd,payment_status";
 
 export async function getVisaCase(id: string): Promise<VisaCase | null> {
   const supabase = await getSupabase();

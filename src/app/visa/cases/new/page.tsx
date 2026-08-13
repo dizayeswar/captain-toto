@@ -1,12 +1,16 @@
 import { createVisaCaseAction } from "@/lib/actions";
 import { getSupplierOptions } from "@/lib/suppliers";
+import { getStaffNames } from "@/lib/staffNames";
 import { PageHeader } from "@/components/ui";
 import VisaForm from "@/components/VisaForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewVisaCasePage() {
-  const suppliers = await getSupplierOptions();
+  const [suppliers, staffNames] = await Promise.all([
+    getSupplierOptions(),
+    getStaffNames(),
+  ]);
 
   return (
     <>
@@ -18,6 +22,7 @@ export default async function NewVisaCasePage() {
         <VisaForm
           action={createVisaCaseAction}
           suppliers={suppliers}
+          staffNames={staffNames}
           submitLabel="Create Case"
         />
       </div>

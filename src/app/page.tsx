@@ -1,26 +1,37 @@
 import Link from "next/link";
 import { getCurrentProfile, canAccessFinance } from "@/lib/auth";
-import { getBookings, computeTotals } from "@/lib/bookings";
-import { getHotelBookings, summarizeHotels } from "@/lib/hotels";
-import { getVisaCases, summarizeVisas } from "@/lib/visas";
+import {
+  getBookings,
+  computeTotals,
+  BOOKING_SUMMARY_SELECT,
+} from "@/lib/bookings";
+import {
+  getHotelBookings,
+  summarizeHotels,
+  HOTEL_SUMMARY_SELECT,
+} from "@/lib/hotels";
+import {
+  getVisaCases,
+  summarizeVisas,
+  VISA_SUMMARY_SELECT,
+} from "@/lib/visas";
 import {
   getSupplierInvoices,
   summarizeSupplierFinance,
+  SUPPLIER_INVOICE_SUMMARY_SELECT,
 } from "@/lib/supplierFinance";
-import { getExpenses, summarizeExpenses } from "@/lib/expenses";
+import {
+  getExpenses,
+  summarizeExpenses,
+  EXPENSE_SUMMARY_SELECT,
+} from "@/lib/expenses";
 import {
   getFinanceDeposits,
   computeFinanceBalance,
   computeOwedToOthers,
+  DEPOSIT_SUMMARY_SELECT,
 } from "@/lib/financeBalance";
-import {
-  bookingsToExcel,
-  hotelsToExcel,
-  visasToExcel,
-  supplierInvoicesToExcel,
-  expensesToExcel,
-  depositsToExcel,
-} from "@/lib/excelRows";
+import { loadDashboardExportSheets } from "@/lib/dashboardExport";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/ui";
 import ExportExcelButton from "@/components/ExportExcelButton";
@@ -61,12 +72,16 @@ export default async function DashboardPage() {
     expenses,
     deposits,
   ] = await Promise.all([
-    getBookings(),
-    getHotelBookings(),
-    getVisaCases(),
-    getSupplierInvoices(),
-    showFinance ? getExpenses() : Promise.resolve([]),
-    showFinance ? getFinanceDeposits() : Promise.resolve([]),
+    getBookings(BOOKING_SUMMARY_SELECT),
+    getHotelBookings(HOTEL_SUMMARY_SELECT),
+    getVisaCases(VISA_SUMMARY_SELECT),
+    getSupplierInvoices(SUPPLIER_INVOICE_SUMMARY_SELECT),
+    showFinance
+      ? getExpenses(EXPENSE_SUMMARY_SELECT)
+      : Promise.resolve([]),
+    showFinance
+      ? getFinanceDeposits(DEPOSIT_SUMMARY_SELECT)
+      : Promise.resolve([]),
   ]);
 
   const ticket = computeTotals(bookings);
@@ -77,22 +92,6 @@ export default async function DashboardPage() {
   const balance = computeFinanceBalance(deposits, expenses);
   const owed = computeOwedToOthers(expenses);
 
-  const exportSheets = [
-    { name: "Ticket bookings", rows: bookingsToExcel(bookings) },
-    { name: "Hotels", rows: hotelsToExcel(hotels) },
-    { name: "Visas", rows: visasToExcel(visas) },
-    {
-      name: "Supplier invoices",
-      rows: supplierInvoicesToExcel(supplierInvoices),
-    },
-    ...(showFinance
-      ? [
-          { name: "Expenses", rows: expensesToExcel(expenses) },
-          { name: "Deposits", rows: depositsToExcel(deposits) },
-        ]
-      : []),
-  ];
-
   return (
     <>
       <PageHeader
@@ -102,7 +101,7 @@ export default async function DashboardPage() {
           <ExportExcelButton
             filename="dashboard-overview"
             label="Export to Excel"
-            sheets={exportSheets}
+            loadSheets={loadDashboardExportSheets}
           />
         }
       />

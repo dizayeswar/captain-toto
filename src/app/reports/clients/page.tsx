@@ -1,4 +1,4 @@
-import { getBookings, groupBy } from "@/lib/bookings";
+import { getBookings, groupBy, BOOKING_REPORT_SELECT } from "@/lib/bookings";
 import { groupRowsToExcel } from "@/lib/excelRows";
 import { PageHeader } from "@/components/ui";
 import GroupReport from "@/components/GroupReport";
@@ -7,7 +7,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 export const dynamic = "force-dynamic";
 
 export default async function ClientReportPage() {
-  const bookings = await getBookings();
+  const bookings = await getBookings(BOOKING_REPORT_SELECT);
   const rows = groupBy(bookings, (b) => b.client_name);
 
   return (

@@ -177,7 +177,9 @@ const demoStore: HotelBooking[] = [
   ),
 ];
 
-export async function getHotelBookings(): Promise<HotelBooking[]> {
+export async function getHotelBookings(
+  columns: string = "*"
+): Promise<HotelBooking[]> {
   const supabase = await getSupabase();
   if (!supabase) {
     return mapHotelRows(
@@ -186,11 +188,19 @@ export async function getHotelBookings(): Promise<HotelBooking[]> {
   }
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*")
+    .select(columns)
     .order("created_date", { ascending: false });
   if (error || !data) return [];
-  return mapHotelRows(data as HotelBooking[]);
+  return mapHotelRows(data as unknown as HotelBooking[]);
 }
+
+/** Columns for dashboard aggregates (refreshHotelFinancials-safe). */
+export const HOTEL_SUMMARY_SELECT =
+  "booking_status,cancellation_fee_usd,service_fee_usd,cancel_cost_usd,total_cost_usd,total_sale_usd,net_paid_usd,refunded_usd,final_charge_usd,profit_usd,balance_usd";
+
+/** Columns for hotel list table. */
+export const HOTEL_LIST_SELECT =
+  "id,booking_code,created_date,lead_guest,hotel_name,check_in,nights,payment_status,booking_status,cancellation_fee_usd,service_fee_usd,cancel_cost_usd,total_cost_usd,total_sale_usd,net_paid_usd,refunded_usd,final_charge_usd,profit_usd,balance_usd";
 
 export async function getHotelBooking(id: string): Promise<HotelBooking | null> {
   const supabase = await getSupabase();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { downloadExcel, type ExcelCell } from "@/lib/excelExport";
+import type { ExcelCell } from "@/lib/excelTypes";
 
 type Sheet = {
   name: string;
@@ -15,6 +15,8 @@ type Props = {
   sheetName?: string;
   /** Multiple sheets (overrides rows). */
   sheets?: Sheet[];
+  /** Lazy-load sheets on click (e.g. dashboard export without loading full tables on page). */
+  loadSheets?: () => Promise<Sheet[]>;
   label?: string;
   disabled?: boolean;
 };
@@ -24,25 +26,34 @@ export default function ExportExcelButton({
   rows,
   sheetName = "Sheet1",
   sheets,
+  loadSheets,
   label = "Export Excel",
   disabled,
 }: Props) {
   const [busy, setBusy] = useState(false);
-  const payload =
+  const staticPayload =
     sheets ??
     (rows
       ? [{ name: sheetName, rows }]
-      : [{ name: sheetName, rows: [] as Record<string, ExcelCell>[] }]);
-  const empty = payload.every((s) => s.rows.length === 0);
+      : loadSheets
+        ? null
+        : [{ name: sheetName, rows: [] as Record<string, ExcelCell>[] }]);
+  const empty =
+    !loadSheets &&
+    (staticPayload?.every((s) => s.rows.length === 0) ?? true);
 
   return (
     <button
       type="button"
       disabled={disabled || busy || empty}
-      onClick={() => {
+      onClick={async () => {
         setBusy(true);
         try {
-          downloadExcel(filename, payload);
+          const payload = loadSheets
+            ? await loadSheets()
+            : (staticPayload as Sheet[]);
+          const { downloadExcel } = await import("@/lib/excelExport");
+          await downloadExcel(filename, payload);
         } finally {
           setBusy(false);
         }
