@@ -43,6 +43,7 @@ import {
 } from "./expenses";
 import {
   createFinanceDeposit,
+  updateFinanceDeposit,
   deleteFinanceDeposit,
 } from "./financeBalance";
 import type {
@@ -559,6 +560,17 @@ export async function createFinanceDepositAction(formData: FormData) {
   await requireRole(["ceo", "admin"]);
   await createFinanceDeposit(parseDepositForm(formData));
   revalidatePaths("/", "/finance");
+  redirect("/finance");
+}
+
+export async function updateFinanceDepositAction(
+  id: string,
+  formData: FormData
+) {
+  const { requireRole } = await import("./auth");
+  await requireRole(["ceo", "admin"]);
+  await updateFinanceDeposit(id, parseDepositForm(formData));
+  revalidatePaths("/", "/finance", `/finance/deposits/${id}`);
   redirect("/finance");
 }
 

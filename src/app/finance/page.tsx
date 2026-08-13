@@ -169,11 +169,19 @@ export default async function FinancePage() {
                           </td>
                           <td className="px-5 py-3 text-right">
                             {depositId ? (
-                              <DeleteButton
-                                action={deleteFinanceDepositAction}
-                                id={depositId}
-                                confirmMessage="Move this balance deposit to Recycle Bin?"
-                              />
+                              <div className="flex items-center justify-end gap-3">
+                                <Link
+                                  href={`/finance/deposits/${depositId}`}
+                                  className="font-medium text-brand hover:underline"
+                                >
+                                  Edit
+                                </Link>
+                                <DeleteButton
+                                  action={deleteFinanceDepositAction}
+                                  id={depositId}
+                                  confirmMessage="Move this balance deposit to Recycle Bin?"
+                                />
+                              </div>
                             ) : (
                               <span className="text-xs text-slate-400">—</span>
                             )}

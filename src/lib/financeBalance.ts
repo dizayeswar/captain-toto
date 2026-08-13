@@ -76,6 +76,34 @@ export async function getFinanceDeposit(
   return data as FinanceDeposit;
 }
 
+export async function updateFinanceDeposit(
+  id: string,
+  input: FinanceDepositInput
+): Promise<FinanceDeposit> {
+  const row = {
+    deposit_date: input.deposit_date,
+    brought_by: input.brought_by.trim(),
+    amount: Number(input.amount) || 0,
+    currency: input.currency || "IQD",
+    notes: input.notes.trim(),
+  };
+  const supabase = await getSupabase();
+  if (!supabase) {
+    const idx = demoStore.findIndex((d) => d.id === id);
+    if (idx < 0) throw new Error("Deposit not found");
+    demoStore[idx] = { ...demoStore[idx], ...row, id };
+    return demoStore[idx];
+  }
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update(row)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as FinanceDeposit;
+}
+
 export async function deleteFinanceDeposit(id: string): Promise<void> {
   const row = await getFinanceDeposit(id);
   if (!row) return;
