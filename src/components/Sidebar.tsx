@@ -107,6 +107,7 @@ const SECTIONS: NavSection[] = [
     icon: "settings",
     items: [
       { href: "/settings/appearance", label: "Appearance" },
+      { href: "/settings/password", label: "Change password" },
       { href: "/settings/recycle-bin", label: "Recycle Bin" },
       { href: "/settings/users", label: "Users" },
       { href: "/settings/reset-data", label: "Reset Data" },

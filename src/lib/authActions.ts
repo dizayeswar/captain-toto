@@ -217,3 +217,54 @@ export async function updatePasswordAction(
   revalidatePaths("/");
   redirect("/login?password_updated=1");
 }
+
+/** Logged-in user changes password (requires current password). */
+export async function changePasswordAction(
+  _prev: { error?: string; success?: string } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: string }> {
+  if (!isSupabaseConfigured) {
+    return { error: "Supabase is not configured." };
+  }
+
+  const current = String(formData.get("current_password") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (!current) {
+    return { error: "Enter your current password." };
+  }
+  if (password.length < 6) {
+    return { error: "New password must be at least 6 characters." };
+  }
+  if (password !== confirm) {
+    return { error: "New passwords do not match." };
+  }
+  if (password === current) {
+    return { error: "New password must be different from the current one." };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return { error: "You must be signed in to change your password." };
+  }
+
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: current,
+  });
+  if (verifyError) {
+    return { error: "Current password is incorrect." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: "Password updated successfully." };
+}
