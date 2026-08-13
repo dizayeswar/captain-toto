@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import ListPagination, { LIST_PAGE_SIZE } from "./ListPagination";
 import { EmptyState } from "./ui";
 
 export type FilterOption = { value: string; label: string };
@@ -50,6 +51,7 @@ export default function FilterableList<T>({
   const [status, setStatus] = useState("All");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -75,6 +77,17 @@ export default function FilterableList<T>({
     statusValue,
     itemDate,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, status, dateFrom, dateTo]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice(
+    (safePage - 1) * LIST_PAGE_SIZE,
+    safePage * LIST_PAGE_SIZE
+  );
 
   if (items.length === 0) {
     return null;
@@ -129,7 +142,14 @@ export default function FilterableList<T>({
       {filtered.length === 0 ? (
         <EmptyState message={emptyMessage} />
       ) : (
-        children(filtered)
+        <>
+          {children(pageItems)}
+          <ListPagination
+            page={safePage}
+            total={filtered.length}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

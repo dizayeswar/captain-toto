@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { deleteBookingAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PAYMENT_STATUSES } from "@/lib/lists";
 import type { Booking } from "@/lib/types";
 import { matchesDateRange } from "./FilterableList";
+import ListPagination, { LIST_PAGE_SIZE } from "./ListPagination";
 import { Card, StatusBadge, EmptyState } from "./ui";
 
 const inputCls =
@@ -17,6 +18,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
   const [status, setStatus] = useState("All");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     return bookings.filter((b) => {
@@ -30,6 +32,17 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       return matchesQuery && matchesStatus && matchesDate;
     });
   }, [bookings, query, status, dateFrom, dateTo]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, status, dateFrom, dateTo]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice(
+    (safePage - 1) * LIST_PAGE_SIZE,
+    safePage * LIST_PAGE_SIZE
+  );
 
   return (
     <div>
@@ -96,7 +109,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((b) => (
+                {pageItems.map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-800">
                       {b.booking_id}
@@ -174,9 +187,16 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
         </Card>
       )}
 
-      <p className="mt-3 text-xs text-slate-500">
+      {filtered.length > 0 ? (
+        <ListPagination
+          page={safePage}
+          total={filtered.length}
+          onPageChange={setPage}
+        />
+      ) : null}
+      <p className="mt-2 text-xs text-slate-500">
         {filtered.length} of {bookings.length}{" "}
-        {bookings.length === 1 ? "booking" : "bookings"}
+        {bookings.length === 1 ? "booking" : "bookings"} match filters
       </p>
     </div>
   );
