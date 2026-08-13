@@ -67,18 +67,32 @@ create policy "profiles update by managers"
   using (public.current_user_role() in ('ceo', 'admin'))
   with check (public.current_user_role() in ('ceo', 'admin'));
 
--- Block role changes unless actor is ceo/admin
+-- Block role changes unless actor is ceo/admin; admin cannot touch CEO role
 create or replace function public.profiles_role_guard()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  actor text := public.current_user_role();
 begin
-  if new.role is distinct from old.role
-     and public.current_user_role() not in ('ceo', 'admin') then
+  if new.role is not distinct from old.role then
+    return new;
+  end if;
+
+  if actor is null or actor = 'staff' then
     raise exception 'Not allowed to change role';
   end if;
+
+  if actor = 'admin' and (new.role = 'ceo' or old.role = 'ceo') then
+    raise exception 'Only the CEO can assign or change the CEO role';
+  end if;
+
+  if actor not in ('ceo', 'admin') then
+    raise exception 'Not allowed to change role';
+  end if;
+
   return new;
 end;
 $$;

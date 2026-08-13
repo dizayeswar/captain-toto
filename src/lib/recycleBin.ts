@@ -157,13 +157,18 @@ export async function restoreRecycleBinItem(id: string): Promise<void> {
       ).restoreSupplierPaymentReceipt(item.payload as SupplierPaymentReceipt);
       break;
     case "expense":
-      await (await import("./expenses")).restoreExpense(item.payload as Expense);
+    case "finance_deposit": {
+      const { requireRole } = await import("./auth");
+      await requireRole(["ceo", "admin"]);
+      if (item.entity_type === "expense") {
+        await (await import("./expenses")).restoreExpense(item.payload as Expense);
+      } else {
+        await (
+          await import("./financeBalance")
+        ).restoreFinanceDeposit(item.payload as FinanceDeposit);
+      }
       break;
-    case "finance_deposit":
-      await (
-        await import("./financeBalance")
-      ).restoreFinanceDeposit(item.payload as FinanceDeposit);
-      break;
+    }
     default:
       throw new Error(`Unknown entity type: ${item.entity_type}`);
   }

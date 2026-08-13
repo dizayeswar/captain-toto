@@ -97,24 +97,34 @@ create policy "supplier_payment_receipts authenticated access"
   using (true) with check (true);
 
 -- ========== finance ==========
+-- Managers (CEO / Admin) only — see also rls_role_aware.sql
 alter table if exists public.expenses enable row level security;
 drop policy if exists "expenses full access" on public.expenses;
 drop policy if exists "expenses authenticated access" on public.expenses;
-create policy "expenses authenticated access"
-  on public.expenses for all to authenticated
-  using (true) with check (true);
+drop policy if exists "expenses managers only" on public.expenses;
+create policy "expenses managers only"
+  on public.expenses for all
+  to authenticated
+  using (public.current_user_role() in ('ceo', 'admin'))
+  with check (public.current_user_role() in ('ceo', 'admin'));
 
 alter table if exists public.finance_deposits enable row level security;
 drop policy if exists "finance_deposits full access" on public.finance_deposits;
 drop policy if exists "finance_deposits authenticated access" on public.finance_deposits;
-create policy "finance_deposits authenticated access"
-  on public.finance_deposits for all to authenticated
-  using (true) with check (true);
+drop policy if exists "finance_deposits managers only" on public.finance_deposits;
+create policy "finance_deposits managers only"
+  on public.finance_deposits for all
+  to authenticated
+  using (public.current_user_role() in ('ceo', 'admin'))
+  with check (public.current_user_role() in ('ceo', 'admin'));
 
 -- ========== recycle bin ==========
+-- Prefer running rls_role_aware.sql for full role split.
+-- Fallback: authenticated can use recycle bin (app still gates forever-delete).
 alter table if exists public.recycle_bin enable row level security;
 drop policy if exists "recycle_bin full access" on public.recycle_bin;
 drop policy if exists "recycle_bin authenticated access" on public.recycle_bin;
 create policy "recycle_bin authenticated access"
-  on public.recycle_bin for all to authenticated
+  on public.recycle_bin for all
+  to authenticated
   using (true) with check (true);
