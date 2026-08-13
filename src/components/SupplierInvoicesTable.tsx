@@ -26,6 +26,7 @@ export default function SupplierInvoicesTable({
         label: s,
       }))}
       statusValue={(inv) => inv.invoice_status}
+      itemDate={(inv) => inv.invoice_date}
       emptyMessage="No supplier invoices match your search."
     >
       {(rows) => (

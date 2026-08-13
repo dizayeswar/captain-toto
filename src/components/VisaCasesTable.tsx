@@ -19,6 +19,7 @@ export default function VisaCasesTable({ cases }: { cases: VisaCase[] }) {
       }
       statusOptions={VISA_CASE_STATUSES.map((s) => ({ value: s, label: s }))}
       statusValue={(v) => v.case_status}
+      itemDate={(v) => v.created_date}
       emptyMessage="No visa cases match your search."
     >
       {(rows) => (

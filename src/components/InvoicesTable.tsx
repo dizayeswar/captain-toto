@@ -22,6 +22,7 @@ export default function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         label: s,
       }))}
       statusValue={(inv) => inv.reservation_status}
+      itemDate={(inv) => inv.invoice_date}
       emptyMessage="No invoices match your search."
     >
       {(rows) => (

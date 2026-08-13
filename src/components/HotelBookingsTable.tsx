@@ -26,6 +26,7 @@ export default function HotelBookingsTable({
         label: s,
       }))}
       statusValue={(b) => b.booking_status}
+      itemDate={(b) => b.check_in || b.created_date}
       emptyMessage="No hotel bookings match your search."
     >
       {(rows) => (

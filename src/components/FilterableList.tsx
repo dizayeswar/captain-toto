@@ -5,6 +5,23 @@ import { EmptyState } from "./ui";
 
 export type FilterOption = { value: string; label: string };
 
+const inputCls =
+  "rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-600 dark:bg-slate-900";
+
+/** Inclusive YYYY-MM-DD range; empty from/to means no bound. Missing item date fails the range. */
+export function matchesDateRange(
+  date: string | null | undefined,
+  from: string,
+  to: string
+): boolean {
+  if (!from && !to) return true;
+  const d = (date || "").slice(0, 10);
+  if (!d) return false;
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
+
 type Props<T> = {
   items: T[];
   searchPlaceholder?: string;
@@ -13,6 +30,8 @@ type Props<T> = {
   /** Optional status/category filter. */
   statusOptions?: FilterOption[];
   statusValue?: (item: T) => string;
+  /** Date used for From/To filter (YYYY-MM-DD). Enables date inputs when set. */
+  itemDate?: (item: T) => string | null | undefined;
   emptyMessage?: string;
   children: (filtered: T[]) => ReactNode;
 };
@@ -23,11 +42,14 @@ export default function FilterableList<T>({
   searchText,
   statusOptions,
   statusValue,
+  itemDate,
   emptyMessage = "No items match your search.",
   children,
 }: Props<T>) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -38,9 +60,21 @@ export default function FilterableList<T>({
         !statusOptions ||
         status === "All" ||
         (statusValue ? statusValue(item) === status : true);
-      return matchesQuery && matchesStatus;
+      const matchesDate =
+        !itemDate || matchesDateRange(itemDate(item), dateFrom, dateTo);
+      return matchesQuery && matchesStatus && matchesDate;
     });
-  }, [items, query, status, searchText, statusOptions, statusValue]);
+  }, [
+    items,
+    query,
+    status,
+    dateFrom,
+    dateTo,
+    searchText,
+    statusOptions,
+    statusValue,
+    itemDate,
+  ]);
 
   if (items.length === 0) {
     return null;
@@ -48,18 +82,18 @@ export default function FilterableList<T>({
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={searchPlaceholder}
-          className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-600 dark:bg-slate-900"
+          className={`min-w-64 flex-1 ${inputCls}`}
         />
         {statusOptions && statusOptions.length > 0 && (
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-600 dark:bg-slate-900"
+            className={inputCls}
           >
             <option value="All">All statuses</option>
             {statusOptions.map((o) => (
@@ -68,6 +102,28 @@ export default function FilterableList<T>({
               </option>
             ))}
           </select>
+        )}
+        {itemDate && (
+          <>
+            <label className="flex flex-col gap-1 text-xs text-slate-500">
+              From
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className={inputCls}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-slate-500">
+              To
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className={inputCls}
+              />
+            </label>
+          </>
         )}
       </div>
       {filtered.length === 0 ? (

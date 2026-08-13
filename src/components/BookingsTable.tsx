@@ -6,11 +6,17 @@ import { deleteBookingAction } from "@/lib/actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PAYMENT_STATUSES } from "@/lib/lists";
 import type { Booking } from "@/lib/types";
+import { matchesDateRange } from "./FilterableList";
 import { Card, StatusBadge, EmptyState } from "./ui";
+
+const inputCls =
+  "rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const filtered = useMemo(() => {
     return bookings.filter((b) => {
@@ -20,23 +26,24 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
           .toLowerCase()
           .includes(query.toLowerCase());
       const matchesStatus = status === "All" || b.payment_status === status;
-      return matchesQuery && matchesStatus;
+      const matchesDate = matchesDateRange(b.booking_date, dateFrom, dateTo);
+      return matchesQuery && matchesStatus && matchesDate;
     });
-  }, [bookings, query, status]);
+  }, [bookings, query, status, dateFrom, dateTo]);
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by client, booking ID, route, airline…"
-          className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          className={`min-w-64 flex-1 ${inputCls}`}
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          className={inputCls}
         >
           <option value="All">All statuses</option>
           {PAYMENT_STATUSES.map((s) => (
@@ -45,6 +52,24 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
             </option>
           ))}
         </select>
+        <label className="flex flex-col gap-1 text-xs text-slate-500">
+          From
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className={inputCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-500">
+          To
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className={inputCls}
+          />
+        </label>
       </div>
 
       {filtered.length === 0 ? (
