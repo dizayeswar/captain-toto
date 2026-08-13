@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   title: "Captain ToTo — Booking System",
   description: "Internal booking management system for Captain ToTo travel.",
   icons: {
-    icon: "/logo.png",
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    shortcut: "/logo.png",
     apple: "/logo.png",
   },
 };
