@@ -166,7 +166,7 @@ export async function requestPasswordResetAction(
       : "http://localhost:3000");
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/login?reset=1`,
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
   });
 
   if (error) {
@@ -177,4 +177,43 @@ export async function requestPasswordResetAction(
     success:
       "If that email has an account, a reset link was sent. Check your inbox.",
   };
+}
+
+export async function updatePasswordAction(
+  _prev: { error?: string; success?: string } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: string }> {
+  if (!isSupabaseConfigured) {
+    return { error: "Supabase is not configured." };
+  }
+
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters." };
+  }
+  if (password !== confirm) {
+    return { error: "Passwords do not match." };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      error: "Reset session expired. Request a new link from the login page.",
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: error.message };
+  }
+
+  await supabase.auth.signOut();
+  revalidatePaths("/");
+  redirect("/login?password_updated=1");
 }

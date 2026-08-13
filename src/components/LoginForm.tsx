@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   signInAction,
@@ -10,6 +10,8 @@ import {
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
+  const passwordUpdated = searchParams.get("password_updated") === "1";
+  const resetLinkError = searchParams.get("error") === "reset_link";
   const [mode, setMode] = useState<"login" | "reset">("login");
   const [loginState, loginAction, loginPending] = useActionState(
     signInAction,
@@ -19,6 +21,10 @@ export default function LoginForm() {
     requestPasswordResetAction,
     null
   );
+
+  useEffect(() => {
+    if (searchParams.get("forgot") === "1") setMode("reset");
+  }, [searchParams]);
 
   if (mode === "reset") {
     return (
@@ -73,6 +79,16 @@ export default function LoginForm() {
   return (
     <form action={loginAction} className="space-y-4">
       <input type="hidden" name="next" value={next} />
+      {passwordUpdated && (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+          Password updated. Sign in with your new password.
+        </p>
+      )}
+      {resetLinkError && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          That reset link is invalid or expired. Try Forgot password again.
+        </p>
+      )}
       <div>
         <label
           htmlFor="email"
