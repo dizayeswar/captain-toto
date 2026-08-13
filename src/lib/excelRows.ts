@@ -27,6 +27,7 @@ export function bookingsToExcel(rows: Booking[]) {
     { label: "Service Fee", value: (r) => r.service_fee },
     { label: "Total Paid", value: (r) => r.total_paid },
     { label: "Profit", value: (r) => r.profit },
+    { label: "Debt", value: (r) => r.debt },
     { label: "Payment Status", value: (r) => r.payment_status },
     { label: "Issued", value: (r) => (r.issued ? "Yes" : "No") },
     { label: "Handled By", value: (r) => r.handled_by },

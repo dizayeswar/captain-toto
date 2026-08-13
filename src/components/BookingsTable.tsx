@@ -63,6 +63,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                   <th className="px-4 py-3 text-right font-semibold">Ticket</th>
                   <th className="px-4 py-3 text-right font-semibold">Fee</th>
                   <th className="px-4 py-3 text-right font-semibold">Total</th>
+                  <th className="px-4 py-3 text-right font-semibold">Debt</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
                   <th className="px-4 py-3 font-semibold">Issued</th>
                   <th className="px-4 py-3 font-semibold">Staff</th>
@@ -93,6 +94,15 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                     </td>
                     <td className="px-4 py-3 text-right font-medium tabular-nums text-slate-900">
                       {formatCurrency(b.total_paid)}
+                    </td>
+                    <td
+                      className={`px-4 py-3 text-right tabular-nums ${
+                        b.debt > 0
+                          ? "font-medium text-amber-600"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {formatCurrency(b.debt)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={b.payment_status} />

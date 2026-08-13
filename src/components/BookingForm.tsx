@@ -183,6 +183,18 @@ export default function BookingForm({
           </div>
 
           <div>
+            <label className={labelCls}>Debt / still owed ($)</label>
+            <AmountInput
+              name="debt"
+              defaultValue={booking?.debt ?? 0}
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Amount the client still owes on this ticket
+            </p>
+          </div>
+
+          <div>
             <label className={labelCls}>Payment Method</label>
             <select
               name="payment_method"

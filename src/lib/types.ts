@@ -21,7 +21,7 @@ export type Booking = {
   handled_by: string;
   payment_method: string;
   profit: number; // total_paid - ticket_cost
-  /** @deprecated Kept for DB compatibility; always 0. Use pnr instead. */
+  /** Amount the client still owes on this ticket (manual). */
   debt: number;
   pnr: string;
   supplier_name: string;
@@ -44,6 +44,7 @@ export type BookingInput = {
   issued: boolean;
   handled_by: string;
   payment_method: string;
+  debt: number;
   pnr: string;
   supplier_name: string;
   supplier_code: string;
