@@ -26,14 +26,19 @@ export default async function EditBookingPage(props: PageProps<"/bookings/[id]">
         title={`Edit ${booking.booking_id}`}
         subtitle="Update the details of this ticket booking"
         action={
-          <Button
-            href={`/payments/new?booking=${encodeURIComponent(
-              booking.booking_id
-            )}`}
-            variant="secondary"
-          >
-            + Payment Invoice
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button href={`/bookings/${booking.id}/print`} variant="secondary">
+              Print
+            </Button>
+            <Button
+              href={`/payments/new?booking=${encodeURIComponent(
+                booking.booking_id
+              )}`}
+              variant="secondary"
+            >
+              + Payment Invoice
+            </Button>
+          </div>
         }
       />
       <div className="p-8">
