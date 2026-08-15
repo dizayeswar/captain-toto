@@ -66,6 +66,13 @@ export async function updateUserRoleAction(formData: FormData) {
     throw new Error("Invalid role update");
   }
   await updateProfileRole(id, role);
+  const { writeAuditLog } = await import("./auditLog");
+  await writeAuditLog({
+    action: "role_change",
+    entity_type: "user",
+    entity_id: id,
+    summary: `Role set to ${role}`,
+  });
   revalidatePaths("/", "/settings/users");
   redirect("/settings/users");
 }
@@ -77,6 +84,13 @@ export async function setUserDisabledAction(formData: FormData) {
 
   const { setProfileDisabled } = await import("./auth");
   await setProfileDisabled(id, disabled);
+  const { writeAuditLog } = await import("./auditLog");
+  await writeAuditLog({
+    action: disabled ? "disable" : "enable",
+    entity_type: "user",
+    entity_id: id,
+    summary: disabled ? "User login disabled" : "User login re-enabled",
+  });
   revalidatePaths("/", "/settings/users");
   redirect("/settings/users");
 }
@@ -144,6 +158,13 @@ export async function createUserAction(
   }
 
   revalidatePaths("/settings/users");
+  const { writeAuditLog } = await import("./auditLog");
+  await writeAuditLog({
+    action: "create",
+    entity_type: "user",
+    entity_id: data.user.id,
+    summary: `Created ${email} as ${ROLE_LABELS[role]}`,
+  });
   return {
     success: `Created ${email} as ${ROLE_LABELS[role]}.`,
   };

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePaths } from "./revalidate";
+import { writeAuditLog } from "./auditLog";
 import { createBooking, updateBooking, deleteBooking, getBookings } from "./bookings";
 import {
   createInvoice,
@@ -87,14 +88,26 @@ function parseForm(formData: FormData): BookingInput {
 
 export async function createBookingAction(formData: FormData) {
   const input = parseForm(formData);
-  await createBooking(input);
+  const booking = await createBooking(input);
+  await writeAuditLog({
+    action: "create",
+    entity_type: "booking",
+    entity_id: booking.id,
+    summary: `${booking.booking_id} · ${booking.client_name || "—"} · ${booking.route || "—"}`,
+  });
   revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   redirect("/bookings");
 }
 
 export async function updateBookingAction(id: string, formData: FormData) {
   const input = parseForm(formData);
-  await updateBooking(id, input);
+  const booking = await updateBooking(id, input);
+  await writeAuditLog({
+    action: "update",
+    entity_type: "booking",
+    entity_id: booking.id,
+    summary: `${booking.booking_id} · ${booking.client_name || "—"} · ${booking.route || "—"}`,
+  });
   revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   redirect("/bookings");
 }
@@ -103,6 +116,12 @@ export async function deleteBookingAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteBooking(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "booking",
+      entity_id: id,
+      summary: `Moved ticket booking to Recycle Bin`,
+    });
     revalidatePaths("/", "/bookings", "/reports/monthly", "/reports/payments", "/reports/clients", "/reports/staff", "/reports/airlines", "/reports/routes");
   }
 }
@@ -166,13 +185,26 @@ export async function createInvoiceAction(formData: FormData) {
     prepared_by: "Osman",
   });
 
+  await writeAuditLog({
+    action: "create",
+    entity_type: "invoice",
+    entity_id: invoice.id,
+    summary: `${invoice.invoice_no} · ${invoice.client_name || "—"}`,
+  });
+
   revalidatePaths("/", "/invoices", "/payments");
   redirect(`/invoices/${invoice.id}`);
 }
 
 export async function updateInvoiceAction(id: string, formData: FormData) {
   const input = parseInvoiceForm(formData);
-  await updateInvoice(id, input);
+  const invoice = await updateInvoice(id, input);
+  await writeAuditLog({
+    action: "update",
+    entity_type: "invoice",
+    entity_id: id,
+    summary: `${invoice.invoice_no} · ${invoice.client_name || "—"}`,
+  });
   revalidatePaths("/", "/invoices", `/invoices/${id}`);
   redirect(`/invoices/${id}`);
 }
@@ -181,6 +213,12 @@ export async function deleteInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteInvoice(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "invoice",
+      entity_id: id,
+      summary: "Moved ticket invoice to Recycle Bin",
+    });
     revalidatePaths("/", "/invoices", "/payments");
   }
 }
@@ -190,6 +228,12 @@ export async function updatePolicyAction(formData: FormData) {
   const policyText = String(formData.get("policy_text") ?? "").trim();
   if (airline) {
     await upsertPolicy(airline, policyText);
+    await writeAuditLog({
+      action: "update",
+      entity_type: "airline_policy",
+      entity_id: airline,
+      summary: `Policy for ${airline}`,
+    });
     revalidatePaths("/invoices/policies");
   }
 }
@@ -215,6 +259,12 @@ function parsePaymentForm(formData: FormData): PaymentInvoiceInput {
 export async function createPaymentInvoiceAction(formData: FormData) {
   const input = parsePaymentForm(formData);
   const receipt = await createPaymentInvoice(input);
+  await writeAuditLog({
+    action: "create",
+    entity_type: "payment_invoice",
+    entity_id: receipt.id,
+    summary: `${receipt.receipt_no} · ${receipt.received_from || "—"}`,
+  });
   revalidatePaths("/", "/payments");
   redirect(`/payments/${receipt.id}`);
 }
@@ -224,7 +274,13 @@ export async function updatePaymentInvoiceAction(
   formData: FormData
 ) {
   const input = parsePaymentForm(formData);
-  await updatePaymentInvoice(id, input);
+  const receipt = await updatePaymentInvoice(id, input);
+  await writeAuditLog({
+    action: "update",
+    entity_type: "payment_invoice",
+    entity_id: id,
+    summary: `${receipt.receipt_no} · ${receipt.received_from || "—"}`,
+  });
   revalidatePaths("/", "/payments", `/payments/${id}`);
   redirect(`/payments/${id}`);
 }
@@ -233,6 +289,12 @@ export async function deletePaymentInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deletePaymentInvoice(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "payment_invoice",
+      entity_id: id,
+      summary: "Moved payment invoice to Recycle Bin",
+    });
     revalidatePaths("/", "/payments");
   }
 }
@@ -282,13 +344,25 @@ function parseHotelForm(formData: FormData): HotelBookingInput {
 }
 
 export async function createHotelBookingAction(formData: FormData) {
-  await createHotelBooking(parseHotelForm(formData));
+  const booking = await createHotelBooking(parseHotelForm(formData));
+  await writeAuditLog({
+    action: "create",
+    entity_type: "hotel_booking",
+    entity_id: booking.id,
+    summary: `${booking.booking_code} · ${booking.lead_guest || "—"} · ${booking.hotel_name || "—"}`,
+  });
   revalidatePaths("/", "/hotel", "/hotel/bookings");
   redirect("/hotel");
 }
 
 export async function updateHotelBookingAction(id: string, formData: FormData) {
-  await updateHotelBooking(id, parseHotelForm(formData));
+  const booking = await updateHotelBooking(id, parseHotelForm(formData));
+  await writeAuditLog({
+    action: "update",
+    entity_type: "hotel_booking",
+    entity_id: id,
+    summary: `${booking.booking_code} · ${booking.lead_guest || "—"} · ${booking.hotel_name || "—"}`,
+  });
   revalidatePaths("/", "/hotel", "/hotel/bookings", `/hotel/bookings/${id}`);
   redirect("/hotel");
 }
@@ -297,6 +371,12 @@ export async function deleteHotelBookingAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteHotelBooking(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "hotel_booking",
+      entity_id: id,
+      summary: "Moved hotel booking to Recycle Bin",
+    });
     revalidatePaths("/", "/hotel", "/hotel/bookings");
   }
 }
@@ -343,13 +423,25 @@ function parseVisaForm(formData: FormData): VisaCaseInput {
 }
 
 export async function createVisaCaseAction(formData: FormData) {
-  await createVisaCase(parseVisaForm(formData));
+  const visa = await createVisaCase(parseVisaForm(formData));
+  await writeAuditLog({
+    action: "create",
+    entity_type: "visa_case",
+    entity_id: visa.id,
+    summary: `${visa.visa_id} · ${visa.client_name || "—"} · ${visa.destination_country || "—"}`,
+  });
   revalidatePaths("/", "/visa", "/visa/cases");
   redirect("/visa");
 }
 
 export async function updateVisaCaseAction(id: string, formData: FormData) {
-  await updateVisaCase(id, parseVisaForm(formData));
+  const visa = await updateVisaCase(id, parseVisaForm(formData));
+  await writeAuditLog({
+    action: "update",
+    entity_type: "visa_case",
+    entity_id: id,
+    summary: `${visa.visa_id} · ${visa.client_name || "—"} · ${visa.destination_country || "—"}`,
+  });
   revalidatePaths("/", "/visa", "/visa/cases", `/visa/cases/${id}`);
   redirect("/visa");
 }
@@ -358,6 +450,12 @@ export async function deleteVisaCaseAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteVisaCase(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "visa_case",
+      entity_id: id,
+      summary: "Moved visa case to Recycle Bin",
+    });
     revalidatePaths("/", "/visa", "/visa/cases");
   }
 }
@@ -393,6 +491,12 @@ function parseSupplierInvoiceForm(formData: FormData): SupplierInvoiceInput {
 export async function createSupplierInvoiceAction(formData: FormData) {
   const invoice = await createSupplierInvoice(parseSupplierInvoiceForm(formData));
   const receipt = await ensureReceiptForSettledInvoice(invoice);
+  await writeAuditLog({
+    action: "create",
+    entity_type: "supplier_invoice",
+    entity_id: invoice.id,
+    summary: `${invoice.invoice_id} · ${invoice.supplier || "—"}`,
+  });
   revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices", "/suppliers/receipts");
   if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
@@ -407,6 +511,12 @@ export async function updateSupplierInvoiceAction(
     parseSupplierInvoiceForm(formData)
   );
   const receipt = await ensureReceiptForSettledInvoice(invoice);
+  await writeAuditLog({
+    action: "update",
+    entity_type: "supplier_invoice",
+    entity_id: id,
+    summary: `${invoice.invoice_id} · ${invoice.supplier || "—"}`,
+  });
   revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices", "/suppliers/receipts", `/suppliers/invoices/${id}`);
   if (receipt) redirect(`/suppliers/receipts/${receipt.id}`);
   redirect("/suppliers/invoices");
@@ -416,6 +526,12 @@ export async function deleteSupplierInvoiceAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplierInvoice(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "supplier_invoice",
+      entity_id: id,
+      summary: "Moved supplier invoice to Recycle Bin",
+    });
     revalidatePaths("/", "/suppliers/dashboard", "/suppliers/invoices");
   }
 }
@@ -436,7 +552,13 @@ export async function createSupplierAction(formData: FormData) {
     active: formData.get("active") !== "off",
     notes: str("notes"),
   };
-  await createSupplier(input);
+  const supplier = await createSupplier(input);
+  await writeAuditLog({
+    action: "create",
+    entity_type: "supplier",
+    entity_id: supplier.id,
+    summary: `${supplier.supplier_code} · ${supplier.name || "—"}`,
+  });
   revalidatePaths("/suppliers", "/suppliers/new");
   redirect("/suppliers");
 }
@@ -445,6 +567,12 @@ export async function deleteSupplierAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplier(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "supplier",
+      entity_id: id,
+      summary: "Moved supplier to Recycle Bin",
+    });
     revalidatePaths("/suppliers");
   }
 }
@@ -471,6 +599,12 @@ export async function createSupplierPaymentReceiptAction(formData: FormData) {
   const receipt = await createSupplierPaymentReceipt(
     parseSupplierReceiptForm(formData)
   );
+  await writeAuditLog({
+    action: "create",
+    entity_type: "supplier_receipt",
+    entity_id: receipt.id,
+    summary: `${receipt.receipt_no} · ${receipt.supplier || "—"}`,
+  });
   revalidatePaths("/", "/suppliers/receipts", "/suppliers/dashboard");
   redirect(`/suppliers/receipts/${receipt.id}`);
 }
@@ -479,7 +613,16 @@ export async function updateSupplierPaymentReceiptAction(
   id: string,
   formData: FormData
 ) {
-  await updateSupplierPaymentReceipt(id, parseSupplierReceiptForm(formData));
+  const receipt = await updateSupplierPaymentReceipt(
+    id,
+    parseSupplierReceiptForm(formData)
+  );
+  await writeAuditLog({
+    action: "update",
+    entity_type: "supplier_receipt",
+    entity_id: id,
+    summary: `${receipt.receipt_no} · ${receipt.supplier || "—"}`,
+  });
   revalidatePaths("/", "/suppliers/receipts", `/suppliers/receipts/${id}`);
   redirect(`/suppliers/receipts/${id}`);
 }
@@ -488,6 +631,12 @@ export async function deleteSupplierPaymentReceiptAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteSupplierPaymentReceipt(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "supplier_receipt",
+      entity_id: id,
+      summary: "Moved supplier receipt to Recycle Bin",
+    });
     revalidatePaths("/", "/suppliers/receipts", "/suppliers/dashboard");
   }
 }
@@ -518,7 +667,13 @@ function parseExpenseForm(formData: FormData): ExpenseInput {
 export async function createExpenseAction(formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
-  await createExpense(parseExpenseForm(formData));
+  const expense = await createExpense(parseExpenseForm(formData));
+  await writeAuditLog({
+    action: "create",
+    entity_type: "expense",
+    entity_id: expense.id,
+    summary: `${expense.category || "Expense"} · ${expense.description || "—"}`,
+  });
   revalidatePaths("/", "/finance", "/finance/summary");
   redirect("/finance");
 }
@@ -526,7 +681,13 @@ export async function createExpenseAction(formData: FormData) {
 export async function updateExpenseAction(id: string, formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
-  await updateExpense(id, parseExpenseForm(formData));
+  const expense = await updateExpense(id, parseExpenseForm(formData));
+  await writeAuditLog({
+    action: "update",
+    entity_type: "expense",
+    entity_id: id,
+    summary: `${expense.category || "Expense"} · ${expense.description || "—"}`,
+  });
   revalidatePaths("/", "/finance", "/finance/summary", `/finance/${id}`);
   redirect("/finance");
 }
@@ -537,6 +698,12 @@ export async function deleteExpenseAction(formData: FormData) {
     const { requireRole } = await import("./auth");
     await requireRole(["ceo", "admin"]);
     await deleteExpense(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "expense",
+      entity_id: id,
+      summary: "Moved expense to Recycle Bin",
+    });
     revalidatePaths("/", "/finance", "/finance/summary");
   }
 }
@@ -559,7 +726,13 @@ function parseDepositForm(formData: FormData): FinanceDepositInput {
 export async function createFinanceDepositAction(formData: FormData) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
-  await createFinanceDeposit(parseDepositForm(formData));
+  const deposit = await createFinanceDeposit(parseDepositForm(formData));
+  await writeAuditLog({
+    action: "create",
+    entity_type: "finance_deposit",
+    entity_id: deposit.id,
+    summary: `${deposit.brought_by || "—"} · ${deposit.amount} ${deposit.currency}`,
+  });
   revalidatePaths("/", "/finance");
   redirect("/finance");
 }
@@ -570,7 +743,13 @@ export async function updateFinanceDepositAction(
 ) {
   const { requireRole } = await import("./auth");
   await requireRole(["ceo", "admin"]);
-  await updateFinanceDeposit(id, parseDepositForm(formData));
+  const deposit = await updateFinanceDeposit(id, parseDepositForm(formData));
+  await writeAuditLog({
+    action: "update",
+    entity_type: "finance_deposit",
+    entity_id: id,
+    summary: `${deposit.brought_by || "—"} · ${deposit.amount} ${deposit.currency}`,
+  });
   revalidatePaths("/", "/finance", `/finance/deposits/${id}`);
   redirect("/finance");
 }
@@ -581,19 +760,27 @@ export async function deleteFinanceDepositAction(formData: FormData) {
     const { requireRole } = await import("./auth");
     await requireRole(["ceo", "admin"]);
     await deleteFinanceDeposit(id);
+    await writeAuditLog({
+      action: "delete",
+      entity_type: "finance_deposit",
+      entity_id: id,
+      summary: "Moved cash deposit to Recycle Bin",
+    });
     revalidatePaths("/", "/finance");
   }
 }
-
-// ---------------------------------------------------------------------------
-// Recycle bin
-// ---------------------------------------------------------------------------
 
 export async function restoreRecycleBinItemAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     const { restoreRecycleBinItem } = await import("./recycleBin");
     await restoreRecycleBinItem(id);
+    await writeAuditLog({
+      action: "restore",
+      entity_type: "recycle_bin",
+      entity_id: id,
+      summary: "Restored item from Recycle Bin",
+    });
     revalidatePaths("/", "/settings/recycle-bin");
   }
 }
@@ -605,6 +792,12 @@ export async function purgeRecycleBinItemAction(formData: FormData) {
     await requireRole(["ceo", "admin"]);
     const { purgeRecycleBinItem } = await import("./recycleBin");
     await purgeRecycleBinItem(id);
+    await writeAuditLog({
+      action: "purge",
+      entity_type: "recycle_bin",
+      entity_id: id,
+      summary: "Permanently deleted from Recycle Bin",
+    });
     revalidatePaths("/settings/recycle-bin");
   }
 }

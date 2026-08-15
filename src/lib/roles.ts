@@ -43,6 +43,11 @@ export function canDisableUsers(role: AppRole): boolean {
   return role === "ceo";
 }
 
+/** View Settings → Audit log — CEO / Admin. */
+export function canViewAuditLog(role: AppRole): boolean {
+  return role === "ceo" || role === "admin";
+}
+
 export function canAssignRole(
   actor: AppRole,
   targetRole: AppRole,

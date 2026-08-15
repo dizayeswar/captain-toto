@@ -16,6 +16,7 @@ export {
   canResetData,
   canCreateUsers,
   canDisableUsers,
+  canViewAuditLog,
   canAssignRole,
 } from "./roles";
 

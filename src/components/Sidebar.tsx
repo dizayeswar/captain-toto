@@ -8,6 +8,7 @@ import {
   canAccessFinance,
   canManageUsers,
   canResetData,
+  canViewAuditLog,
   ROLE_LABELS,
   type Profile,
 } from "@/lib/roles";
@@ -109,6 +110,7 @@ const SECTIONS: NavSection[] = [
       { href: "/settings/appearance", label: "Appearance" },
       { href: "/settings/password", label: "Change password" },
       { href: "/settings/recycle-bin", label: "Recycle Bin" },
+      { href: "/settings/audit", label: "Audit log" },
       { href: "/settings/users", label: "Users" },
       { href: "/settings/reset-data", label: "Reset Data" },
     ],
@@ -122,6 +124,7 @@ function sectionsForProfile(profile: Profile | null): NavSection[] {
     if (section.id === "settings") {
       const items = section.items.filter((item) => {
         if (item.href === "/settings/users") return canManageUsers(role);
+        if (item.href === "/settings/audit") return canViewAuditLog(role);
         if (item.href === "/settings/reset-data") return canResetData(role);
         return true;
       });
