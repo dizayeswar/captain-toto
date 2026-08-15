@@ -7,10 +7,16 @@ create table if not exists public.profiles (
   full_name   text not null default '',
   role        text not null default 'staff'
                 check (role in ('ceo', 'admin', 'staff')),
+  disabled    boolean not null default false,
   created_at  timestamptz not null default now()
 );
 
 create index if not exists profiles_role_idx on public.profiles (role);
+create index if not exists profiles_disabled_idx on public.profiles (disabled);
+
+-- Existing installs: add column if table already existed without it
+alter table public.profiles
+  add column if not exists disabled boolean not null default false;
 
 alter table public.profiles enable row level security;
 

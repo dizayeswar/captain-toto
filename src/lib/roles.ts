@@ -4,6 +4,8 @@ export type Profile = {
   id: string;
   full_name: string;
   role: AppRole;
+  /** When true, login is blocked until CEO re-enables. */
+  disabled?: boolean;
   email?: string;
   created_at?: string;
 };
@@ -33,6 +35,11 @@ export function canResetData(role: AppRole): boolean {
 
 /** Create login accounts from the app — CEO only. */
 export function canCreateUsers(role: AppRole): boolean {
+  return role === "ceo";
+}
+
+/** Disable / re-enable login accounts — CEO only. */
+export function canDisableUsers(role: AppRole): boolean {
   return role === "ceo";
 }
 

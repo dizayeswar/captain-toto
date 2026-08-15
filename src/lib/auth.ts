@@ -15,6 +15,7 @@ export {
   canPurgeRecycleBin,
   canResetData,
   canCreateUsers,
+  canDisableUsers,
   canAssignRole,
 } from "./roles";
 
@@ -35,6 +36,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
       id: "demo",
       full_name: "Demo User",
       role: "ceo",
+      disabled: false,
       email: "demo@local",
     };
   }
@@ -48,7 +50,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, created_at")
+    .select("id, full_name, role, disabled, created_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -57,6 +59,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
       id: user.id,
       full_name: user.email?.split("@")[0] ?? "",
       role: "staff",
+      disabled: false,
       email: user.email ?? "",
     };
   }
@@ -64,6 +67,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   return {
     ...(data as Omit<Profile, "email">),
     role: (data.role as AppRole) || "staff",
+    disabled: Boolean((data as { disabled?: boolean }).disabled),
     email: user.email ?? "",
   };
 });
@@ -71,6 +75,11 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 export async function requireUser(): Promise<Profile> {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
+  if (profile.disabled) {
+    const supabase = await getSupabase();
+    if (supabase) await supabase.auth.signOut();
+    redirect("/login?disabled=1");
+  }
   return profile;
 }
 
@@ -89,6 +98,7 @@ export async function listProfiles(): Promise<Profile[]> {
         id: "demo",
         full_name: "Demo User",
         role: "ceo",
+        disabled: false,
         email: "demo@local",
       },
     ];
@@ -98,7 +108,7 @@ export async function listProfiles(): Promise<Profile[]> {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, created_at")
+    .select("id, full_name, role, disabled, created_at")
     .order("created_at", { ascending: true });
 
   if (error || !data) return [];
@@ -106,6 +116,7 @@ export async function listProfiles(): Promise<Profile[]> {
   return (data as Profile[]).map((p) => ({
     ...p,
     role: (p.role as AppRole) || "staff",
+    disabled: Boolean(p.disabled),
   }));
 }
 
@@ -129,4 +140,52 @@ export async function updateProfileRole(
     .update({ role })
     .eq("id", userId);
   if (error) throw new Error(error.message);
+}
+
+/** Soft-disable or re-enable a login. CEO only. Uses service role. */
+export async function setProfileDisabled(
+  userId: string,
+  disabled: boolean
+): Promise<void> {
+  const actor = await requireRole(["ceo"]);
+  if (actor.id === userId) {
+    throw new Error("You cannot disable your own account");
+  }
+
+  const profiles = await listProfiles();
+  const target = profiles.find((p) => p.id === userId);
+  if (!target) throw new Error("User not found");
+
+  if (disabled && target.role === "ceo") {
+    const otherActiveCeos = profiles.filter(
+      (p) => p.role === "ceo" && !p.disabled && p.id !== userId
+    );
+    if (otherActiveCeos.length === 0) {
+      throw new Error("Cannot disable the last active CEO");
+    }
+  }
+
+  const { getAdminSupabase } = await import("./supabase/admin");
+  const admin = getAdminSupabase();
+  if (!admin) {
+    throw new Error(
+      "Missing SUPABASE_SERVICE_ROLE_KEY. Add it in Vercel (and .env.local), then redeploy."
+    );
+  }
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ disabled })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  // Block / unblock at Auth level so existing sessions cannot refresh
+  const { error: banError } = await admin.auth.admin.updateUserById(userId, {
+    ban_duration: disabled ? "876000h" : "none",
+  });
+  if (banError) {
+    throw new Error(
+      `Account marked ${disabled ? "disabled" : "enabled"}, but Auth ban failed: ${banError.message}`
+    );
+  }
 }

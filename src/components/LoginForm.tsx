@@ -12,6 +12,7 @@ export default function LoginForm() {
   const next = searchParams.get("next") || "/";
   const passwordUpdated = searchParams.get("password_updated") === "1";
   const resetLinkError = searchParams.get("error") === "reset_link";
+  const accountDisabled = searchParams.get("disabled") === "1";
   const [mode, setMode] = useState<"login" | "reset">("login");
   const [loginState, loginAction, loginPending] = useActionState(
     signInAction,
@@ -87,6 +88,11 @@ export default function LoginForm() {
       {resetLinkError && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           That reset link is invalid or expired. Try Forgot password again.
+        </p>
+      )}
+      {accountDisabled && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          This account has been disabled. Contact the CEO.
         </p>
       )}
       <div>

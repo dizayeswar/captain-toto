@@ -1,12 +1,16 @@
 import {
   canAssignRole,
   canCreateUsers,
+  canDisableUsers,
   listProfiles,
   requireRole,
   ROLE_LABELS,
   type AppRole,
 } from "@/lib/auth";
-import { updateUserRoleAction } from "@/lib/authActions";
+import {
+  setUserDisabledAction,
+  updateUserRoleAction,
+} from "@/lib/authActions";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import CreateUserForm from "@/components/CreateUserForm";
 
@@ -16,9 +20,13 @@ export default async function UsersSettingsPage() {
   const actor = await requireRole(["ceo", "admin"]);
   const profiles = await listProfiles();
   const showCreate = canCreateUsers(actor.role);
+  const showDisable = canDisableUsers(actor.role);
   const createRoles = (["ceo", "admin", "staff"] as AppRole[]).filter((r) =>
     canAssignRole(actor.role, r, "staff")
   );
+  const activeCeoCount = profiles.filter(
+    (p) => p.role === "ceo" && !p.disabled
+  ).length;
 
   return (
     <>
@@ -26,7 +34,7 @@ export default async function UsersSettingsPage() {
         title="Users"
         subtitle={
           showCreate
-            ? "Add accounts and manage roles."
+            ? "Add accounts, manage roles, and disable logins."
             : "Manage account roles."
         }
       />
@@ -54,13 +62,20 @@ export default async function UsersSettingsPage() {
                   <tr>
                     <th className="px-5 py-3 font-semibold">Name</th>
                     <th className="px-5 py-3 font-semibold">Role</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
                     <th className="px-5 py-3 font-semibold text-right">
                       Change role
                     </th>
+                    {showDisable && (
+                      <th className="px-5 py-3 font-semibold text-right">
+                        Access
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {profiles.map((user) => {
+                    const isDisabled = Boolean(user.disabled);
                     const options = (
                       ["ceo", "admin", "staff"] as AppRole[]
                     ).filter(
@@ -70,17 +85,28 @@ export default async function UsersSettingsPage() {
                     );
                     const canEdit =
                       user.id !== actor.id &&
+                      !isDisabled &&
                       options.some((r) => r !== user.role);
+
+                    const isSelf = user.id === actor.id;
+                    const isLastCeo =
+                      user.role === "ceo" &&
+                      !isDisabled &&
+                      activeCeoCount <= 1;
+                    const canToggle =
+                      showDisable && !isSelf && !(isDisabled === false && isLastCeo);
 
                     return (
                       <tr
                         key={user.id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                        className={`hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                          isDisabled ? "opacity-70" : ""
+                        }`}
                       >
                         <td className="px-5 py-3">
                           <p className="font-medium text-slate-900 dark:text-slate-100">
                             {user.full_name || "—"}
-                            {user.id === actor.id ? " (you)" : ""}
+                            {isSelf ? " (you)" : ""}
                           </p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             {user.id.slice(0, 8)}…
@@ -88,6 +114,17 @@ export default async function UsersSettingsPage() {
                         </td>
                         <td className="px-5 py-3 text-slate-700 dark:text-slate-300">
                           {ROLE_LABELS[user.role]}
+                        </td>
+                        <td className="px-5 py-3">
+                          {isDisabled ? (
+                            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                              Disabled
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+                              Active
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3 text-right">
                           {canEdit ? (
@@ -118,6 +155,42 @@ export default async function UsersSettingsPage() {
                             <span className="text-xs text-slate-400">—</span>
                           )}
                         </td>
+                        {showDisable && (
+                          <td className="px-5 py-3 text-right">
+                            {canToggle ? (
+                              <form action={setUserDisabledAction}>
+                                <input
+                                  type="hidden"
+                                  name="id"
+                                  value={user.id}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="disabled"
+                                  value={isDisabled ? "false" : "true"}
+                                />
+                                <button
+                                  type="submit"
+                                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                                    isDisabled
+                                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                      : "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  {isDisabled ? "Enable" : "Disable"}
+                                </button>
+                              </form>
+                            ) : (
+                              <span className="text-xs text-slate-400">
+                                {isSelf
+                                  ? "—"
+                                  : isLastCeo
+                                    ? "Last CEO"
+                                    : "—"}
+                              </span>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -127,12 +200,11 @@ export default async function UsersSettingsPage() {
           </Card>
         )}
 
-        {!showCreate && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Only the CEO can add new users. Only the CEO can assign the CEO
-            role.
-          </p>
-        )}
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {showDisable
+            ? "Disable blocks login but keeps the account. You cannot disable yourself or the last CEO."
+            : "Only the CEO can add or disable users. Only the CEO can assign the CEO role."}
+        </p>
       </div>
     </>
   );

@@ -6,6 +6,7 @@ import { TOTO_BALANCE_PAID_BY } from "./financeConstants";
 export async function getStaffNames(): Promise<string[]> {
   const profiles = await listProfiles();
   const names = profiles
+    .filter((p) => !p.disabled)
     .map((p) => p.full_name?.trim() || p.email?.split("@")[0] || "")
     .filter(Boolean);
   const unique = [...new Set(names)].sort((a, b) => a.localeCompare(b));

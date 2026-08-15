@@ -24,9 +24,26 @@ export async function signInAction(
   }
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) {
     return { error: error.message };
+  }
+
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("disabled")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (profile?.disabled) {
+      await supabase.auth.signOut();
+      return {
+        error: "This account has been disabled. Contact the CEO.",
+      };
+    }
   }
 
   revalidatePaths("/");
@@ -49,6 +66,17 @@ export async function updateUserRoleAction(formData: FormData) {
     throw new Error("Invalid role update");
   }
   await updateProfileRole(id, role);
+  revalidatePaths("/", "/settings/users");
+  redirect("/settings/users");
+}
+
+export async function setUserDisabledAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const disabled = String(formData.get("disabled") ?? "") === "true";
+  if (!id) throw new Error("Invalid user");
+
+  const { setProfileDisabled } = await import("./auth");
+  await setProfileDisabled(id, disabled);
   revalidatePaths("/", "/settings/users");
   redirect("/settings/users");
 }
@@ -106,6 +134,7 @@ export async function createUserAction(
     id: data.user.id,
     full_name: fullName || email.split("@")[0],
     role,
+    disabled: false,
   });
 
   if (profileError) {
