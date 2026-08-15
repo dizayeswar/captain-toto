@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type { VisaCase, VisaCaseInput } from "./types";
 
 const TABLE = "visa_cases";
@@ -53,8 +54,8 @@ export function buildVisaCase(
   };
 }
 
-function nextCode(count: number) {
-  return `CTV-${String(count + 1).padStart(4, "0")}`;
+function nextCode(existing: string[]) {
+  return nextSequentialCode(existing, "CTV-");
 }
 
 const demoStore: VisaCase[] = [
@@ -99,16 +100,18 @@ const demoStore: VisaCase[] = [
 export async function getVisaCases(columns: string = "*"): Promise<VisaCase[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      b.created_date.localeCompare(a.created_date)
-    );
+    return sortByCodeDesc(demoStore, (v) => v.visa_id);
   }
   const { data, error } = await supabase
     .from(TABLE)
     .select(columns)
-    .order("created_date", { ascending: false });
+    .order("visa_id", { ascending: false });
   if (error || !data) return [];
-  return data as unknown as VisaCase[];
+  const rows = data as unknown as VisaCase[];
+  if (rows.some((v) => v.visa_id)) {
+    return sortByCodeDesc(rows, (v) => v.visa_id);
+  }
+  return rows;
 }
 
 export const VISA_SUMMARY_SELECT =
@@ -131,7 +134,7 @@ export async function getVisaCase(id: string): Promise<VisaCase | null> {
 
 export async function createVisaCase(input: VisaCaseInput): Promise<VisaCase> {
   const all = await getVisaCases();
-  const code = nextCode(all.length);
+  const code = nextCode(all.map((v) => v.visa_id));
   const supabase = await getSupabase();
   if (!supabase) {
     const row = buildVisaCase(input, code, `demo-visa-${Date.now()}`);

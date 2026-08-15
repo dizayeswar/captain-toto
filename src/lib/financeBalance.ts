@@ -29,7 +29,8 @@ export async function getFinanceDeposits(
   const { data, error } = await supabase
     .from(TABLE)
     .select(columns)
-    .order("deposit_date", { ascending: false });
+    .order("deposit_date", { ascending: false })
+    .order("created_at", { ascending: false });
   if (error || !data) return [];
   return data as unknown as FinanceDeposit[];
 }

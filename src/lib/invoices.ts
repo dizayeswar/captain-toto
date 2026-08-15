@@ -1,6 +1,7 @@
 import { getSupabase } from "./supabase";
 import { INVOICE_AIRLINES } from "./lists";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type {
   Invoice,
   InvoiceInput,
@@ -79,8 +80,8 @@ const demoPolicies: AirlinePolicy[] = ["General Airline", ...INVOICE_AIRLINES].m
   (airline) => ({ airline, policy_text: STANDARD_POLICY })
 );
 
-function nextInvoiceCode(count: number): string {
-  return `CT-TI-${String(count + 1).padStart(4, "0")}`;
+function nextInvoiceCode(existing: string[]): string {
+  return nextSequentialCode(existing, "CT-TI-");
 }
 
 // ---------------------------------------------------------------------------
@@ -90,22 +91,23 @@ function nextInvoiceCode(count: number): string {
 export async function getInvoices(): Promise<Invoice[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoInvoices].sort((a, b) =>
-      b.invoice_date.localeCompare(a.invoice_date)
-    );
+    return sortByCodeDesc(demoInvoices, (i) => i.invoice_no);
   }
 
   const { data, error } = await supabase
     .from("invoices")
     .select("*")
-    .order("invoice_date", { ascending: false });
+    .order("invoice_no", { ascending: false });
 
   if (error || !data) return [];
-  return (data as Omit<Invoice, "passengers" | "segments">[]).map((row) => ({
-    ...row,
-    passengers: [],
-    segments: [],
-  }));
+  return sortByCodeDesc(
+    (data as Omit<Invoice, "passengers" | "segments">[]).map((row) => ({
+      ...row,
+      passengers: [],
+      segments: [],
+    })),
+    (i) => i.invoice_no
+  );
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {
@@ -146,7 +148,7 @@ export async function getInvoice(id: string): Promise<Invoice | null> {
 
 export async function createInvoice(input: InvoiceInput): Promise<Invoice> {
   const all = await getInvoices();
-  const code = nextInvoiceCode(all.length);
+  const code = nextInvoiceCode(all.map((i) => i.invoice_no));
 
   const supabase = await getSupabase();
   if (!supabase) {

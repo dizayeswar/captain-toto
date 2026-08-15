@@ -31,7 +31,8 @@ export async function getExpenses(columns: string = "*"): Promise<Expense[]> {
   const { data, error } = await supabase
     .from(TABLE)
     .select(columns)
-    .order("expense_date", { ascending: false });
+    .order("expense_date", { ascending: false })
+    .order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as unknown as Expense[]).map((e) => ({
     ...e,

@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type {
   SupplierInvoice,
   SupplierPaymentReceipt,
@@ -10,8 +11,8 @@ const TABLE = "supplier_payment_receipts";
 
 const demoStore: SupplierPaymentReceipt[] = [];
 
-function nextCode(count: number) {
-  return `SPR-${String(count + 1).padStart(4, "0")}`;
+function nextCode(existing: string[]) {
+  return nextSequentialCode(existing, "SPR-");
 }
 
 function buildReceipt(
@@ -37,20 +38,21 @@ export async function getSupplierPaymentReceipts(): Promise<
 > {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      b.receipt_date.localeCompare(a.receipt_date)
-    );
+    return sortByCodeDesc(demoStore, (r) => r.receipt_no);
   }
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
-    .order("receipt_date", { ascending: false });
+    .order("receipt_no", { ascending: false });
   if (error || !data) return [];
-  return (data as SupplierPaymentReceipt[]).map((r) => ({
-    ...r,
-    source_invoice_id: r.source_invoice_id ?? "",
-    source_invoice_no: r.source_invoice_no ?? "",
-  }));
+  return sortByCodeDesc(
+    (data as SupplierPaymentReceipt[]).map((r) => ({
+      ...r,
+      source_invoice_id: r.source_invoice_id ?? "",
+      source_invoice_no: r.source_invoice_no ?? "",
+    })),
+    (r) => r.receipt_no
+  );
 }
 
 export async function getSupplierPaymentReceipt(
@@ -98,7 +100,7 @@ export async function createSupplierPaymentReceipt(
   input: SupplierPaymentReceiptInput
 ): Promise<SupplierPaymentReceipt> {
   const all = await getSupplierPaymentReceipts();
-  const code = nextCode(all.length);
+  const code = nextCode(all.map((r) => r.receipt_no));
   const supabase = await getSupabase();
   if (!supabase) {
     const row = buildReceipt(input, code, `demo-spr-${Date.now()}`);

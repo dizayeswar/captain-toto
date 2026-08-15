@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type { SupplierRecord, SupplierInput } from "./types";
 
 const TABLE = "suppliers";
@@ -36,23 +37,21 @@ function demo(
   };
 }
 
-function nextCode(count: number): string {
-  return `SUP-${String(count + 1).padStart(4, "0")}`;
+function nextCode(existing: string[]): string {
+  return nextSequentialCode(existing, "SUP-");
 }
 
 export async function getSuppliers(): Promise<SupplierRecord[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      a.supplier_code.localeCompare(b.supplier_code)
-    );
+    return sortByCodeDesc(demoStore, (s) => s.supplier_code);
   }
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
-    .order("supplier_code", { ascending: true });
+    .order("supplier_code", { ascending: false });
   if (error || !data) return [];
-  return data as SupplierRecord[];
+  return sortByCodeDesc(data as SupplierRecord[], (s) => s.supplier_code);
 }
 
 /** Lightweight options for supplier dropdowns across sections. */
@@ -62,7 +61,8 @@ export async function getSupplierOptions(): Promise<
   const suppliers = await getSuppliers();
   return suppliers
     .filter((s) => s.active)
-    .map((s) => ({ code: s.supplier_code, name: s.name }));
+    .map((s) => ({ code: s.supplier_code, name: s.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getSupplier(id: string): Promise<SupplierRecord | null> {
@@ -81,7 +81,7 @@ export async function createSupplier(
   input: SupplierInput
 ): Promise<SupplierRecord> {
   const all = await getSuppliers();
-  const code = nextCode(all.length);
+  const code = nextCode(all.map((s) => s.supplier_code));
   const supabase = await getSupabase();
   if (!supabase) {
     const rec: SupplierRecord = {

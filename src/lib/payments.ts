@@ -1,8 +1,10 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type { PaymentInvoice, PaymentInvoiceInput } from "./types";
 
 const TABLE = "payment_invoices";
+const CODE_PREFIX = "CT-PR-";
 
 // Demo fallback (used only when Supabase isn't configured).
 const demoStore: PaymentInvoice[] = [
@@ -20,23 +22,17 @@ const demoStore: PaymentInvoice[] = [
   },
 ];
 
-function nextReceiptCode(count: number): string {
-  return `CT-PR-${String(count + 1).padStart(4, "0")}`;
-}
-
 export async function getPaymentInvoices(): Promise<PaymentInvoice[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      b.receipt_date.localeCompare(a.receipt_date)
-    );
+    return sortByCodeDesc(demoStore, (r) => r.receipt_no);
   }
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
-    .order("receipt_date", { ascending: false });
+    .order("receipt_no", { ascending: false });
   if (error || !data) return [];
-  return data as PaymentInvoice[];
+  return sortByCodeDesc(data as PaymentInvoice[], (r) => r.receipt_no);
 }
 
 export async function getPaymentInvoice(
@@ -57,7 +53,10 @@ export async function createPaymentInvoice(
   input: PaymentInvoiceInput
 ): Promise<PaymentInvoice> {
   const all = await getPaymentInvoices();
-  const code = nextReceiptCode(all.length);
+  const code = nextSequentialCode(
+    all.map((r) => r.receipt_no),
+    CODE_PREFIX
+  );
 
   const supabase = await getSupabase();
   if (!supabase) {

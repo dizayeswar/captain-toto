@@ -1,6 +1,7 @@
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { MONTH_NAMES } from "./lists";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type { Booking, BookingInput } from "./types";
 
 const TABLE = "bookings";
@@ -77,8 +78,8 @@ export function buildBooking(
   };
 }
 
-function nextBookingCode(count: number): string {
-  return `CT-${String(count + 1).padStart(4, "0")}`;
+function nextBookingCode(existing: string[]): string {
+  return nextSequentialCode(existing, "CT-");
 }
 
 // ---------------------------------------------------------------------------
@@ -90,22 +91,25 @@ export async function getBookings(
 ): Promise<Booking[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoStore].sort((a, b) =>
-      b.booking_date.localeCompare(a.booking_date)
-    );
+    return sortByCodeDesc(demoStore, (b) => b.booking_id);
   }
 
   const { data, error } = await supabase
     .from(TABLE)
     .select(columns)
-    .order("booking_date", { ascending: false });
+    .order("booking_id", { ascending: false });
 
   if (error || !data) return [];
-  return (data as unknown as Booking[]).map((b) => ({
+  const rows = (data as unknown as Booking[]).map((b) => ({
     ...b,
     pnr: b.pnr ?? "",
     debt: b.debt ?? 0,
   }));
+  // When booking_id is selected (list pages), keep numeric order newest-first.
+  if (rows.some((b) => b.booking_id)) {
+    return sortByCodeDesc(rows, (b) => b.booking_id);
+  }
+  return rows;
 }
 
 /** Columns needed for dashboard StatCards. */
@@ -135,7 +139,7 @@ export async function getBooking(id: string): Promise<Booking | null> {
 
 export async function createBooking(input: BookingInput): Promise<Booking> {
   const all = await getBookings();
-  const code = nextBookingCode(all.length);
+  const code = nextBookingCode(all.map((b) => b.booking_id));
 
   const supabase = await getSupabase();
   if (!supabase) {

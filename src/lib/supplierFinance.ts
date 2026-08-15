@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type {
   SupplierInvoice,
   SupplierInvoiceInput,
@@ -74,8 +75,8 @@ export function buildSupplierInvoice(
   };
 }
 
-function nextInvCode(count: number) {
-  return `SINV-${String(count + 1).padStart(4, "0")}`;
+function nextInvCode(existing: string[]) {
+  return nextSequentialCode(existing, "SINV-");
 }
 
 const demoInvoices: SupplierInvoice[] = [
@@ -163,20 +164,21 @@ export async function getSupplierInvoices(
 ): Promise<SupplierInvoice[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return [...demoInvoices].sort((a, b) =>
-      b.invoice_date.localeCompare(a.invoice_date)
-    );
+    return sortByCodeDesc(demoInvoices, (i) => i.invoice_id);
   }
   const { data, error } = await supabase
     .from(INV_TABLE)
     .select(columns)
-    .order("invoice_date", { ascending: false });
+    .order("invoice_id", { ascending: false });
   if (error || !data) return [];
-  // List view does not need line details.
-  return (data as unknown as SupplierInvoice[]).map((r) => ({
+  const rows = (data as unknown as SupplierInvoice[]).map((r) => ({
     ...r,
     lines: [],
   }));
+  if (rows.some((r) => r.invoice_id)) {
+    return sortByCodeDesc(rows, (r) => r.invoice_id);
+  }
+  return rows;
 }
 
 export const SUPPLIER_INVOICE_SUMMARY_SELECT =
@@ -206,7 +208,7 @@ export async function createSupplierInvoice(
   input: SupplierInvoiceInput
 ): Promise<SupplierInvoice> {
   const all = await getSupplierInvoices();
-  const code = nextInvCode(all.length);
+  const code = nextInvCode(all.map((i) => i.invoice_id));
   const supabase = await getSupabase();
   if (!supabase) {
     const row = buildSupplierInvoice(input, code, `demo-sinv-${Date.now()}`);

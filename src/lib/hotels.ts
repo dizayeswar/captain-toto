@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { addToRecycleBin } from "./recycleBin";
+import { nextSequentialCode, sortByCodeDesc } from "./sequentialCode";
 import type { HotelBooking, HotelBookingInput } from "./types";
 
 const TABLE = "hotel_bookings";
@@ -95,8 +96,8 @@ export function buildHotelBooking(
   };
 }
 
-function nextCode(count: number) {
-  return `CTH-${String(count + 1).padStart(4, "0")}`;
+function nextCode(existing: string[]) {
+  return nextSequentialCode(existing, "CTH-");
 }
 
 /**
@@ -182,16 +183,18 @@ export async function getHotelBookings(
 ): Promise<HotelBooking[]> {
   const supabase = await getSupabase();
   if (!supabase) {
-    return mapHotelRows(
-      [...demoStore].sort((a, b) => b.created_date.localeCompare(a.created_date))
-    );
+    return mapHotelRows(sortByCodeDesc(demoStore, (b) => b.booking_code));
   }
   const { data, error } = await supabase
     .from(TABLE)
     .select(columns)
-    .order("created_date", { ascending: false });
+    .order("booking_code", { ascending: false });
   if (error || !data) return [];
-  return mapHotelRows(data as unknown as HotelBooking[]);
+  const rows = mapHotelRows(data as unknown as HotelBooking[]);
+  if (rows.some((b) => b.booking_code)) {
+    return sortByCodeDesc(rows, (b) => b.booking_code);
+  }
+  return rows;
 }
 
 /** Columns for dashboard aggregates (refreshHotelFinancials-safe). */
@@ -221,7 +224,7 @@ export async function createHotelBooking(
   input: HotelBookingInput
 ): Promise<HotelBooking> {
   const all = await getHotelBookings();
-  const code = nextCode(all.length);
+  const code = nextCode(all.map((b) => b.booking_code));
   const supabase = await getSupabase();
   if (!supabase) {
     const row = buildHotelBooking(input, code, `demo-hotel-${Date.now()}`);
