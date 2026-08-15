@@ -5,7 +5,7 @@ import {
   AUDIT_ENTITY_LABELS,
   type AuditAction,
   type AuditLog,
-} from "@/lib/auditLog";
+} from "@/lib/auditLogShared";
 import { formatDateTime } from "@/lib/format";
 import FilterableList from "./FilterableList";
 import { Card } from "./ui";
