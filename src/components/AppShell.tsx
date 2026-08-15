@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/supabaseConfig";
+import NavigationProgress from "./NavigationProgress";
 
 export default function AppShell({
   sidebar,
@@ -34,6 +35,10 @@ export default function AppShell({
 
   return (
     <div className="flex h-full">
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
+
       {mobileOpen && (
         <button
           type="button"

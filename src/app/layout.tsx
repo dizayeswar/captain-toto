@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
@@ -36,6 +37,23 @@ const themeInitScript = `
 })();
 `;
 
+function SidebarFallback() {
+  return (
+    <aside className="flex h-full w-64 shrink-0 flex-col bg-[#061b30] text-white">
+      <div className="animate-pulse border-b border-white/10 p-5">
+        <div className="h-10 w-10 rounded bg-white/10" />
+        <div className="mt-3 h-4 w-28 rounded bg-white/10" />
+      </div>
+      <div className="flex-1 space-y-3 p-4">
+        <div className="h-8 rounded bg-white/10" />
+        <div className="h-8 rounded bg-white/10" />
+        <div className="h-8 rounded bg-white/10" />
+        <div className="h-8 rounded bg-white/10" />
+      </div>
+    </aside>
+  );
+}
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -48,9 +66,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="h-full bg-background text-foreground">
         <ThemeProvider>
-          <AppShell sidebar={<AppSidebar />}>{children}</AppShell>
+          <AppShell
+            sidebar={
+              <Suspense fallback={<SidebarFallback />}>
+                <AppSidebar />
+              </Suspense>
+            }
+          >
+            {children}
+          </AppShell>
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
